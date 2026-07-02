@@ -217,13 +217,22 @@ fn recommender_prioritizes_high_weight_weak_topic() {
     assert_eq!(rec.candidates[0].topic_key, "mcat::biobiochem::metabolism");
 }
 
+/// The section key (`biobiochem`, `chemphys`, …) of a full topic tag such as
+/// `mcat::biobiochem::metabolism`.
+fn section_of_tag(tag: &str) -> &str {
+    tag.split("::").nth(1).unwrap_or("")
+}
+
 #[test]
-fn interleaving_differs_from_blocked() {
+fn interleaving_alternates_sections_and_differs_from_blocked() {
     let mut col = Collection::new();
-    add_knowledge(&mut col, "m1", &["mcat::biobiochem::metabolism"]);
-    add_knowledge(&mut col, "m2", &["mcat::biobiochem::metabolism"]);
-    add_knowledge(&mut col, "s1", &["mcat::chemphys::stoichiometry"]);
-    add_knowledge(&mut col, "s2", &["mcat::chemphys::stoichiometry"]);
+    // Two sections, two topics each, a single due card per topic — the same
+    // shape as the starter deck, where blocked practice comes out grouped by
+    // section.
+    add_knowledge(&mut col, "e", &["mcat::biobiochem::enzymes"]);
+    add_knowledge(&mut col, "m", &["mcat::biobiochem::metabolism"]);
+    add_knowledge(&mut col, "k", &["mcat::chemphys::kinetics"]);
+    add_knowledge(&mut col, "t", &["mcat::chemphys::thermodynamics"]);
 
     let inter = col
         .mcat_interleaved_session(pb::InterleavedSessionRequest {
@@ -234,8 +243,20 @@ fn interleaving_differs_from_blocked() {
         .unwrap();
     assert!(inter.interleaved);
     assert_eq!(inter.card_ids.len(), 4);
-    // Round-robin: adjacent cards come from different topics.
-    assert_ne!(inter.topic_keys[0], inter.topic_keys[1]);
+
+    // Interleaved: every consecutive pair crosses a section boundary, even
+    // though each topic only has one due card.
+    let inter_sections: Vec<&str> = inter
+        .topic_keys
+        .iter()
+        .map(|t| section_of_tag(t))
+        .collect();
+    for pair in inter_sections.windows(2) {
+        assert_ne!(
+            pair[0], pair[1],
+            "interleaved order should alternate sections: {inter_sections:?}"
+        );
+    }
 
     let blocked = col
         .mcat_interleaved_session(pb::InterleavedSessionRequest {
@@ -245,8 +266,20 @@ fn interleaving_differs_from_blocked() {
         })
         .unwrap();
     assert!(!blocked.interleaved);
-    // Blocked: first two cards come from the same topic.
-    assert_eq!(blocked.topic_keys[0], blocked.topic_keys[1]);
+
+    // Blocked: the first two cards stay within one section (section-grouped).
+    let blocked_sections: Vec<&str> = blocked
+        .topic_keys
+        .iter()
+        .map(|t| section_of_tag(t))
+        .collect();
+    assert_eq!(
+        blocked_sections[0], blocked_sections[1],
+        "blocked order should stay within a section first: {blocked_sections:?}"
+    );
+
+    // And the two orderings are genuinely different.
+    assert_ne!(inter.topic_keys, blocked.topic_keys);
 }
 
 #[test]

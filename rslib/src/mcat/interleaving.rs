@@ -8,9 +8,18 @@
 //! blocked practice (all of one topic, then the next). This generator produces
 //! either ordering deterministically so the on/off toggle can be ablated.
 
+use std::collections::BTreeMap;
+
 use anki_proto::mcat as pb;
 
 use crate::prelude::*;
+
+/// A single topic's due cards, tagged with the section it belongs to.
+struct TopicQueue {
+    section_key: String,
+    full_tag: String,
+    cards: Vec<CardId>,
+}
 
 impl Collection {
     pub(crate) fn mcat_interleaved_session(
@@ -24,28 +33,65 @@ impl Collection {
             req.max_cards as usize
         };
 
-        // Per-topic due queues (already deterministic within a topic).
-        let mut queues: Vec<(String, Vec<CardId>)> = snap
+        // Per-topic due queues, carrying the owning section. Sorting by full tag
+        // keeps a topic's cards contiguous and groups a section's topics
+        // together, which is exactly the blocked ordering.
+        let mut queues: Vec<TopicQueue> = snap
             .topics
             .iter()
             .filter(|t| !t.due_card_ids.is_empty())
-            .map(|t| (t.full_tag.clone(), t.due_card_ids.clone()))
+            .map(|t| TopicQueue {
+                section_key: t.section_key.clone(),
+                full_tag: t.full_tag.clone(),
+                cards: t.due_card_ids.clone(),
+            })
             .collect();
-        queues.sort_by(|a, b| a.0.cmp(&b.0));
+        queues.sort_by(|a, b| a.full_tag.cmp(&b.full_tag));
 
         let mut card_ids: Vec<i64> = Vec::new();
         let mut topic_keys: Vec<String> = Vec::new();
 
         if req.interleave {
-            // Round-robin across topics: A B C A B C ...
+            // True cross-section interleaving. Group topics by section (sections
+            // ordered deterministically by key, topics kept tag-sorted), build a
+            // per-section stream that round-robins that section's topics, then
+            // round-robin ACROSS sections so consecutive cards come from
+            // different sections wherever possible. This alternates sections even
+            // when each topic only has a single due card, so the result is
+            // clearly distinct from the section-grouped blocked ordering.
+            let mut sections: BTreeMap<&str, Vec<&TopicQueue>> = BTreeMap::new();
+            for q in &queues {
+                sections.entry(&q.section_key).or_default().push(q);
+            }
+
+            let section_streams: Vec<Vec<(&str, i64)>> = sections
+                .values()
+                .map(|topics| {
+                    let mut stream: Vec<(&str, i64)> = Vec::new();
+                    let mut i = 0;
+                    let mut remaining = true;
+                    while remaining {
+                        remaining = false;
+                        for tq in topics {
+                            if let Some(cid) = tq.cards.get(i) {
+                                stream.push((tq.full_tag.as_str(), cid.0));
+                                remaining = true;
+                            }
+                        }
+                        i += 1;
+                    }
+                    stream
+                })
+                .collect();
+
             let mut i = 0;
             let mut remaining = true;
             while remaining && card_ids.len() < max_cards {
                 remaining = false;
-                for (topic, queue) in queues.iter() {
-                    if let Some(cid) = queue.get(i) {
-                        card_ids.push(cid.0);
-                        topic_keys.push(topic.clone());
+                for stream in &section_streams {
+                    if let Some((tag, cid)) = stream.get(i) {
+                        card_ids.push(*cid);
+                        topic_keys.push((*tag).to_string());
                         remaining = true;
                         if card_ids.len() >= max_cards {
                             break;
@@ -56,10 +102,11 @@ impl Collection {
             }
         } else {
             // Blocked: exhaust one topic before the next: A A A B B B ...
-            'outer: for (topic, queue) in queues.iter() {
-                for cid in queue {
+            // (and, because tags sort section-first, one section before the next).
+            'outer: for q in queues.iter() {
+                for cid in &q.cards {
                     card_ids.push(cid.0);
-                    topic_keys.push(topic.clone());
+                    topic_keys.push(q.full_tag.clone());
                     if card_ids.len() >= max_cards {
                         break 'outer;
                     }

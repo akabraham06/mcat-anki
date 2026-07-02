@@ -71,6 +71,32 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
           )
         : 0;
 
+    // Per-item view model for the ordered session list: topic name plus the
+    // section it belongs to, so the cross-section interleaving is visible.
+    interface SessionItem {
+        topicName: string;
+        sectionName: string;
+        sectionKey: string;
+    }
+    $: sessionItems = (session?.topicKeys ?? []).map((key): SessionItem => {
+        const t = targetByKey.get(key);
+        return {
+            topicName: t?.topicName ?? key,
+            sectionName: t?.sectionName ?? "",
+            sectionKey: t?.sectionKey ?? "",
+        };
+    });
+
+    // Stable per-section accent colours for the chips.
+    const sectionColors: Record<string, string> = {
+        biobiochem: "#2e7d32",
+        chemphys: "#1565c0",
+        cars: "#8e24aa",
+        psychsoc: "#c98a00",
+    };
+    const sectionColor = (key: string): string =>
+        sectionColors[key] ?? "var(--fg-subtle, #888)";
+
     function barLeft(est: ScoreEstimate): number {
         const range = est.scaleMax - est.scaleMin || 1;
         return ((est.low - est.scaleMin) / range) * 100;
@@ -327,14 +353,27 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         <button on:click={buildSession} disabled={building}>Build session</button>
         {#if session}
             <p class="log">
-                {session.cardIds.length} cards • target ~{Math.round(
-                    sessionTargetSecs / 60,
-                )} min •
-                {session.interleaved ? "interleaved" : "blocked"}
+                <strong>{session.cardIds.length}</strong> cards
+                <span class="dot">•</span>
+                target ~{Math.round(sessionTargetSecs / 60)} min
+                <span class="dot">•</span>
+                <span class="mode" class:interleaved={session.interleaved}>
+                    {session.interleaved ? "interleaved" : "blocked"}
+                </span>
             </p>
             <ol class="order">
-                {#each session.topicKeys as key, i (i)}
-                    <li>{targetByKey.get(key)?.topicName ?? key}</li>
+                {#each sessionItems as item, i (i)}
+                    <li>
+                        <span class="idx">{i + 1}</span>
+                        <span
+                            class="chip"
+                            style="--chip:{sectionColor(item.sectionKey)}"
+                            title={item.sectionName}
+                        >
+                            {item.sectionName || item.sectionKey}
+                        </span>
+                        <span class="topic">{item.topicName}</span>
+                    </li>
                 {/each}
             </ol>
         {/if}
@@ -595,11 +634,68 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     }
     .log {
         color: var(--fg-subtle);
-        margin: 0.5rem 0;
+        margin: 0.75rem 0;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.4rem;
+    }
+    .log strong {
+        color: var(--fg);
+        font-variant-numeric: tabular-nums;
+    }
+    .log .dot {
+        opacity: 0.5;
+    }
+    .mode {
+        border-radius: 999px;
+        padding: 0.05rem 0.55rem;
+        font-size: 0.85em;
+        font-weight: 600;
+        background: var(--canvas-inset, rgba(128, 128, 128, 0.16));
+        color: var(--fg-subtle);
+    }
+    .mode.interleaved {
+        background: rgba(46, 125, 50, 0.18);
+        color: var(--state-new, #2e7d32);
     }
     .order {
-        columns: 2;
+        list-style: none;
+        margin: 0.5rem 0 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+        gap: 0.3rem 1rem;
         font-size: 0.9em;
+    }
+    .order li {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.2rem 0;
+    }
+    .order .idx {
         color: var(--fg-subtle);
+        font-variant-numeric: tabular-nums;
+        min-width: 1.4em;
+        text-align: right;
+        font-size: 0.85em;
+    }
+    .order .chip {
+        flex: none;
+        min-width: 5.5em;
+        text-align: center;
+        border-radius: 999px;
+        padding: 0.05rem 0.5rem;
+        font-size: 0.78em;
+        font-weight: 600;
+        color: #fff;
+        background: var(--chip, var(--fg-subtle));
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .order .topic {
+        color: var(--fg);
     }
 </style>

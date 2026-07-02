@@ -51,6 +51,43 @@
     }
 }
 
+// MCAT readiness badge: a compact, non-clickable pill that sits next to the
+// "MCAT" link and is colour-coded by readiness band.
+.mcat-pill {
+    display: inline-block;
+    vertical-align: middle;
+    white-space: nowrap;
+    font-weight: 600;
+    font-size: 0.82em;
+    line-height: 1.4;
+    padding: 2px 10px;
+    margin: 0 2px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: var(--canvas-inset, rgba(128, 128, 128, 0.16));
+    color: var(--fg-subtle);
+
+    &.mcat-pill--none {
+        background: var(--canvas-inset, rgba(128, 128, 128, 0.16));
+        color: var(--fg-subtle);
+    }
+    &.mcat-pill--low {
+        background: rgba(184, 134, 11, 0.16);
+        border-color: rgba(184, 134, 11, 0.4);
+        color: var(--flag-2, #b8860b);
+    }
+    &.mcat-pill--mid {
+        background: rgba(124, 179, 66, 0.18);
+        border-color: rgba(124, 179, 66, 0.45);
+        color: #558b2f;
+    }
+    &.mcat-pill--high {
+        background: rgba(46, 125, 50, 0.18);
+        border-color: rgba(46, 125, 50, 0.45);
+        color: var(--state-new, #2e7d32);
+    }
+}
+
 body {
     margin: 0;
     padding: 0;

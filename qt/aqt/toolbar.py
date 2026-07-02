@@ -395,12 +395,13 @@ class Toolbar:
     ######################################################################
 
     def _mcat_readiness_pill(self) -> str:
-        """A lightweight, non-clickable pill showing the current readiness
-        score (or an em-dash when the give-up rule fired / data is unavailable).
+        """A lightweight, non-clickable badge showing the current readiness
+        score, colour-coded by band (or a muted placeholder when the give-up
+        rule fired / data is unavailable).
         """
-        label, tip = self._mcat_readiness_label()
+        label, tip, band = self._mcat_readiness_label()
         return (
-            f"""<span class="hitem mcat-pill" id="mcat-readiness" """
+            f"""<span class="mcat-pill mcat-pill--{band}" id="mcat-readiness" """
             f"""title="{html.escape(tip)}">{html.escape(label)}</span>"""
         )
 
@@ -409,30 +410,32 @@ class Toolbar:
 
         The center links (and thus the pill) are only rendered on ``draw()``,
         which happens before the collection is open, so we update the pill's
-        text/tooltip on each ``redraw()`` (fired on every state change).
+        text/tooltip/band on each ``redraw()`` (fired on every state change).
         """
-        label, tip = self._mcat_readiness_label()
+        label, tip, band = self._mcat_readiness_label()
         self.web.eval(
             "(function(){{ var el = document.getElementById('mcat-readiness');"
-            " if (el) {{ el.textContent = {label}; el.title = {tip}; }} }})();".format(
-                label=json.dumps(label), tip=json.dumps(tip)
+            " if (el) {{ el.textContent = {label}; el.title = {tip};"
+            " el.className = 'mcat-pill mcat-pill--' + {band}; }} }})();".format(
+                label=json.dumps(label), tip=json.dumps(tip), band=json.dumps(band)
             )
         )
 
-    def _mcat_readiness_label(self) -> tuple[str, str]:
-        """Return (label, tooltip) for the readiness pill.
+    def _mcat_readiness_label(self) -> tuple[str, str, str]:
+        """Return ``(label, tooltip, band)`` for the readiness pill.
 
-        Fetches readiness synchronously from the collection, mirroring the
-        dashboard. Any failure (collection not open, backend busy, etc.)
-        degrades gracefully to an em-dash rather than breaking the toolbar.
+        ``band`` is one of ``none``/``low``/``mid``/``high`` and drives the
+        pill's colour. Fetches readiness synchronously from the collection,
+        mirroring the dashboard. Any failure (collection not open, backend
+        busy, etc.) degrades gracefully rather than breaking the toolbar.
         """
         col = self.mw.col
         if not col:
-            return "MCAT —", "MCAT readiness unavailable"
+            return "Readiness: n/a", "MCAT readiness unavailable", "none"
         try:
             readiness = col.mcat_exam_readiness()
         except Exception:
-            return "MCAT —", "MCAT readiness unavailable"
+            return "Readiness: n/a", "MCAT readiness unavailable", "none"
 
         est = readiness.readiness
         if est.available:
@@ -443,10 +446,28 @@ class Toolbar:
                 f"(range {round(est.low)}–{round(est.high)}), "
                 f"coverage {round(readiness.overall_coverage_percent)}%"
             )
+            band = self._mcat_readiness_band(est)
         else:
-            label = "Readiness —"
+            label = "Readiness: not yet"
             tip = est.abstain_reason or "Not enough data yet to estimate readiness"
-        return label, tip
+            band = "none"
+        return label, tip, band
+
+    @staticmethod
+    def _mcat_readiness_band(est: Any) -> str:
+        """Bucket a readiness score into a colour band by where it sits on the
+        exam's scale: the bottom half is ``low`` (amber), the third quarter is
+        ``mid`` (amber-green), and the top quarter is ``high`` (green).
+        """
+        span = est.scale_max - est.scale_min
+        if span <= 0:
+            return "mid"
+        fraction = (est.point - est.scale_min) / span
+        if fraction < 0.5:
+            return "low"
+        if fraction < 0.75:
+            return "mid"
+        return "high"
 
     # Add-ons
     ######################################################################
