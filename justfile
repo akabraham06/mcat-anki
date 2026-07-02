@@ -35,6 +35,13 @@ wheels:
 installer:
     {{ ninja }} installer:package
 
+# Run the MCAT AI card-quality-checker gold-set evaluation (offline, mock
+# provider; no network/key). Writes mcat/ai_eval/report.md and fails if the
+# checker does not beat the naive baseline.
+mcat-ai-eval:
+    {{ ninja }} pylib
+    {{ if os() == "windows" { "$env:MCAT_AI_MOCK='1'; $env:PYTHONPATH='out\\pylib'" } else { "MCAT_AI_MOCK=1 PYTHONPATH=out/pylib" } }} {{ uv }} run python mcat/ai_eval/run_eval.py
+
 # Build and run all checks (lint + test) - lets ninja handle dependencies
 check:
     {{ ninja }} pylib qt check

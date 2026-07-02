@@ -1,0 +1,392 @@
+{
+    "_comment": "50 candidate cards 'generated from one real source' (source.json), each with a ground-truth label. 'accept' = a good card the checker should let through (NeedsReview); 'block' = the checker should Block it. The corpus[] cards are seeded as pre-existing notes so the duplicate check has something to match. Flaw types: none, trivial, vague, unsupported (wrong / not in source), duplicate.",
+    "source_id": "eval-metabolism-src",
+    "corpus": [
+        {
+            "question": "Where does the citric acid (Krebs) cycle occur in the cell?",
+            "answer": "The citric acid cycle occurs in the mitochondrial matrix of the cell.",
+            "topic_tag": "mcat::biobiochem::metabolism"
+        },
+        {
+            "question": "What is the net ATP and NADH yield of glycolysis per glucose molecule?",
+            "answer": "Glycolysis nets two ATP and two NADH for each glucose molecule.",
+            "topic_tag": "mcat::biobiochem::glycolysis"
+        },
+        {
+            "question": "What does a competitive inhibitor do to the Km and Vmax of an enzyme?",
+            "answer": "A competitive inhibitor increases the apparent Km while leaving Vmax unchanged.",
+            "topic_tag": "mcat::biobiochem::enzymes"
+        },
+        {
+            "question": "What is the committed, rate-limiting step of glycolysis?",
+            "answer": "Phosphofructokinase-1 converting fructose-6-phosphate to fructose-1,6-bisphosphate is the committed step.",
+            "topic_tag": "mcat::biobiochem::glycolysis"
+        },
+        {
+            "question": "What does glycolysis convert glucose into?",
+            "answer": "Glycolysis converts one glucose into two molecules of pyruvate.",
+            "topic_tag": "mcat::biobiochem::glycolysis"
+        },
+        {
+            "question": "What does a noncompetitive inhibitor do to Km and Vmax?",
+            "answer": "A noncompetitive inhibitor lowers Vmax while leaving Km unchanged.",
+            "topic_tag": "mcat::biobiochem::enzymes"
+        }
+    ],
+    "cards": [
+        {
+            "question": "In which cellular compartment does glycolysis take place?",
+            "answer": "Glycolysis occurs in the cytosol of the cell.",
+            "topic_tag": "mcat::biobiochem::glycolysis",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "After glycolysis, where is pyruvate transported?",
+            "answer": "Pyruvate is transported into the mitochondrial matrix.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "What electron carriers does the citric acid cycle generate?",
+            "answer": "The citric acid cycle generates NADH and FADH2.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "Where do the electron carriers donate their electrons?",
+            "answer": "They donate electrons to the electron transport chain.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "Where is the electron transport chain located?",
+            "answer": "On the inner mitochondrial membrane.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "What does the electron transport chain establish across the membrane?",
+            "answer": "A proton gradient across the inner mitochondrial membrane.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "What does ATP synthase use to produce ATP?",
+            "answer": "ATP synthase uses the proton gradient to produce ATP.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "Which process produces most of the cell's ATP?",
+            "answer": "Oxidative phosphorylation produces the bulk of cellular ATP.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "Where do competitive inhibitors bind on an enzyme?",
+            "answer": "Competitive inhibitors bind the active site of the enzyme.",
+            "topic_tag": "mcat::biobiochem::enzymes",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "Where do noncompetitive inhibitors bind?",
+            "answer": "Noncompetitive inhibitors bind an allosteric site.",
+            "topic_tag": "mcat::biobiochem::enzymes",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "Under anaerobic conditions, what regenerates NAD+ from NADH?",
+            "answer": "Lactate fermentation regenerates NAD+ from NADH.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "How can the effect of a competitive inhibitor be overcome?",
+            "answer": "By increasing the substrate concentration to outcompete the inhibitor.",
+            "topic_tag": "mcat::biobiochem::enzymes",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "What allows glycolysis to continue producing ATP anaerobically?",
+            "answer": "Regenerating NAD+ through lactate fermentation lets glycolysis continue.",
+            "topic_tag": "mcat::biobiochem::glycolysis",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "What is oxidized in the mitochondrial matrix to feed the citric acid cycle?",
+            "answer": "Pyruvate is oxidized in the mitochondrial matrix.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "On which membrane does oxidative phosphorylation occur?",
+            "answer": "On the inner mitochondrial membrane, where the electron transport chain sits.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "What happens to the apparent Km when a competitive inhibitor is present?",
+            "answer": "The apparent Km rises while Vmax stays unchanged as substrate can outcompete it.",
+            "topic_tag": "mcat::biobiochem::enzymes",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "Why does a proton gradient matter for the cell?",
+            "answer": "ATP synthase uses the proton gradient to drive oxidative phosphorylation.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "Which molecules carry electrons from the citric acid cycle to the chain?",
+            "answer": "NADH and FADH2 carry electrons to the electron transport chain.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "What kind of site do noncompetitive inhibitors occupy, and what is the effect?",
+            "answer": "An allosteric site, which lowers Vmax without changing Km.",
+            "topic_tag": "mcat::biobiochem::enzymes",
+            "label": "accept",
+            "flaw": "none"
+        },
+        {
+            "question": "Where is the bulk of cellular ATP produced and by what enzyme?",
+            "answer": "At the inner mitochondrial membrane, produced by ATP synthase during oxidative phosphorylation.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "accept",
+            "flaw": "none"
+        },
+
+        {
+            "question": "What is glycolysis?",
+            "answer": "Glycolysis is the glycolysis process that is known simply as glycolysis in metabolism.",
+            "topic_tag": "mcat::biobiochem::glycolysis",
+            "label": "block",
+            "flaw": "trivial"
+        },
+        {
+            "question": "Define ATP.",
+            "answer": "ATP is ATP, the molecule referred to as ATP that is the ATP of the cell.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "block",
+            "flaw": "trivial"
+        },
+        {
+            "question": "What is NADH?",
+            "answer": "NADH is the NADH carrier that everyone calls NADH throughout the NADH pathway.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "block",
+            "flaw": "trivial"
+        },
+        {
+            "question": "Name pyruvate.",
+            "answer": "Pyruvate is pyruvate, the substance named pyruvate that we call pyruvate here.",
+            "topic_tag": "mcat::biobiochem::glycolysis",
+            "label": "block",
+            "flaw": "trivial"
+        },
+        {
+            "question": "Define enzyme.",
+            "answer": "An enzyme is the enzyme that acts as an enzyme, an enzyme in every sense.",
+            "topic_tag": "mcat::biobiochem::enzymes",
+            "label": "block",
+            "flaw": "trivial"
+        },
+        {
+            "question": "What is Vmax?",
+            "answer": "Vmax is Vmax, the value that we describe as Vmax, otherwise known as Vmax.",
+            "topic_tag": "mcat::biobiochem::enzymes",
+            "label": "block",
+            "flaw": "trivial"
+        },
+        {
+            "question": "Define matrix.",
+            "answer": "The matrix is the matrix, a matrix that is the matrix of the mitochondrion matrix.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "block",
+            "flaw": "trivial"
+        },
+        {
+            "question": "What is a gradient?",
+            "answer": "A gradient is the gradient that is a gradient, essentially the gradient itself.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "block",
+            "flaw": "trivial"
+        },
+        {
+            "question": "Define Km.",
+            "answer": "Km is Km, the parameter labeled Km that stands for the Km of an enzyme Km.",
+            "topic_tag": "mcat::biobiochem::enzymes",
+            "label": "block",
+            "flaw": "trivial"
+        },
+
+        {
+            "question": "How does the electron transport chain contribute to making ATP?",
+            "answer": "It generally does various things that somehow help make some ATP in many different ways.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "block",
+            "flaw": "vague"
+        },
+        {
+            "question": "What role do inhibitors play in enzyme kinetics?",
+            "answer": "They usually affect stuff about the enzyme in various ways, kind of changing many things generally.",
+            "topic_tag": "mcat::biobiochem::enzymes",
+            "label": "block",
+            "flaw": "vague"
+        },
+        {
+            "question": "Why is glycolysis important to the cell?",
+            "answer": "It is generally important for many things and various processes that matter somehow.",
+            "topic_tag": "mcat::biobiochem::glycolysis",
+            "label": "block",
+            "flaw": "vague"
+        },
+        {
+            "question": "What does the citric acid cycle accomplish?",
+            "answer": "It does some stuff with various molecules and many carriers in a kind of general way.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "block",
+            "flaw": "vague"
+        },
+        {
+            "question": "How does ATP synthase work overall?",
+            "answer": "It somehow uses some kind of gradient to generally make various amounts of energy stuff.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "block",
+            "flaw": "vague"
+        },
+        {
+            "question": "What happens during oxidative phosphorylation?",
+            "answer": "Many things happen that usually involve various steps and some general processes somehow.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "block",
+            "flaw": "vague"
+        },
+        {
+            "question": "What is the significance of the proton gradient?",
+            "answer": "It is generally significant for stuff and various cellular things in many kinds of ways.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "block",
+            "flaw": "vague"
+        },
+        {
+            "question": "How do competitive and noncompetitive inhibitors differ?",
+            "answer": "They differ in various ways that generally involve some things about enzymes somehow.",
+            "topic_tag": "mcat::biobiochem::enzymes",
+            "label": "block",
+            "flaw": "vague"
+        },
+        {
+            "question": "What is the purpose of lactate fermentation?",
+            "answer": "It generally helps with various stuff so many things can kind of keep going somehow.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "block",
+            "flaw": "vague"
+        },
+
+        {
+            "question": "In which organelle does glycolysis actually occur?",
+            "answer": "Glycolysis occurs entirely inside the nucleus during ribosomal photosynthesis reactions.",
+            "topic_tag": "mcat::biobiochem::glycolysis",
+            "label": "block",
+            "flaw": "unsupported"
+        },
+        {
+            "question": "How many ATP does glycolysis directly produce per glucose?",
+            "answer": "Glycolysis directly produces thirty-eight ATP straight from a single glucose without respiration.",
+            "topic_tag": "mcat::biobiochem::glycolysis",
+            "label": "block",
+            "flaw": "unsupported"
+        },
+        {
+            "question": "What gas does the electron transport chain release as its main product?",
+            "answer": "The electron transport chain releases chlorophyll and oxygen sugars during carbon fixation.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "block",
+            "flaw": "unsupported"
+        },
+        {
+            "question": "What do competitive inhibitors do to Vmax?",
+            "answer": "Competitive inhibitors permanently destroy Vmax and shred the ribosome and Golgi apparatus.",
+            "topic_tag": "mcat::biobiochem::enzymes",
+            "label": "block",
+            "flaw": "unsupported"
+        },
+        {
+            "question": "Where does the citric acid cycle take place according to this source?",
+            "answer": "The citric acid cycle takes place inside the chloroplast thylakoid during dark reactions.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "block",
+            "flaw": "unsupported"
+        },
+        {
+            "question": "What regenerates NAD+ under anaerobic conditions here?",
+            "answer": "Sunlight and DNA polymerase regenerate NAD+ by translating tRNA in the endoplasmic reticulum.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "block",
+            "flaw": "unsupported"
+        },
+
+        {
+            "question": "Where does the citric acid (Krebs) cycle occur in the cell?",
+            "answer": "The citric acid cycle occurs in the mitochondrial matrix of the cell.",
+            "topic_tag": "mcat::biobiochem::metabolism",
+            "label": "block",
+            "flaw": "duplicate"
+        },
+        {
+            "question": "What is the net ATP and NADH yield of glycolysis per glucose molecule?",
+            "answer": "Glycolysis nets two ATP and two NADH for each glucose molecule.",
+            "topic_tag": "mcat::biobiochem::glycolysis",
+            "label": "block",
+            "flaw": "duplicate"
+        },
+        {
+            "question": "What does a competitive inhibitor do to the Km and Vmax of an enzyme?",
+            "answer": "A competitive inhibitor increases the apparent Km while leaving Vmax unchanged.",
+            "topic_tag": "mcat::biobiochem::enzymes",
+            "label": "block",
+            "flaw": "duplicate"
+        },
+        {
+            "question": "What is the committed, rate-limiting step of glycolysis?",
+            "answer": "Phosphofructokinase-1 converting fructose-6-phosphate to fructose-1,6-bisphosphate is the committed step.",
+            "topic_tag": "mcat::biobiochem::glycolysis",
+            "label": "block",
+            "flaw": "duplicate"
+        },
+        {
+            "question": "What does glycolysis convert glucose into?",
+            "answer": "Glycolysis converts one glucose into two molecules of pyruvate.",
+            "topic_tag": "mcat::biobiochem::glycolysis",
+            "label": "block",
+            "flaw": "duplicate"
+        },
+        {
+            "question": "What does a noncompetitive inhibitor do to Km and Vmax?",
+            "answer": "A noncompetitive inhibitor lowers Vmax while leaving Km unchanged.",
+            "topic_tag": "mcat::biobiochem::enzymes",
+            "label": "block",
+            "flaw": "duplicate"
+        }
+    ]
+}

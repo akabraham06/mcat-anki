@@ -1,0 +1,6 @@
+{
+    "source_id": "eval-metabolism-src",
+    "source_name": "MCAT Biochemistry Primer — Cellular Respiration & Enzyme Kinetics",
+    "source_section": "Ch. 3, pp. 40-46",
+    "excerpt": "Glycolysis occurs in the cytosol and converts one molecule of glucose into two molecules of pyruvate, yielding a net of two ATP and two NADH. The committed, rate-limiting step of glycolysis is catalyzed by phosphofructokinase-1, which converts fructose-6-phosphate to fructose-1,6-bisphosphate. Pyruvate is then transported into the mitochondrial matrix, where the citric acid cycle oxidizes it and generates NADH and FADH2. These electron carriers donate electrons to the electron transport chain on the inner mitochondrial membrane, establishing a proton gradient across the membrane. ATP synthase uses this proton gradient to produce the bulk of cellular ATP through oxidative phosphorylation. Competitive inhibitors bind the active site and raise the apparent Km of an enzyme while leaving Vmax unchanged, because increasing substrate concentration can outcompete them. Noncompetitive inhibitors bind an allosteric site and lower Vmax without changing Km. Under anaerobic conditions, lactate fermentation regenerates NAD+ from NADH so that glycolysis can continue producing ATP."
+}
