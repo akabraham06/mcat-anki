@@ -136,6 +136,37 @@ The app opens to the **MCAT Readiness** screen (three score cards, best-next-top
 
 ---
 
+## Sync (desktop ↔ mobile)
+
+You do **not** need a custom sign-in system. Card decks and progress sync through **Anki's built-in account sync**, and because both apps link the same Rust engine, the sync client is already compiled into each — the "sign-in" is simply your sync account.
+
+### 1. Pick a server
+
+- **AnkiWeb (recommended):** the free hosted sync server. Sign in with an [AnkiWeb](https://ankiweb.net) account and leave the endpoint empty.
+- **Self-hosted:** run a sync server and point both apps at it via the `endpoint` field (use `SetCustomCertificate` for a self-signed cert).
+
+### 2. Desktop (built in)
+
+**Tools → Sync** (or the sync button) → sign in with your account. This uploads/downloads your collection. Nothing to build.
+
+### 3. iOS companion
+
+The shared engine exposes the sync RPCs through the FFI (backend **sync service**, methods `SyncLogin` → `SyncCollection` → `FullUploadOrDownload`). To sync the companion:
+
+1. Sign in with `SyncLogin(username, password)` → returns a `SyncAuth { hkey, endpoint }`.
+2. Store **only the `hkey` token** in the iOS **Keychain** (never the password).
+3. Call `SyncCollection(auth)`; handle the `required` result (`NO_CHANGES` / `NORMAL_SYNC` / `FULL_DOWNLOAD` / `FULL_UPLOAD`). The first sync on a fresh device is typically a **full download**.
+
+The collection must live at a stable, writable path (the app's `Documents` directory) so sync can mutate it in place.
+
+### 4. End to end
+
+Desktop: sign in → **Sync** (uploads your MCAT decks). Phone: sign in with the **same account** → sync (first sync full-downloads the collection). After that, reviews and progress reconcile both ways through the server.
+
+> **Security:** persist the `hkey` token, not the password. If self-hosting, both clients must trust the server certificate and share the same `endpoint`.
+
+---
+
 ## Features
 
 - **MCAT taxonomy** — 4 sections, 27 weighted topics with target answer times, embedded in the engine (`rslib/src/mcat/taxonomy.json`).
