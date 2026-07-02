@@ -28,6 +28,13 @@ final class CollectionStore: ObservableObject {
     private var backend: AnkiBackend?
     private var auth: Anki_Sync_SyncAuth?
 
+    /// The shared engine handle, so a study session drives the *same* open
+    /// collection (opening the file twice would risk conflicting handles).
+    var engine: AnkiBackend? { backend }
+
+    /// Whether a sync is possible (used to decide whether to push study writes).
+    var canSync: Bool { loggedIn }
+
     /// Path to the collection the companion reads. A stable location under the
     /// app's Documents directory so it survives launches and is the single file
     /// the AnkiWeb sync reads and writes.

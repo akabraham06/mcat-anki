@@ -26,18 +26,32 @@ index_for() {
 SYNC=$(index_for "sync_collection_raw")
 COLLECTION=$(index_for "open_collection_raw")
 MCAT=$(index_for "get_exam_readiness_raw")
+# Services the native exam loop drives (see AnkiBackend.Service).
+CARDS=$(index_for "get_card_raw")
+DECKS=$(index_for "get_deck_id_by_name_raw")
+SCHEDULER=$(index_for "get_queued_cards_raw")
+NOTES=$(index_for "get_note_raw")
+CARD_RENDERING=$(index_for "render_existing_card_raw")
 
-[ -n "$SYNC" ] && [ -n "$COLLECTION" ] && [ -n "$MCAT" ] || {
+[ -n "$SYNC" ] && [ -n "$COLLECTION" ] && [ -n "$MCAT" ] \
+    && [ -n "$CARDS" ] && [ -n "$DECKS" ] && [ -n "$SCHEDULER" ] \
+    && [ -n "$NOTES" ] && [ -n "$CARD_RENDERING" ] || {
     echo "error: could not extract service indices (backend regenerated?)"; exit 1
 }
 
 echo "sync = $SYNC, collection = $COLLECTION, mcat = $MCAT"
+echo "cards = $CARDS, decks = $DECKS, scheduler = $SCHEDULER, notes = $NOTES, cardRendering = $CARD_RENDERING"
 
 # Rewrite the enum lines in place.
 /usr/bin/sed -i '' -E \
     -e "s/(case sync = )[0-9]+/\1$SYNC/" \
     -e "s/(case collection = )[0-9]+/\1$COLLECTION/" \
     -e "s/(case mcat = )[0-9]+/\1$MCAT/" \
+    -e "s/(case cards = )[0-9]+/\1$CARDS/" \
+    -e "s/(case decks = )[0-9]+/\1$DECKS/" \
+    -e "s/(case scheduler = )[0-9]+/\1$SCHEDULER/" \
+    -e "s/(case notes = )[0-9]+/\1$NOTES/" \
+    -e "s/(case cardRendering = )[0-9]+/\1$CARD_RENDERING/" \
     "$SWIFT"
 
 echo "==> Patched $SWIFT"

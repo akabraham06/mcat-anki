@@ -110,6 +110,8 @@ struct ReadinessView: View {
 
             InterleaveSection(store: store)
 
+            ExamEntrySection(store: store)
+
             if readiness.hasXp {
                 XpSection(xp: readiness.xp)
             }
@@ -406,6 +408,30 @@ struct InterleaveSection: View {
                 if !session.log.isEmpty {
                     Text(session.log)
                         .font(.caption2).foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Native timed exam entry
+
+struct ExamEntrySection: View {
+    @ObservedObject var store: CollectionStore
+    var body: some View {
+        Section("Exam mode") {
+            NavigationLink {
+                ExamView(collection: store)
+            } label: {
+                Label {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Start timed exam")
+                        Text("Auto-graded MCQ / CARS from MCAT::Exam. "
+                            + "Answers count and sync.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                } icon: {
+                    Image(systemName: "timer")
                 }
             }
         }

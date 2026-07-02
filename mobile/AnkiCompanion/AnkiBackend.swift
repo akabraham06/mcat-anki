@@ -29,6 +29,11 @@ final class AnkiBackend {
     enum Service: UInt32 {
         case sync = 1
         case collection = 3
+        case cards = 5
+        case decks = 7
+        case scheduler = 13
+        case notes = 25
+        case cardRendering = 27
         case mcat = 41
     }
 
@@ -38,6 +43,37 @@ final class AnkiBackend {
         case getStudyRecommendation = 2
         case buildInterleavedSession = 3
         case getTopicTargets = 4
+    }
+
+    // NOTE: method indices below are the BACKEND service method indices (the
+    // same (service, method) pairs `_backend_generated.py` dispatches through
+    // `_run_command`), which is exactly what `anki_backend_command` uses. For
+    // SchedulerService these do NOT match the frontend proto declaration order,
+    // because BackendSchedulerService injects extra methods — always read the
+    // real indices from out/pylib/anki/_backend_generated.py.
+
+    /// Method indices within SchedulerService (backend dispatch order).
+    enum SchedulerMethod: UInt32 {
+        case getQueuedCards = 3
+        case answerCard = 4
+        case countsForDeckToday = 10
+        case getSchedulingStates = 23
+    }
+
+    /// Method indices within NotesService (backend dispatch order).
+    enum NotesMethod: UInt32 {
+        case getNote = 6
+    }
+
+    /// Method indices within CardsService (backend dispatch order).
+    enum CardsMethod: UInt32 {
+        case getCard = 0
+    }
+
+    /// Method indices within DecksService (backend dispatch order).
+    enum DecksMethod: UInt32 {
+        case getDeckIdByName = 7
+        case setCurrentDeck = 22
     }
 
     /// Method indices within BackendSyncService (proto declaration order).
@@ -126,6 +162,98 @@ final class AnkiBackend {
             input: try request.serializedData()
         )
         return try Anki_Mcat_InterleavedSession(serializedBytes: out)
+    }
+
+    /// Per-topic target answer times (CARS 90s / sciences 35–50s) used to size
+    /// the per-question countdown. Mirrors the desktop reviewer's
+    /// `mcat_topic_targets()`.
+    func topicTargets() throws -> Anki_Mcat_TopicTargetList {
+        let request = Anki_Mcat_ExamReadinessRequest()
+        let out = try run(
+            service: Service.mcat.rawValue,
+            method: McatMethod.getTopicTargets.rawValue,
+            input: try request.serializedData()
+        )
+        return try Anki_Mcat_TopicTargetList(serializedBytes: out)
+    }
+
+    // MARK: - Study / exam loop (scheduler + notes + decks)
+    //
+    // These drive the same SchedulerService the desktop reviewer uses, over the
+    // generic FFI, so reviews written here are real: they update FSRS memory
+    // state, the review log, and (once synced) show up identically on desktop.
+
+    /// Resolve a deck id by exact name (e.g. "MCAT::Exam"). Returns 0 if the
+    /// deck doesn't exist yet.
+    func deckId(named name: String) throws -> Int64 {
+        var request = Anki_Generic_String()
+        request.val = name
+        let out = try run(
+            service: Service.decks.rawValue,
+            method: DecksMethod.getDeckIdByName.rawValue,
+            input: try request.serializedData()
+        )
+        return try Anki_Decks_DeckId(serializedBytes: out).did
+    }
+
+    /// Select the deck the scheduler should draw its queue from. GetQueuedCards
+    /// always works against the current deck, so exam study scopes to
+    /// MCAT::Exam by setting it current first.
+    func setCurrentDeck(id: Int64) throws {
+        var request = Anki_Decks_DeckId()
+        request.did = id
+        _ = try run(
+            service: Service.decks.rawValue,
+            method: DecksMethod.setCurrentDeck.rawValue,
+            input: try request.serializedData()
+        )
+    }
+
+    /// Fetch the next batch of due cards for the current deck. Each QueuedCard
+    /// carries the Card plus its precomputed SchedulingStates.
+    func queuedCards(fetchLimit: UInt32 = 1) throws -> Anki_Scheduler_QueuedCards {
+        var request = Anki_Scheduler_GetQueuedCardsRequest()
+        request.fetchLimit = fetchLimit
+        let out = try run(
+            service: Service.scheduler.rawValue,
+            method: SchedulerMethod.getQueuedCards.rawValue,
+            input: try request.serializedData()
+        )
+        return try Anki_Scheduler_QueuedCards(serializedBytes: out)
+    }
+
+    /// The four next-state options for a card (again/hard/good/easy + current),
+    /// needed to populate `new_state` when answering.
+    func schedulingStates(cardId: Int64) throws -> Anki_Scheduler_SchedulingStates {
+        var request = Anki_Cards_CardId()
+        request.cid = cardId
+        let out = try run(
+            service: Service.scheduler.rawValue,
+            method: SchedulerMethod.getSchedulingStates.rawValue,
+            input: try request.serializedData()
+        )
+        return try Anki_Scheduler_SchedulingStates(serializedBytes: out)
+    }
+
+    /// Record an answer. Writes a review to the collection (FSRS + revlog).
+    func answerCard(_ answer: Anki_Scheduler_CardAnswer) throws {
+        _ = try run(
+            service: Service.scheduler.rawValue,
+            method: SchedulerMethod.answerCard.rawValue,
+            input: try answer.serializedData()
+        )
+    }
+
+    /// Fetch a note's fields + tags, used to render the MCQ/CARS card natively.
+    func note(id: Int64) throws -> Anki_Notes_Note {
+        var request = Anki_Notes_NoteId()
+        request.nid = id
+        let out = try run(
+            service: Service.notes.rawValue,
+            method: NotesMethod.getNote.rawValue,
+            input: try request.serializedData()
+        )
+        return try Anki_Notes_Note(serializedBytes: out)
     }
 
     // MARK: - Sync (AnkiWeb)
