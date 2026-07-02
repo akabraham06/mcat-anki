@@ -1,0 +1,477 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		014833193444A21A7FC33311 /* frontend.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D3C43439D29E9397E87EA85 /* frontend.pb.swift */; };
+		0E211DFD4F80731D59EBA53C /* github.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12F637A7E60104239FDDAF28 /* github.pb.swift */; };
+		1184E7D88875FE4EC721E8C3 /* AnkiBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_311FBE5F-5654-40DD-9FEB-C2C48AC02001" /* AnkiBackend.swift */; };
+		146703D95187B7AD69254E9B /* card_rendering.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79170CEF44BCDA12479C5496 /* card_rendering.pb.swift */; };
+		15A25614B6D80BD8D362D230 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_4BD4FFE5-FD7D-4B7B-A521-10CAF5762827" /* ContentView.swift */; };
+		1929590FCC2A1DC7581F8ADF /* AnkiCompanionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_748219B1-421E-4CB5-B53B-038CF697F904" /* AnkiCompanionApp.swift */; };
+		20400A2B38BAF821C6BDB9A9 /* search.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A293A1C0BC9F8DAD533B514B /* search.pb.swift */; };
+		22D2123B2BBE2B5705349369 /* deck_config.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CF6ECC67B25400DBF7C6A8 /* deck_config.pb.swift */; };
+		288E0725FFFDC62864E00BDA /* import_export.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01F0E66B7751222EF9035DC1 /* import_export.pb.swift */; };
+		2CDE755A1382B565795CE342 /* stats.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7B8E3006A3D18B0D5AAD3D7 /* stats.pb.swift */; };
+		502AEE75BF969B8E8DDB48DF /* image_occlusion.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCDAAE01334AEE33DEB5E25 /* image_occlusion.pb.swift */; };
+		5F82678EAC13825FAE6C03B8 /* tags.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C453195C1E278CA2E74A6E6 /* tags.pb.swift */; };
+		6B871CFC28EFA61543BE0342 /* i18n.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F520B40509CCA60740D5BCA /* i18n.pb.swift */; };
+		7813464BC64F59AF71869EE8 /* ankiweb.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65362C88313217ECE0827DDD /* ankiweb.pb.swift */; };
+		9A42CBD5529E01ED57407F65 /* decks.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85A2A3BA26085FBC704E5939 /* decks.pb.swift */; };
+		A3642F78D1A3D42A0B5ABA50 /* media.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31C24EA2E14F82746B2AD807 /* media.pb.swift */; };
+		A3ECC89AA323381A68F192EA /* collection.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 413FA60EFA1CEF5FFFE9B6ED /* collection.pb.swift */; };
+		A4CF3235EA20EB6E764132FD /* generic.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FFE0AA7343F12CB65760E0 /* generic.pb.swift */; };
+		B1BB4AC02BE1CFE9B60D61FA /* cards.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B97D857A606EE2F60F415B /* cards.pb.swift */; };
+		B9A300117A5BC1FB8926E789 /* ankidroid.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6685FA750E39E10EFC77634A /* ankidroid.pb.swift */; };
+		B9EB60A64CD2D9D2DEBC537B /* links.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F94F10B06CA6E9BFAD66298 /* links.pb.swift */; };
+		BAF9F716E53E542C21016CD3 /* scheduler.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D7D1730B355FF90AEAA0212 /* scheduler.pb.swift */; };
+		BC7352CAA731221DF220140D /* config.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E879762D191B89E4128969 /* config.pb.swift */; };
+		C54447841FA4685F27D7730A /* ankihub.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7CB90D67A93AB44B302C911 /* ankihub.pb.swift */; };
+		DA61FA3F276091C417D67FE1 /* AnkiEngine.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E835238A9ED5EC4E7DF59CA /* AnkiEngine.xcframework */; };
+		E425CBC4D4EBADA1E94F914B /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 8912D1182E58AAAD7C986AA5 /* SwiftProtobuf */; };
+		E4928CB4ACA75F274B579FC5 /* backend.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53BC6D5D79E99154A756B9F9 /* backend.pb.swift */; };
+		E7B2590991DE76761902413E /* CollectionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_693D0A61-E526-4674-A8BA-B6A6C2988888" /* CollectionStore.swift */; };
+		ED6BE6A03CC9A32C03544A46 /* sync.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 301E3F78781F35FD789C615F /* sync.pb.swift */; };
+		F57FFF43F25840FA44E712F7 /* mcat.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B44ABB3BB0DEB268BF05E15 /* mcat.pb.swift */; };
+		F8FC15E61F361D2153B6E718 /* notes.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615348AC9C21B09FCCF7D223 /* notes.pb.swift */; };
+		FD8341F9F6BD1C52BA4CD3E2 /* notetypes.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED00F84B09744B0F8F9CCEF2 /* notetypes.pb.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		01F0E66B7751222EF9035DC1 /* import_export.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = import_export.pb.swift; sourceTree = "<group>"; };
+		0D7D1730B355FF90AEAA0212 /* scheduler.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = scheduler.pb.swift; sourceTree = "<group>"; };
+		12F637A7E60104239FDDAF28 /* github.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = github.pb.swift; sourceTree = "<group>"; };
+		15FFE0AA7343F12CB65760E0 /* generic.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = generic.pb.swift; sourceTree = "<group>"; };
+		2B44ABB3BB0DEB268BF05E15 /* mcat.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mcat.pb.swift; sourceTree = "<group>"; };
+		2D3C43439D29E9397E87EA85 /* frontend.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = frontend.pb.swift; sourceTree = "<group>"; };
+		301E3F78781F35FD789C615F /* sync.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = sync.pb.swift; sourceTree = "<group>"; };
+		31C24EA2E14F82746B2AD807 /* media.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = media.pb.swift; sourceTree = "<group>"; };
+		413FA60EFA1CEF5FFFE9B6ED /* collection.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = collection.pb.swift; sourceTree = "<group>"; };
+		53BC6D5D79E99154A756B9F9 /* backend.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = backend.pb.swift; sourceTree = "<group>"; };
+		5F94F10B06CA6E9BFAD66298 /* links.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = links.pb.swift; sourceTree = "<group>"; };
+		615348AC9C21B09FCCF7D223 /* notes.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = notes.pb.swift; sourceTree = "<group>"; };
+		65362C88313217ECE0827DDD /* ankiweb.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ankiweb.pb.swift; sourceTree = "<group>"; };
+		6685FA750E39E10EFC77634A /* ankidroid.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ankidroid.pb.swift; sourceTree = "<group>"; };
+		79170CEF44BCDA12479C5496 /* card_rendering.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = card_rendering.pb.swift; sourceTree = "<group>"; };
+		7E835238A9ED5EC4E7DF59CA /* AnkiEngine.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AnkiEngine.xcframework; path = ../build/AnkiEngine.xcframework; sourceTree = "<group>"; };
+		7F520B40509CCA60740D5BCA /* i18n.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = i18n.pb.swift; sourceTree = "<group>"; };
+		85A2A3BA26085FBC704E5939 /* decks.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = decks.pb.swift; sourceTree = "<group>"; };
+		88E879762D191B89E4128969 /* config.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = config.pb.swift; sourceTree = "<group>"; };
+		8C453195C1E278CA2E74A6E6 /* tags.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = tags.pb.swift; sourceTree = "<group>"; };
+		8FD76977530CE0ACD4C4943B /* AnkiCompanion.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AnkiCompanion.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9DCDAAE01334AEE33DEB5E25 /* image_occlusion.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = image_occlusion.pb.swift; sourceTree = "<group>"; };
+		A293A1C0BC9F8DAD533B514B /* search.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = search.pb.swift; sourceTree = "<group>"; };
+		A7B8E3006A3D18B0D5AAD3D7 /* stats.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stats.pb.swift; sourceTree = "<group>"; };
+		B7CB90D67A93AB44B302C911 /* ankihub.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ankihub.pb.swift; sourceTree = "<group>"; };
+		C8CF6ECC67B25400DBF7C6A8 /* deck_config.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = deck_config.pb.swift; sourceTree = "<group>"; };
+		D8B97D857A606EE2F60F415B /* cards.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cards.pb.swift; sourceTree = "<group>"; };
+		ED00F84B09744B0F8F9CCEF2 /* notetypes.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = notetypes.pb.swift; sourceTree = "<group>"; };
+		"TEMP_311FBE5F-5654-40DD-9FEB-C2C48AC02001" /* AnkiBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnkiBackend.swift; sourceTree = "<group>"; };
+		"TEMP_4BD4FFE5-FD7D-4B7B-A521-10CAF5762827" /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		"TEMP_693D0A61-E526-4674-A8BA-B6A6C2988888" /* CollectionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionStore.swift; sourceTree = "<group>"; };
+		"TEMP_748219B1-421E-4CB5-B53B-038CF697F904" /* AnkiCompanionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnkiCompanionApp.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		5FCF86338B4EC96BEC0E8D7F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E425CBC4D4EBADA1E94F914B /* SwiftProtobuf in Frameworks */,
+				DA61FA3F276091C417D67FE1 /* AnkiEngine.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		183740EF3F345006CF8B098C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8FD76977530CE0ACD4C4943B /* AnkiCompanion.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		382D7F4F09D1503547853D0A /* anki */ = {
+			isa = PBXGroup;
+			children = (
+				6685FA750E39E10EFC77634A /* ankidroid.pb.swift */,
+				B7CB90D67A93AB44B302C911 /* ankihub.pb.swift */,
+				65362C88313217ECE0827DDD /* ankiweb.pb.swift */,
+				53BC6D5D79E99154A756B9F9 /* backend.pb.swift */,
+				79170CEF44BCDA12479C5496 /* card_rendering.pb.swift */,
+				D8B97D857A606EE2F60F415B /* cards.pb.swift */,
+				413FA60EFA1CEF5FFFE9B6ED /* collection.pb.swift */,
+				88E879762D191B89E4128969 /* config.pb.swift */,
+				C8CF6ECC67B25400DBF7C6A8 /* deck_config.pb.swift */,
+				85A2A3BA26085FBC704E5939 /* decks.pb.swift */,
+				2D3C43439D29E9397E87EA85 /* frontend.pb.swift */,
+				15FFE0AA7343F12CB65760E0 /* generic.pb.swift */,
+				12F637A7E60104239FDDAF28 /* github.pb.swift */,
+				7F520B40509CCA60740D5BCA /* i18n.pb.swift */,
+				9DCDAAE01334AEE33DEB5E25 /* image_occlusion.pb.swift */,
+				01F0E66B7751222EF9035DC1 /* import_export.pb.swift */,
+				5F94F10B06CA6E9BFAD66298 /* links.pb.swift */,
+				2B44ABB3BB0DEB268BF05E15 /* mcat.pb.swift */,
+				31C24EA2E14F82746B2AD807 /* media.pb.swift */,
+				615348AC9C21B09FCCF7D223 /* notes.pb.swift */,
+				ED00F84B09744B0F8F9CCEF2 /* notetypes.pb.swift */,
+				0D7D1730B355FF90AEAA0212 /* scheduler.pb.swift */,
+				A293A1C0BC9F8DAD533B514B /* search.pb.swift */,
+				A7B8E3006A3D18B0D5AAD3D7 /* stats.pb.swift */,
+				301E3F78781F35FD789C615F /* sync.pb.swift */,
+				8C453195C1E278CA2E74A6E6 /* tags.pb.swift */,
+			);
+			path = anki;
+			sourceTree = "<group>";
+		};
+		53323C21D4BB8290C46E3B43 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7E835238A9ED5EC4E7DF59CA /* AnkiEngine.xcframework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		6C4E75E82A87C098AC15C8CD /* Generated */ = {
+			isa = PBXGroup;
+			children = (
+				382D7F4F09D1503547853D0A /* anki */,
+			);
+			path = Generated;
+			sourceTree = "<group>";
+		};
+		8EF0C67A11A3A167E5F79D29 = {
+			isa = PBXGroup;
+			children = (
+				6C4E75E82A87C098AC15C8CD /* Generated */,
+				53323C21D4BB8290C46E3B43 /* Frameworks */,
+				183740EF3F345006CF8B098C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		"TEMP_AB8788E0-6DD7-4FC0-82E4-8794491495E8" /* . */ = {
+			isa = PBXGroup;
+			children = (
+				"TEMP_693D0A61-E526-4674-A8BA-B6A6C2988888" /* CollectionStore.swift */,
+				"TEMP_311FBE5F-5654-40DD-9FEB-C2C48AC02001" /* AnkiBackend.swift */,
+				"TEMP_748219B1-421E-4CB5-B53B-038CF697F904" /* AnkiCompanionApp.swift */,
+				"TEMP_4BD4FFE5-FD7D-4B7B-A521-10CAF5762827" /* ContentView.swift */,
+				6C4E75E82A87C098AC15C8CD /* Generated */,
+			);
+			name = .;
+			path = .;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		46A6A5AD9449DB1A26AE0163 /* AnkiCompanion */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4A97573D41ECDC14BF4BC8CC /* Build configuration list for PBXNativeTarget "AnkiCompanion" */;
+			buildPhases = (
+				A130113AA47491D02B614B05 /* Sources */,
+				5FCF86338B4EC96BEC0E8D7F /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AnkiCompanion;
+			packageProductDependencies = (
+				8912D1182E58AAAD7C986AA5 /* SwiftProtobuf */,
+			);
+			productName = AnkiCompanion;
+			productReference = 8FD76977530CE0ACD4C4943B /* AnkiCompanion.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		37C8B292052A8F6DB1895275 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 21D0E6E55F579840732307AB /* Build configuration list for PBXProject "AnkiCompanion" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 8EF0C67A11A3A167E5F79D29;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				4F0730F48426B3096611D825 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 183740EF3F345006CF8B098C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				46A6A5AD9449DB1A26AE0163 /* AnkiCompanion */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A130113AA47491D02B614B05 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1184E7D88875FE4EC721E8C3 /* AnkiBackend.swift in Sources */,
+				1929590FCC2A1DC7581F8ADF /* AnkiCompanionApp.swift in Sources */,
+				E7B2590991DE76761902413E /* CollectionStore.swift in Sources */,
+				15A25614B6D80BD8D362D230 /* ContentView.swift in Sources */,
+				B9A300117A5BC1FB8926E789 /* ankidroid.pb.swift in Sources */,
+				C54447841FA4685F27D7730A /* ankihub.pb.swift in Sources */,
+				7813464BC64F59AF71869EE8 /* ankiweb.pb.swift in Sources */,
+				E4928CB4ACA75F274B579FC5 /* backend.pb.swift in Sources */,
+				146703D95187B7AD69254E9B /* card_rendering.pb.swift in Sources */,
+				B1BB4AC02BE1CFE9B60D61FA /* cards.pb.swift in Sources */,
+				A3ECC89AA323381A68F192EA /* collection.pb.swift in Sources */,
+				BC7352CAA731221DF220140D /* config.pb.swift in Sources */,
+				22D2123B2BBE2B5705349369 /* deck_config.pb.swift in Sources */,
+				9A42CBD5529E01ED57407F65 /* decks.pb.swift in Sources */,
+				014833193444A21A7FC33311 /* frontend.pb.swift in Sources */,
+				A4CF3235EA20EB6E764132FD /* generic.pb.swift in Sources */,
+				0E211DFD4F80731D59EBA53C /* github.pb.swift in Sources */,
+				6B871CFC28EFA61543BE0342 /* i18n.pb.swift in Sources */,
+				502AEE75BF969B8E8DDB48DF /* image_occlusion.pb.swift in Sources */,
+				288E0725FFFDC62864E00BDA /* import_export.pb.swift in Sources */,
+				B9EB60A64CD2D9D2DEBC537B /* links.pb.swift in Sources */,
+				F57FFF43F25840FA44E712F7 /* mcat.pb.swift in Sources */,
+				A3642F78D1A3D42A0B5ABA50 /* media.pb.swift in Sources */,
+				F8FC15E61F361D2153B6E718 /* notes.pb.swift in Sources */,
+				FD8341F9F6BD1C52BA4CD3E2 /* notetypes.pb.swift in Sources */,
+				BAF9F716E53E542C21016CD3 /* scheduler.pb.swift in Sources */,
+				20400A2B38BAF821C6BDB9A9 /* search.pb.swift in Sources */,
+				2CDE755A1382B565795CE342 /* stats.pb.swift in Sources */,
+				ED6BE6A03CC9A32C03544A46 /* sync.pb.swift in Sources */,
+				5F82678EAC13825FAE6C03B8 /* tags.pb.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		0D12E3739960DA21B6FB7966 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"../build\"",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = MCAT;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = "-lc++ -lz -liconv -framework Security -framework SystemConfiguration -framework CoreFoundation";
+				PRODUCT_BUNDLE_IDENTIFIER = net.ankiweb.ankicompanion;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		7A3AD3E1759C932A1B5300CE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"../build\"",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = MCAT;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = "-lc++ -lz -liconv -framework Security -framework SystemConfiguration -framework CoreFoundation";
+				PRODUCT_BUNDLE_IDENTIFIER = net.ankiweb.ankicompanion;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		898227275D49F5D13B48050C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		BF3E0A88BC9428F0619A430C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		21D0E6E55F579840732307AB /* Build configuration list for PBXProject "AnkiCompanion" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				898227275D49F5D13B48050C /* Debug */,
+				BF3E0A88BC9428F0619A430C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4A97573D41ECDC14BF4BC8CC /* Build configuration list for PBXNativeTarget "AnkiCompanion" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7A3AD3E1759C932A1B5300CE /* Debug */,
+				0D12E3739960DA21B6FB7966 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4F0730F48426B3096611D825 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-protobuf.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.25.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8912D1182E58AAAD7C986AA5 /* SwiftProtobuf */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4F0730F48426B3096611D825 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
+			productName = SwiftProtobuf;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 37C8B292052A8F6DB1895275 /* Project object */;
+}

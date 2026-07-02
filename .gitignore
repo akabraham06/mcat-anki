@@ -24,3 +24,9 @@ ts/.svelte-kit
 docs/_build/
 docs/autoapi/
 .complexipy_cache
+
+# iOS companion build artifacts (regenerable via mobile/build_ios.sh + xcodegen)
+mobile/build/
+mobile/AnkiCompanion/build/
+**/xcuserdata/
+*.xcuserstate

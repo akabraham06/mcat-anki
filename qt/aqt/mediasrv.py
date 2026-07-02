@@ -422,6 +422,7 @@ def is_sveltekit_page(path: str) -> bool:
         "import-csv",
         "import-page",
         "image-occlusion",
+        "mcat",
     ]
 
 
@@ -765,6 +766,12 @@ exposed_backend_list = [
     # DeckConfigService
     "get_ignored_before_count",
     "get_retention_workload",
+    # McatService
+    "get_topic_mastery",
+    "get_exam_readiness",
+    "get_study_recommendation",
+    "build_interleaved_session",
+    "get_topic_targets",
 ]
 
 

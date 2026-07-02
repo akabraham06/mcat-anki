@@ -1,0 +1,6 @@
+// Exposes the C FFI as a Swift-importable module (`import AnkiEngine`).
+// Bundled into AnkiEngine.xcframework via `-headers` in build_ios.sh.
+module AnkiEngine {
+    header "ankiffi.h"
+    export *
+}

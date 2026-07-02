@@ -1,0 +1,21 @@
+[package]
+name = "anki-ffi"
+version = "0.0.0"
+edition = "2021"
+publish = false
+description = "C FFI over the Anki Rust engine, for the iOS companion app."
+
+[lib]
+name = "ankiffi"
+# staticlib for linking into the iOS app. (A cdylib crate-type would force a
+# link step when cross-compiling to the iOS device target, which fails on
+# missing compiler-rt builtins like ___chkstk_darwin; the static archive skips
+# linking entirely, so we only build that.)
+crate-type = ["staticlib"]
+
+[dependencies]
+anki = { path = "../../rslib" }
+# anki relies on tokio's io-util being unified in by other workspace members;
+# depend on it explicitly so this crate also builds standalone (e.g. when
+# cross-compiling the iOS static library on its own).
+tokio = { workspace = true, features = ["io-util"] }

@@ -1,0 +1,53 @@
+# XcodeGen spec for the Anki MCAT companion iOS app.
+#
+# Generate the Xcode project with:
+#     brew install xcodegen          # one-time
+#     cd mobile/AnkiCompanion && xcodegen generate
+#     open AnkiCompanion.xcodeproj
+#
+# Prerequisites (see mobile/build_ios.sh and gen_swift_proto.sh):
+#   1. full Xcode installed and selected (xcode-select -s /Applications/Xcode.app)
+#   2. rustup target add aarch64-apple-ios-sim aarch64-apple-ios
+#   3. ../build_ios.sh              -> produces ../build/AnkiEngine.xcframework
+#   4. ./gen_swift_proto.sh         -> produces ./Generated/*.pb.swift
+
+name: AnkiCompanion
+options:
+  bundleIdPrefix: net.ankiweb
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+
+packages:
+  SwiftProtobuf:
+    url: https://github.com/apple/swift-protobuf.git
+    from: "1.25.0"
+
+targets:
+  AnkiCompanion:
+    type: application
+    platform: iOS
+    sources:
+      - path: .
+        excludes:
+          - "project.yml"
+          - "gen_swift_proto.sh"
+          - "patch_service_indices.sh"
+          - "*.md"
+          - "build"
+          - "*.xcodeproj"
+    dependencies:
+      - package: SwiftProtobuf
+      # Static engine library packaged as an xcframework (not embedded).
+      - framework: ../build/AnkiEngine.xcframework
+        embed: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: net.ankiweb.ankicompanion
+        GENERATE_INFOPLIST_FILE: "YES"
+        INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
+        INFOPLIST_KEY_CFBundleDisplayName: "MCAT"
+        SWIFT_VERSION: "5.9"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        # The Rust static library pulls in these system libs/frameworks.
+        OTHER_LDFLAGS: "-lc++ -lz -liconv -framework Security -framework SystemConfiguration -framework CoreFoundation"

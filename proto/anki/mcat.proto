@@ -1,0 +1,208 @@
+// Copyright: Ankitects Pty Ltd and contributors
+// License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+
+package anki.mcat;
+
+// MCAT Anki Mastery: backend queries that power the study dashboard.
+//
+// The topic mastery query aggregates per-topic statistics from native
+// collection data (cards, note tags, FSRS memory state, and the review log),
+// so results are correct on any device that has synced the collection and are
+// shared identically between the desktop and mobile apps.
+service McatService {
+  // Returns per-topic mastery statistics for MCAT-tagged cards.
+  rpc GetTopicMastery(TopicMasteryRequest) returns (TopicMasteryList);
+  // Returns the three separate scores (memory, performance, readiness) with
+  // ranges, coverage, the give-up rule, the best-next-topic recommendation,
+  // transfer gaps, and XP. Powers the MCAT dashboard.
+  rpc GetExamReadiness(ExamReadinessRequest) returns (ExamReadiness);
+  // Returns the single best next topic to study, with a self-explanation.
+  rpc GetStudyRecommendation(ExamReadinessRequest)
+      returns (StudyRecommendation);
+  // Builds an ordered study session, optionally interleaving topics (the
+  // toggle under test) versus blocking by topic.
+  rpc BuildInterleavedSession(InterleavedSessionRequest)
+      returns (InterleavedSession);
+  // Per-topic target answer times (and exam metadata) for timed review.
+  rpc GetTopicTargets(ExamReadinessRequest) returns (TopicTargetList);
+}
+
+// Implicitly includes any of the above methods that are not listed in the
+// backend service.
+service BackendMcatService {}
+
+message ExamReadinessRequest {
+  string search = 1;
+  string tag_prefix = 2;
+  double default_target_seconds = 3;
+}
+
+// One of the three scores, always shown with honesty metadata.
+message ScoreEstimate {
+  string label = 1;
+  // False => the give-up rule fired and no number is shown.
+  bool available = 2;
+  string abstain_reason = 3;
+  double point = 4;
+  double low = 5;
+  double high = 6;
+  double scale_min = 7;
+  double scale_max = 8;
+  string confidence = 9;
+  double coverage_percent = 10;
+  int64 last_updated = 11;
+  repeated string reasons = 12;
+  int64 evidence_count = 13;
+}
+
+message SectionScore {
+  string section_key = 1;
+  string section_name = 2;
+  bool available = 3;
+  double point = 4;
+  double low = 5;
+  double high = 6;
+  double coverage_percent = 7;
+  double recall = 8;
+}
+
+message ExamReadiness {
+  string exam = 1;
+  ScoreEstimate memory = 2;
+  ScoreEstimate performance = 3;
+  ScoreEstimate readiness = 4;
+  repeated SectionScore sections = 5;
+  double overall_coverage_percent = 6;
+  int64 graded_reviews = 7;
+  StudyRecommendation recommendation = 8;
+  repeated TransferGap transfer_gaps = 9;
+  XpSummary xp = 10;
+  GiveUpRule give_up_rule = 11;
+}
+
+// The written-down abstention rule.
+message GiveUpRule {
+  int64 min_graded_reviews = 1;
+  double min_coverage_percent = 2;
+  string description = 3;
+}
+
+message StudyRecommendation {
+  bool available = 1;
+  string topic_key = 2;
+  string topic_name = 3;
+  string section_key = 4;
+  double priority_score = 5;
+  string explanation = 6;
+  repeated RecommendationCandidate candidates = 7;
+}
+
+message RecommendationCandidate {
+  string topic_key = 1;
+  string topic_name = 2;
+  double priority_score = 3;
+  double exam_weight = 4;
+  double weakness = 5;
+  double coverage_gap = 6;
+  uint32 due_cards = 7;
+}
+
+// Recall-vs-paraphrase: how much recall on knowledge cards exceeds accuracy on
+// exam-style questions for the same topic. A near-zero gap means the
+// performance model is just copying the memory model.
+message TransferGap {
+  string topic_key = 1;
+  string topic_name = 2;
+  bool available = 3;
+  double memory_recall = 4;
+  double performance_accuracy = 5;
+  double gap = 6;
+  int64 knowledge_reviews = 7;
+  int64 performance_reviews = 8;
+}
+
+message XpSummary {
+  int64 total_xp = 1;
+  int64 reviews_today = 2;
+  int64 xp_today = 3;
+  int64 streak_days = 4;
+  int64 level = 5;
+  repeated string badges = 6;
+}
+
+message InterleavedSessionRequest {
+  string tag_prefix = 1;
+  uint32 max_cards = 2;
+  // False => blocked (grouped by topic) ordering, for the ablation.
+  bool interleave = 3;
+}
+
+message InterleavedSession {
+  repeated int64 card_ids = 1;
+  repeated string topic_keys = 2;
+  bool interleaved = 3;
+  string log = 4;
+}
+
+message TopicTarget {
+  string topic_key = 1;
+  string topic_name = 2;
+  string section_key = 3;
+  string section_name = 4;
+  double target_seconds = 5;
+  uint32 exam_weight = 6;
+  bool fact_based = 7;
+  bool in_deck = 8;
+}
+
+message TopicTargetList {
+  repeated TopicTarget targets = 1;
+  string tag_prefix = 2;
+}
+
+message TopicMasteryRequest {
+  // Optional search limiting the cards considered. Empty matches the whole
+  // collection.
+  string search = 1;
+  // Tag namespace identifying MCAT topics. Empty defaults to "mcat", so a tag
+  // like "mcat::biobiochem::metabolism" is section "biobiochem", topic
+  // "metabolism".
+  string tag_prefix = 2;
+  // Per-card target answer time in seconds, used to classify a review as
+  // overtime. 0 uses the built-in default.
+  double default_target_seconds = 3;
+}
+
+message TopicMastery {
+  // Full tag path, e.g. "mcat::biobiochem::metabolism".
+  string topic_key = 1;
+  // Leaf name of the topic, e.g. "metabolism".
+  string topic_name = 2;
+  // Top-level MCAT section key, e.g. "biobiochem".
+  string section = 3;
+  uint32 cards_total = 4;
+  uint32 cards_seen = 5;
+  uint32 cards_mastered = 6;
+  // Mean current FSRS recall probability (0..1) across cards with memory state.
+  double average_recall_probability = 7;
+  double average_response_time_secs = 8;
+  // Fraction of rated reviews that exceeded the target time (0..1).
+  double overtime_rate = 9;
+  // Unix seconds of the most recent review, or 0 if never reviewed.
+  int64 last_reviewed_at = 10;
+  // 0..1, higher means weaker (surfaced first for study).
+  double weakness_score = 11;
+  double coverage_percent = 12;
+}
+
+message TopicMasteryList {
+  repeated TopicMastery topics = 1;
+  // Distinct-card rollups across all MCAT-tagged cards in scope.
+  uint32 cards_total = 2;
+  uint32 cards_seen = 3;
+  double overall_coverage_percent = 4;
+}

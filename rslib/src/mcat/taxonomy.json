@@ -1,0 +1,207 @@
+{
+    "exam": "MCAT",
+    "score_scale": {
+        "section_min": 118,
+        "section_max": 132,
+        "total_min": 472,
+        "total_max": 528
+    },
+    "tag_prefix": "mcat",
+    "sections": [
+        {
+            "key": "chemphys",
+            "name": "Chemical and Physical Foundations of Biological Systems",
+            "topics": [
+                {
+                    "key": "thermodynamics",
+                    "name": "Thermodynamics",
+                    "weight": 4,
+                    "target_seconds": 45,
+                    "fact_based": true
+                },
+                {
+                    "key": "kinetics",
+                    "name": "Reaction Kinetics",
+                    "weight": 3,
+                    "target_seconds": 45,
+                    "fact_based": true
+                },
+                {
+                    "key": "acids_bases",
+                    "name": "Acids and Bases",
+                    "weight": 4,
+                    "target_seconds": 40,
+                    "fact_based": true
+                },
+                {
+                    "key": "atomic_structure",
+                    "name": "Atomic Structure",
+                    "weight": 3,
+                    "target_seconds": 35,
+                    "fact_based": true
+                },
+                {
+                    "key": "thermochemistry",
+                    "name": "Thermochemistry",
+                    "weight": 3,
+                    "target_seconds": 45,
+                    "fact_based": true
+                },
+                { "key": "fluids", "name": "Fluids and Gases", "weight": 3, "target_seconds": 50, "fact_based": true },
+                {
+                    "key": "electrochemistry",
+                    "name": "Electrochemistry",
+                    "weight": 3,
+                    "target_seconds": 50,
+                    "fact_based": true
+                },
+                {
+                    "key": "stoichiometry",
+                    "name": "Stoichiometry",
+                    "weight": 2,
+                    "target_seconds": 40,
+                    "fact_based": true
+                }
+            ]
+        },
+        {
+            "key": "cars",
+            "name": "Critical Analysis and Reasoning Skills",
+            "topics": [
+                {
+                    "key": "main_idea",
+                    "name": "Main Idea and Purpose",
+                    "weight": 4,
+                    "target_seconds": 90,
+                    "fact_based": false
+                },
+                {
+                    "key": "inference",
+                    "name": "Inference and Implication",
+                    "weight": 4,
+                    "target_seconds": 90,
+                    "fact_based": false
+                },
+                {
+                    "key": "tone_argument",
+                    "name": "Tone and Argument Structure",
+                    "weight": 3,
+                    "target_seconds": 90,
+                    "fact_based": false
+                },
+                {
+                    "key": "application",
+                    "name": "Application and Extrapolation",
+                    "weight": 3,
+                    "target_seconds": 90,
+                    "fact_based": false
+                }
+            ]
+        },
+        {
+            "key": "biobiochem",
+            "name": "Biological and Biochemical Foundations of Living Systems",
+            "topics": [
+                { "key": "amino_acids", "name": "Amino Acids", "weight": 4, "target_seconds": 35, "fact_based": true },
+                {
+                    "key": "protein_structure",
+                    "name": "Protein Structure",
+                    "weight": 4,
+                    "target_seconds": 40,
+                    "fact_based": true
+                },
+                {
+                    "key": "enzymes",
+                    "name": "Enzymes and Kinetics",
+                    "weight": 5,
+                    "target_seconds": 45,
+                    "fact_based": true
+                },
+                { "key": "metabolism", "name": "Metabolism", "weight": 5, "target_seconds": 50, "fact_based": true },
+                {
+                    "key": "glycolysis",
+                    "name": "Glycolysis and Respiration",
+                    "weight": 4,
+                    "target_seconds": 50,
+                    "fact_based": true
+                },
+                {
+                    "key": "cell_biology",
+                    "name": "Cell Biology",
+                    "weight": 3,
+                    "target_seconds": 40,
+                    "fact_based": true
+                },
+                {
+                    "key": "molecular_genetics",
+                    "name": "Molecular Genetics",
+                    "weight": 4,
+                    "target_seconds": 45,
+                    "fact_based": true
+                },
+                {
+                    "key": "membranes",
+                    "name": "Membranes and Transport",
+                    "weight": 3,
+                    "target_seconds": 40,
+                    "fact_based": true
+                }
+            ]
+        },
+        {
+            "key": "psychsoc",
+            "name": "Psychological, Social, and Biological Foundations of Behavior",
+            "topics": [
+                {
+                    "key": "learning_memory",
+                    "name": "Learning and Memory",
+                    "weight": 4,
+                    "target_seconds": 40,
+                    "fact_based": true
+                },
+                {
+                    "key": "sensation_perception",
+                    "name": "Sensation and Perception",
+                    "weight": 4,
+                    "target_seconds": 40,
+                    "fact_based": true
+                },
+                {
+                    "key": "cognition",
+                    "name": "Cognition and Language",
+                    "weight": 3,
+                    "target_seconds": 40,
+                    "fact_based": true
+                },
+                {
+                    "key": "motivation_emotion",
+                    "name": "Motivation and Emotion",
+                    "weight": 3,
+                    "target_seconds": 40,
+                    "fact_based": true
+                },
+                {
+                    "key": "social_psychology",
+                    "name": "Social Psychology",
+                    "weight": 4,
+                    "target_seconds": 40,
+                    "fact_based": true
+                },
+                {
+                    "key": "identity",
+                    "name": "Self and Identity",
+                    "weight": 3,
+                    "target_seconds": 40,
+                    "fact_based": true
+                },
+                {
+                    "key": "demographics",
+                    "name": "Social Structure and Demographics",
+                    "weight": 3,
+                    "target_seconds": 45,
+                    "fact_based": true
+                }
+            ]
+        }
+    ]
+}

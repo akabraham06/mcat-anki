@@ -1311,6 +1311,9 @@ title="{}" {}>{}</button>""".format(
         else:
             aqt.dialogs.open("NewDeckStats", self)
 
+    def on_mcat_dashboard(self) -> None:
+        aqt.dialogs.open("MCATDashboard", self)
+
     def onPrefs(self) -> None:
         aqt.dialogs.open("Preferences", self)
 
@@ -1447,6 +1450,11 @@ title="{}" {}>{}</button>""".format(
         qconnect(m.actionNoteTypes.triggered, self.onNoteTypes)
         qconnect(m.action_check_for_updates.triggered, self.on_check_for_updates)
         qconnect(m.actionPreferences.triggered, self.onPrefs)
+
+        # Tools: MCAT Anki Mastery dashboard
+        self.action_mcat_dashboard = QAction("MCAT Dashboard", self)
+        qconnect(self.action_mcat_dashboard.triggered, self.on_mcat_dashboard)
+        m.menuTools.addAction(self.action_mcat_dashboard)
 
         # View
         qconnect(

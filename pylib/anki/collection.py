@@ -16,6 +16,7 @@ from anki import (
     image_occlusion_pb2,
     import_export_pb2,
     links_pb2,
+    mcat_pb2,
     notes_pb2,
     scheduler_pb2,
     search_pb2,
@@ -1024,6 +1025,59 @@ class Collection(DeprecatedNamesMixin):
         self, card_id: CardId
     ) -> Sequence[stats_pb2.CardStatsResponse.StatsRevlogEntry]:
         return self._backend.get_review_logs(card_id)
+
+    def mcat_topic_mastery(
+        self,
+        search: str = "",
+        tag_prefix: str = "",
+        default_target_seconds: float = 0.0,
+    ) -> mcat_pb2.TopicMasteryList:
+        """MCAT Anki Mastery: per-topic mastery stats aggregated in the Rust
+        engine from native card/tag/FSRS/revlog data."""
+        return self._backend.get_topic_mastery(
+            search=search,
+            tag_prefix=tag_prefix,
+            default_target_seconds=default_target_seconds,
+        )
+
+    def mcat_exam_readiness(
+        self, tag_prefix: str = "", default_target_seconds: float = 0.0
+    ) -> mcat_pb2.ExamReadiness:
+        """MCAT Anki Mastery: the three separate scores (memory, performance,
+        readiness) with ranges, coverage, the give-up rule, best-next-topic
+        recommendation, transfer gaps and XP. Powers the dashboard."""
+        return self._backend.get_exam_readiness(
+            search="",
+            tag_prefix=tag_prefix,
+            default_target_seconds=default_target_seconds,
+        )
+
+    def mcat_study_recommendation(
+        self, tag_prefix: str = ""
+    ) -> mcat_pb2.StudyRecommendation:
+        """The single best next topic to study, with a self-explanation."""
+        return self._backend.get_study_recommendation(
+            search="", tag_prefix=tag_prefix, default_target_seconds=0.0
+        )
+
+    def mcat_interleaved_session(
+        self, tag_prefix: str = "", max_cards: int = 0, interleave: bool = True
+    ) -> mcat_pb2.InterleavedSession:
+        """An ordered study session, interleaving topics (the feature under
+        test) or blocking by topic for the ablation."""
+        return self._backend.build_interleaved_session(
+            tag_prefix=tag_prefix, max_cards=max_cards, interleave=interleave
+        )
+
+    def mcat_topic_targets(
+        self, tag_prefix: str = "", default_target_seconds: float = 0.0
+    ) -> mcat_pb2.TopicTargetList:
+        """Per-topic target answer times (and exam metadata) for timed review."""
+        return self._backend.get_topic_targets(
+            search="",
+            tag_prefix=tag_prefix,
+            default_target_seconds=default_target_seconds,
+        )
 
     def studied_today(self) -> str:
         return self._backend.studied_today()
