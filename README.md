@@ -10,6 +10,8 @@ A desktop study app and an iOS companion, **built on a fork of [Anki](https://ap
 
 The app follows an **honesty rule**: it refuses to show a readiness score until it has enough evidence (a written-down give-up rule), and every score ships with its point estimate, likely range, exam coverage, confidence, last-updated time, and the reasons behind it.
 
+> **Setup & run in a hurry?** See [`README-MCAT.md`](./README-MCAT.md) for concise, verified instructions (macOS installer + building/running desktop and iOS from source).
+
 > This is an AGPL-3.0-or-later fork of Anki, with credit to Ankitects Pty Ltd and contributors. See [License](#license).
 
 ---
