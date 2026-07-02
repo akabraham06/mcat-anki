@@ -21,7 +21,6 @@ the AI Settings dialog and stored in the collection config.
 
 from __future__ import annotations
 
-from concurrent.futures import Future
 from typing import Any
 
 import aqt
@@ -164,7 +163,9 @@ class NewSourceDialog(QDialog):
 
     def _accept(self) -> None:
         if not self.name.text().strip() or not self.excerpt.toPlainText().strip():
-            showWarning("A source needs both a name and a non-empty excerpt.", parent=self)
+            showWarning(
+                "A source needs both a name and a non-empty excerpt.", parent=self
+            )
             return
         self.accept()
 
@@ -218,7 +219,9 @@ class MCATAiStudio(QDialog):
         controls.addWidget(QLabel("Source:"))
         self.source_combo = QComboBox()
         self.source_combo.setMinimumWidth(240)
-        qconnect(self.source_combo.currentIndexChanged, lambda _: self._show_source_trace())
+        qconnect(
+            self.source_combo.currentIndexChanged, lambda _: self._show_source_trace()
+        )
         controls.addWidget(self.source_combo)
         new_src = QPushButton("New…")
         qconnect(new_src.clicked, self._new_source)
@@ -307,7 +310,7 @@ class MCATAiStudio(QDialog):
             self.generate_btn.setToolTip("")
 
     def _reload_sources(self, select_id: str | None = None) -> None:
-        sources = list(self.mw.col.mcat_list_ai_sources().sources)
+        sources = list(self.mw.col.mcat_list_ai_sources())
         self.source_combo.blockSignals(True)
         self.source_combo.clear()
         for src in sources:
@@ -358,7 +361,7 @@ class MCATAiStudio(QDialog):
         result = self.mw.col.mcat_register_ai_source(
             source_name=name, excerpt=excerpt, source_section=section
         )
-        sources = list(result.sources)
+        sources = list(result)
         new_id = sources[-1].source_id if sources else None
         self._reload_sources(select_id=new_id)
         self._refresh_status()
@@ -383,9 +386,7 @@ class MCATAiStudio(QDialog):
         topic = self.topic_hint.text().strip()
 
         def op(col: Any) -> Any:
-            return col.mcat_generate_cards(
-                source_id=sid, count=count, topic_hint=topic
-            )
+            return col.mcat_generate_cards(source_id=sid, count=count, topic_hint=topic)
 
         QueryOp(parent=self, op=op, success=self._on_generated).with_progress(
             "Generating source-grounded cards…"
@@ -395,9 +396,7 @@ class MCATAiStudio(QDialog):
         if not result.ai_available:
             self._candidates = []
             self._populate_list()
-            showWarning(
-                f"AI unavailable: {result.unavailable_reason}", parent=self
-            )
+            showWarning(f"AI unavailable: {result.unavailable_reason}", parent=self)
             self._refresh_status()
             return
         self._candidates = list(result.cards)
@@ -455,10 +454,10 @@ class MCATAiStudio(QDialog):
         return f"""
         <h3>{_esc(card.question)}</h3>
         <p><b>Answer:</b> {_esc(card.answer)}</p>
-        <p><b>Topic:</b> {_esc(card.topic_tag) or '—'} &nbsp; <b>Difficulty:</b> {_esc(card.difficulty) or '—'}</p>
+        <p><b>Topic:</b> {_esc(card.topic_tag) or "—"} &nbsp; <b>Difficulty:</b> {_esc(card.difficulty) or "—"}</p>
         <p><b>Verdict:</b> <span style='color:{verdict_color};font-weight:600'>{_esc(q.verdict)}</span>
            &nbsp; overall {q.overall_score:.2f} / cutoff {q.cutoff:.2f}
-           {'· DUPLICATE' if q.duplicate else ''}</p>
+           {"· DUPLICATE" if q.duplicate else ""}</p>
         <table cellpadding='4' style='border-collapse:collapse'>
           <tr><th></th><th align='left'>Category</th><th>Score</th><th align='left'>Reason</th></tr>
           {cats}
@@ -515,9 +514,4 @@ class MCATAiStudio(QDialog):
 
 
 def _esc(text: str) -> str:
-    return (
-        (text or "")
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-    )
+    return (text or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")

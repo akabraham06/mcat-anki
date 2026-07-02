@@ -119,17 +119,17 @@ mcat-mastery` succeeded (`git branch --show-current` → `mcat-mastery`).
   synced, Briefcase downloads the standalone Python + Qt runtime, and the app is
   packaged. Output: `out/installer/dist/anki-26.05-mac-apple.dmg` (~220 MB).
 - **Verified (clean-machine open):**
-    1. Mounted the `.dmg` → standard drag-to-`/Applications` layout with `Anki.app`.
-    2. Copied `Anki.app` to a fresh `/tmp/anki-clean-test/` (not the source tree)
-       and detached the image.
-    3. `codesign --verify --deep --strict Anki.app` → OK (ad-hoc signed).
-    4. Launched the copied app with a fresh base dir + unique
-       `ANKI_SINGLE_INSTANCE_KEY`; log showed `Starting Anki 26.05...`,
-       `aqt.mediasrv: Serving on http://127.0.0.1:62609`, and `Starting main
+  1. Mounted the `.dmg` → standard drag-to-`/Applications` layout with `Anki.app`.
+  2. Copied `Anki.app` to a fresh `/tmp/anki-clean-test/` (not the source tree)
+     and detached the image.
+  3. `codesign --verify --deep --strict Anki.app` → OK (ad-hoc signed).
+  4. Launched the copied app with a fresh base dir + unique
+     `ANKI_SINGLE_INSTANCE_KEY`; log showed `Starting Anki 26.05...`,
+     `aqt.mediasrv: Serving on http://127.0.0.1:62609`, and `Starting main
 loop...` — full GUI startup, then quit cleanly.
-    5. Confirmed the MCAT engine change shipped inside the bundle: `_rsbridge.so`
-       (compiled Rust engine), `anki/mcat_pb2.pyc`, and `get_topic_mastery`
-       present in `anki/_backend_generated.pyc`.
+  5. Confirmed the MCAT engine change shipped inside the bundle: `_rsbridge.so`
+     (compiled Rust engine), `anki/mcat_pb2.pyc`, and `get_topic_mastery`
+     present in `anki/_backend_generated.pyc`.
 - **Not yet (later milestones):** code signing/notarization with a real Apple
   identity (Speedrun §13 bonus), Windows `.msi` / Linux `.tar.zst` on their host
   platforms, and the iOS build (Milestone D).
@@ -143,20 +143,20 @@ loop...` — full GUI startup, then quit cleanly.
   product's core: an embedded MCAT taxonomy (the "coverage map"), three separate
   honest scores, a deterministic recommender, and a desktop dashboard.
 - **Engine (Rust, `rslib/src/mcat/`):**
-    - `taxonomy.json` + `taxonomy.rs`: the 4-section MCAT outline (27 topics) with
-      per-topic exam weights + target answer times, `include_str!`-embedded so the
-      same numbers drive desktop and mobile. Authoritative for coverage.
-    - `snapshot.rs`: one pass over the collection producing every aggregate
-      (per-topic recall from FSRS, perf accuracy from revlog, due counts, reviews
-      today, streak). Perf cards are classified by the `MCATPerf` notetype.
-    - `scores.rs`: `estimate()` (pure, unit-tested) maps ability→exam scale with an
-      uncertainty band driven by coverage + evidence. Produces **Memory**,
-      **Performance** and **Readiness** each with point + range + coverage +
-      confidence + reasons + last-updated, plus a written-down **give-up rule**
-      (no readiness score until ≥100 graded reviews and ≥50% coverage) and a
-      per-section breakdown.
-    - `recommender.rs`: deterministic best-next-topic = examWeight × weakness ×
-      coverage-gap × due-ness, with a self-explanation and ranked candidates.
+  - `taxonomy.json` + `taxonomy.rs`: the 4-section MCAT outline (27 topics) with
+    per-topic exam weights + target answer times, `include_str!`-embedded so the
+    same numbers drive desktop and mobile. Authoritative for coverage.
+  - `snapshot.rs`: one pass over the collection producing every aggregate
+    (per-topic recall from FSRS, perf accuracy from revlog, due counts, reviews
+    today, streak). Perf cards are classified by the `MCATPerf` notetype.
+  - `scores.rs`: `estimate()` (pure, unit-tested) maps ability→exam scale with an
+    uncertainty band driven by coverage + evidence. Produces **Memory**,
+    **Performance** and **Readiness** each with point + range + coverage +
+    confidence + reasons + last-updated, plus a written-down **give-up rule**
+    (no readiness score until ≥100 graded reviews and ≥50% coverage) and a
+    per-section breakdown.
+  - `recommender.rs`: deterministic best-next-topic = examWeight × weakness ×
+    coverage-gap × due-ness, with a self-explanation and ranked candidates.
 - **Proto:** extended `proto/anki/mcat.proto` with `GetExamReadiness`,
   `GetStudyRecommendation`, `GetTopicTargets` (+ messages). Wired in
   `rslib/src/mcat/service.rs`.
@@ -314,28 +314,28 @@ Legend for merge-risk unchanged (**low/med/high**).
 
 - **What:** New provider-agnostic, OpenAI-compatible Chat Completions client
   plus the shared plumbing every feature builds on:
-    - `AiClient` trait + `OpenAiClient` (reqwest, blocking call driven from a
-      dedicated current-thread tokio runtime so it is safe to call from the
-      synchronous `Collection`), `MockAiClient` (deterministic, offline; selected
-      by `MCAT_AI_MOCK` env or `mcat.ai.mock` config) — used by all Rust unit
-      tests, the Python integration tests and the eval harness with **no network
-      and no key**.
-    - Typed errors: `Unconfigured / Offline / Http / RateLimited / Malformed`.
-    - Config resolution order: collection keys (`mcat.ai.base_url`,
-      `mcat.ai.model`, `mcat.ai.api_key`, `mcat.ai.checker_cutoff`,
-      `mcat.ai.enabled`) → env (`MCAT_AI_BASE_URL`, `MCAT_AI_MODEL`,
-      `MCAT_AI_API_KEY`, then `OPENAI_API_KEY`). Defaults:
-      `https://api.openai.com/v1`, `gpt-4o-mini`, cutoff `0.7`. Local/keyless
-      endpoints (e.g. Ollama `http://localhost:11434/v1`) count as available.
-      The api key is **masked on read** and never committed.
-    - `complete_json()` helper: prompts for strict JSON, extracts/validates it,
-      and **retries once** on malformed output before erroring.
-    - Source registry (config-backed): `AiSource {id,name,section,excerpt}`.
-      Generation is **rejected without a valid registered source** (9.3/9.9
-      fake-source defence).
-    - Prompt-injection defence: source text is sanitised (embedded instructions
-      neutralised), length-capped, wrapped in a `<<<MCAT_SOURCE>>>` fence and the
-      model is told to treat it as **data only** (9.9).
+  - `AiClient` trait + `OpenAiClient` (reqwest, blocking call driven from a
+    dedicated current-thread tokio runtime so it is safe to call from the
+    synchronous `Collection`), `MockAiClient` (deterministic, offline; selected
+    by `MCAT_AI_MOCK` env or `mcat.ai.mock` config) — used by all Rust unit
+    tests, the Python integration tests and the eval harness with **no network
+    and no key**.
+  - Typed errors: `Unconfigured / Offline / Http / RateLimited / Malformed`.
+  - Config resolution order: collection keys (`mcat.ai.base_url`,
+    `mcat.ai.model`, `mcat.ai.api_key`, `mcat.ai.checker_cutoff`,
+    `mcat.ai.enabled`) → env (`MCAT_AI_BASE_URL`, `MCAT_AI_MODEL`,
+    `MCAT_AI_API_KEY`, then `OPENAI_API_KEY`). Defaults:
+    `https://api.openai.com/v1`, `gpt-4o-mini`, cutoff `0.7`. Local/keyless
+    endpoints (e.g. Ollama `http://localhost:11434/v1`) count as available.
+    The api key is **masked on read** and never committed.
+  - `complete_json()` helper: prompts for strict JSON, extracts/validates it,
+    and **retries once** on malformed output before erroring.
+  - Source registry (config-backed): `AiSource {id,name,section,excerpt}`.
+    Generation is **rejected without a valid registered source** (9.3/9.9
+    fake-source defence).
+  - Prompt-injection defence: source text is sanitised (embedded instructions
+    neutralised), length-capped, wrapped in a `<<<MCAT_SOURCE>>>` fence and the
+    model is told to treat it as **data only** (9.9).
 - **Files:** `rslib/src/mcat/ai/{mod,client,prompt,sources,checker,generate,
 explain,planner,perfgen,mock,tests}.rs` (new), `rslib/src/mcat/mod.rs` (med:
   add `ai` module), `proto/anki/mcat.proto` (med: new messages + 13 RPCs),

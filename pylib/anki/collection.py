@@ -1120,8 +1120,11 @@ class Collection(DeprecatedNamesMixin):
         excerpt: str,
         source_section: str = "",
         source_id: str = "",
-    ) -> mcat_pb2.AiSourceList:
-        """Register a named, inspectable source used to ground generation."""
+    ) -> Sequence[mcat_pb2.AiSource]:
+        """Register a named, inspectable source used to ground generation.
+
+        The single-field ``AiSourceList`` response is unwrapped by the backend to
+        the repeated ``sources`` list."""
         return self._backend.register_ai_source(
             mcat_pb2.AiSource(
                 source_id=source_id,
@@ -1131,10 +1134,10 @@ class Collection(DeprecatedNamesMixin):
             )
         )
 
-    def mcat_list_ai_sources(self) -> mcat_pb2.AiSourceList:
+    def mcat_list_ai_sources(self) -> Sequence[mcat_pb2.AiSource]:
         return self._backend.list_ai_sources(tag_prefix="")
 
-    def mcat_remove_ai_source(self, source_id: str) -> mcat_pb2.AiSourceList:
+    def mcat_remove_ai_source(self, source_id: str) -> Sequence[mcat_pb2.AiSource]:
         return self._backend.remove_ai_source(source_id=source_id)
 
     def mcat_generate_cards(

@@ -33,6 +33,8 @@ const IGNORED_FOLDERS: &[&str] = &[
     "./qt/aqt/forms",
     "./tools/workspace-hack",
     "./target",
+    "./mobile/build",
+    "./mobile/AnkiCompanion/build",
     ".mypy_cache",
     "./extra",
     "./ts/.svelte-kit",
