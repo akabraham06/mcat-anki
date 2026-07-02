@@ -68,6 +68,59 @@ message SectionScore {
   double high = 6;
   double coverage_percent = 7;
   double recall = 8;
+  // Mean recall as a percentage (recall * 100), for display convenience.
+  double memory_percent = 9;
+  // Reviewed knowledge cards contributing recall in this section.
+  int64 cards_reviewed = 10;
+  // Total tagged knowledge cards in this section.
+  int64 cards_total = 11;
+}
+
+// Extra memory-side detail so users can see the evidence behind the Memory
+// score: how much has been studied, how well it is retained, and how broadly.
+message MemoryDetail {
+  // Distinct tagged knowledge cards that have been reviewed at least once.
+  int64 cards_reviewed = 1;
+  // Distinct tagged knowledge cards in the deck.
+  int64 cards_total = 2;
+  // Mean recall across reviewed knowledge cards, as a percentage.
+  double average_retention_percent = 3;
+  // Number of graded knowledge-card reviews.
+  int64 graded_reviews = 4;
+  // Reviewed cards with a mature interval (>= 21 days).
+  int64 mature_cards = 5;
+  // Reviewed cards below the mature interval.
+  int64 young_cards = 6;
+  // Taxonomy topics with at least one knowledge card.
+  int64 covered_topics = 7;
+  // Total taxonomy topics.
+  int64 total_topics = 8;
+  // Breadth = covered_topics / total_topics, as a percentage.
+  double breadth_percent = 9;
+}
+
+// Extra performance-side detail (exam-style questions).
+message PerformanceDetail {
+  // Exam-style questions answered (graded reviews on perf notes).
+  int64 questions_answered = 1;
+  // Accuracy across those questions, as a percentage.
+  double accuracy_percent = 2;
+  // Number answered correctly.
+  int64 correct = 3;
+  // Taxonomy topics with at least one exam-style question review.
+  int64 covered_topics = 4;
+  // Total taxonomy topics.
+  int64 total_topics = 5;
+}
+
+// Progress toward the readiness give-up gate, so the abstention is transparent.
+message ReadinessDetail {
+  int64 graded_reviews = 1;
+  int64 required_graded_reviews = 2;
+  double coverage_percent = 3;
+  double required_coverage_percent = 4;
+  bool graded_reviews_met = 5;
+  bool coverage_met = 6;
 }
 
 message ExamReadiness {
@@ -82,6 +135,9 @@ message ExamReadiness {
   repeated TransferGap transfer_gaps = 9;
   XpSummary xp = 10;
   GiveUpRule give_up_rule = 11;
+  MemoryDetail memory_detail = 12;
+  PerformanceDetail performance_detail = 13;
+  ReadinessDetail readiness_detail = 14;
 }
 
 // The written-down abstention rule.

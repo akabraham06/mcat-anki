@@ -7,6 +7,8 @@
 
 use anki_proto::mcat as pb;
 
+use crate::card::CardQueue;
+use crate::card::CardType;
 use crate::card::FsrsMemoryState;
 use crate::collection::Collection;
 use crate::mcat::scores::estimate;
@@ -45,6 +47,101 @@ fn add_perf(col: &mut Collection, nt: &Notetype, front: &str, tags: &[&str]) {
     note.set_field(0, front).unwrap();
     note.tags = tags.iter().map(|t| t.to_string()).collect();
     col.add_note(&mut note, DeckId(1)).unwrap();
+}
+
+/// Put the note's first card into a classic SM-2 review state (no FSRS memory
+/// state), with the given interval (days) and last review N days ago.
+fn sm2_reviewed(col: &mut Collection, note: &Note, interval_days: u32, reviewed_days_ago: i64) {
+    let cid = col.storage.all_cards_of_note(note.id).unwrap()[0].id;
+    let mut card = col.storage.get_card(cid).unwrap().unwrap();
+    card.memory_state = None;
+    card.ctype = CardType::Review;
+    card.queue = CardQueue::Review;
+    card.interval = interval_days;
+    card.reps = 1;
+    card.last_review_time = Some(TimestampSecs(
+        TimestampSecs::now().0 - reviewed_days_ago * 86_400,
+    ));
+    col.storage.update_card(&card).unwrap();
+}
+
+/// Section of the taxonomy that a full tag belongs to, for pulling the matching
+/// [`pb::SectionScore`] out of a readiness result.
+fn section_of(readiness: &pb::ExamReadiness, key: &str) -> pb::SectionScore {
+    readiness
+        .sections
+        .iter()
+        .find(|s| s.section_key == key)
+        .cloned()
+        .expect("section present")
+}
+
+/// A reviewed SM-2 card (no FSRS) still yields a recall in (0,1), so the Memory
+/// score populates even when FSRS is disabled.
+#[test]
+fn non_fsrs_reviewed_card_has_recall() {
+    let mut col = Collection::new();
+    let note = add_knowledge(&mut col, "a", &["mcat::cars::inference"]);
+    // Interval 10 days, last reviewed 5 days ago => R = exp(-5/10) ≈ 0.61.
+    sm2_reviewed(&mut col, &note, 10, 5);
+
+    let r = col.mcat_exam_readiness(rreq()).unwrap();
+    let memory = r.memory.as_ref().unwrap();
+    assert!(memory.available, "memory should be available without FSRS");
+
+    let detail = r.memory_detail.unwrap();
+    assert_eq!(detail.cards_reviewed, 1);
+    assert_eq!(detail.cards_total, 1);
+    assert!(detail.average_retention_percent > 0.0 && detail.average_retention_percent < 100.0);
+
+    let cars = section_of(&r, "cars");
+    assert!(cars.available);
+    assert!(
+        cars.recall > 0.0 && cars.recall < 1.0,
+        "recall={}",
+        cars.recall
+    );
+    assert!(
+        (cars.recall - (-0.5f64).exp()).abs() < 0.02,
+        "recall={}",
+        cars.recall
+    );
+    assert_eq!(cars.cards_reviewed, 1);
+    assert_eq!(cars.cards_total, 1);
+}
+
+/// A brand-new (never-reviewed) card contributes to coverage but not to recall,
+/// so Memory abstains with no reviewed cards.
+#[test]
+fn non_fsrs_new_card_has_no_recall() {
+    let mut col = Collection::new();
+    add_knowledge(&mut col, "a", &["mcat::cars::inference"]);
+
+    let r = col.mcat_exam_readiness(rreq()).unwrap();
+    assert!(!r.memory.unwrap().available);
+
+    let detail = r.memory_detail.unwrap();
+    assert_eq!(detail.cards_reviewed, 0);
+    assert_eq!(detail.cards_total, 1);
+    assert!(r.overall_coverage_percent > 0.0);
+}
+
+/// A card just reviewed with a long interval has near-perfect estimated recall,
+/// and counts as mature.
+#[test]
+fn non_fsrs_just_reviewed_long_interval_is_high() {
+    let mut col = Collection::new();
+    let note = add_knowledge(&mut col, "a", &["mcat::cars::inference"]);
+    // Interval 100 days, reviewed today => R ≈ 1.0.
+    sm2_reviewed(&mut col, &note, 100, 0);
+
+    let r = col.mcat_exam_readiness(rreq()).unwrap();
+    let cars = section_of(&r, "cars");
+    assert!(cars.recall > 0.95, "recall={}", cars.recall);
+
+    let detail = r.memory_detail.unwrap();
+    assert_eq!(detail.mature_cards, 1);
+    assert_eq!(detail.young_cards, 0);
 }
 
 fn strong_memory(col: &mut Collection, note: &Note) {

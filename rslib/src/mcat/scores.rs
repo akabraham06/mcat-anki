@@ -251,11 +251,13 @@ impl Collection {
         // --- Section breakdown (memory) ---
         let mut sections = Vec::new();
         for section in &snap.taxonomy.sections {
-            let (mut recall_sum, mut recall_count, mut kreviews) = (0.0, 0i64, 0i64);
+            let (mut recall_sum, mut recall_count, mut kreviews, mut kcards) =
+                (0.0, 0i64, 0i64, 0i64);
             for topic in snap.topics_in_section(&section.key) {
                 recall_sum += topic.recall_sum;
                 recall_count += topic.recall_count as i64;
                 kreviews += topic.knowledge_reviews as i64;
+                kcards += topic.knowledge_cards as i64;
             }
             let cov = snap.section_coverage(&section.key);
             if recall_count > 0 {
@@ -271,6 +273,9 @@ impl Collection {
                     high,
                     coverage_percent: cov * 100.0,
                     recall: frac,
+                    memory_percent: frac * 100.0,
+                    cards_reviewed: recall_count,
+                    cards_total: kcards,
                 });
             } else {
                 sections.push(pb::SectionScore {
@@ -282,6 +287,9 @@ impl Collection {
                     high: 0.0,
                     coverage_percent: cov * 100.0,
                     recall: 0.0,
+                    memory_percent: 0.0,
+                    cards_reviewed: 0,
+                    cards_total: kcards,
                 });
             }
         }
@@ -289,6 +297,37 @@ impl Collection {
         let transfer_gaps = transfer_gaps(&snap);
         let xp = xp_summary(&snap);
         let recommendation = self.recommendation_from_snapshot(&snap);
+
+        let memory_detail = pb::MemoryDetail {
+            cards_reviewed: snap.knowledge_cards_reviewed,
+            cards_total: snap.knowledge_cards_total,
+            average_retention_percent: memory_fraction * 100.0,
+            graded_reviews: t.knowledge_reviews,
+            mature_cards: snap.mature_cards,
+            young_cards: snap.young_cards,
+            covered_topics: snap.covered_topics(),
+            total_topics: snap.total_topics(),
+            breadth_percent: if snap.total_topics() > 0 {
+                snap.covered_topics() as f64 / snap.total_topics() as f64 * 100.0
+            } else {
+                0.0
+            },
+        };
+        let performance_detail = pb::PerformanceDetail {
+            questions_answered: t.perf_reviews,
+            accuracy_percent: performance_fraction * 100.0,
+            correct: t.perf_correct,
+            covered_topics: snap.perf_covered_topics(),
+            total_topics: snap.total_topics(),
+        };
+        let readiness_detail = pb::ReadinessDetail {
+            graded_reviews: snap.graded_reviews,
+            required_graded_reviews: MIN_GRADED_REVIEWS,
+            coverage_percent: coverage * 100.0,
+            required_coverage_percent: MIN_COVERAGE * 100.0,
+            graded_reviews_met: snap.graded_reviews >= MIN_GRADED_REVIEWS,
+            coverage_met: coverage >= MIN_COVERAGE,
+        };
 
         Ok(pb::ExamReadiness {
             exam: snap.taxonomy.exam.clone(),
@@ -310,6 +349,9 @@ impl Collection {
                     MIN_COVERAGE * 100.0
                 ),
             }),
+            memory_detail: Some(memory_detail),
+            performance_detail: Some(performance_detail),
+            readiness_detail: Some(readiness_detail),
         })
     }
 

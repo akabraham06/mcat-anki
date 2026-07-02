@@ -11,10 +11,17 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         TopicTargetList,
     } from "@generated/anki/mcat_pb";
     import { buildInterleavedSession } from "@generated/backend";
+    import { bridgeCommand, bridgeCommandsAvailable } from "@tslib/bridgecommand";
 
     export let readiness: ExamReadiness;
     export let targets: TopicTargetList;
     export let mastery: TopicMasteryList;
+
+    // Only meaningful when hosted inside the desktop main window (the MCAT home
+    // state). In dev/preview there is no Qt bridge, so hide the buttons.
+    const inDesktopShell = bridgeCommandsAvailable();
+    const study = (): void => bridgeCommand("study");
+    const openDecks = (): void => bridgeCommand("decks");
 
     const pct = (n: number): string => `${Math.round(n)}%`;
     const one = (n: number): string => n.toFixed(1);
@@ -84,6 +91,9 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     $: xp = readiness.xp;
     $: giveUpRule = readiness.giveUpRule;
     $: transferGaps = readiness.transferGaps ?? [];
+    $: memoryDetail = readiness.memoryDetail;
+    $: performanceDetail = readiness.performanceDetail;
+    $: readinessDetail = readiness.readinessDetail;
 </script>
 
 <div class="mcat">
@@ -96,6 +106,17 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         </div>
         {#if giveUpRule}
             <p class="rule">{giveUpRule.description}</p>
+        {/if}
+        {#if inDesktopShell}
+            <div class="cta">
+                <button class="cta-primary" on:click={study}>
+                    Start studying
+                    {#if recommendation && recommendation.available}
+                        · {recommendation.topicName}
+                    {/if}
+                </button>
+                <button class="cta-secondary" on:click={openDecks}>Browse decks</button>
+            </div>
         {/if}
     </header>
 
@@ -132,6 +153,58 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                     <div class="nodata">No score yet</div>
                     <p class="why">{est.abstainReason}</p>
                     <div class="coverage">Coverage {pct(est.coveragePercent)}</div>
+                {/if}
+
+                {#if est.label === "Memory" && memoryDetail}
+                    <dl class="stats">
+                        <dt>Cards reviewed</dt>
+                        <dd>
+                            {memoryDetail.cardsReviewed} / {memoryDetail.cardsTotal}
+                        </dd>
+                        {#if memoryDetail.cardsReviewed > 0}
+                            <dt>Avg retention</dt>
+                            <dd>{pct(memoryDetail.averageRetentionPercent)}</dd>
+                        {/if}
+                        <dt>Graded reviews</dt>
+                        <dd>{memoryDetail.gradedReviews}</dd>
+                        <dt>Mature / young</dt>
+                        <dd>{memoryDetail.matureCards} / {memoryDetail.youngCards}</dd>
+                        <dt>Breadth</dt>
+                        <dd>
+                            {memoryDetail.coveredTopics} / {memoryDetail.totalTopics} topics
+                            ({pct(memoryDetail.breadthPercent)})
+                        </dd>
+                    </dl>
+                {:else if est.label === "Performance" && performanceDetail}
+                    <dl class="stats">
+                        <dt>Questions answered</dt>
+                        <dd>{performanceDetail.questionsAnswered}</dd>
+                        {#if performanceDetail.questionsAnswered > 0}
+                            <dt>Accuracy</dt>
+                            <dd>{pct(performanceDetail.accuracyPercent)}</dd>
+                            <dt>Correct</dt>
+                            <dd>
+                                {performanceDetail.correct} / {performanceDetail.questionsAnswered}
+                            </dd>
+                        {/if}
+                        <dt>Topics covered</dt>
+                        <dd>
+                            {performanceDetail.coveredTopics} / {performanceDetail.totalTopics}
+                        </dd>
+                    </dl>
+                {:else if est.label === "Readiness" && readinessDetail}
+                    <dl class="stats">
+                        <dt>Graded reviews</dt>
+                        <dd class:met={readinessDetail.gradedReviewsMet}>
+                            {readinessDetail.gradedReviews} / {readinessDetail.requiredGradedReviews}
+                        </dd>
+                        <dt>Coverage</dt>
+                        <dd class:met={readinessDetail.coverageMet}>
+                            {pct(readinessDetail.coveragePercent)} / {pct(
+                                readinessDetail.requiredCoveragePercent,
+                            )}
+                        </dd>
+                    </dl>
                 {/if}
             </div>
         {/each}
@@ -181,9 +254,12 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                                 s.high,
                             )})
                         </span>
+                        <span class="smem">mem {pct(s.memoryPercent)}</span>
                     {:else}
                         <span class="sscore muted">no data</span>
+                        <span class="smem muted">—</span>
                     {/if}
+                    <span class="scards">{s.cardsReviewed}/{s.cardsTotal} cards</span>
                     <span class="scov">cov {pct(s.coveragePercent)}</span>
                 </div>
             {/each}
@@ -297,6 +373,32 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         font-style: italic;
         color: var(--fg-subtle);
         margin-top: 0.25rem;
+    }
+    .cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+    .cta button {
+        padding: 0.6rem 1.4rem;
+        border-radius: var(--border-radius, 6px);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid var(--border);
+    }
+    .cta-primary {
+        background: var(--fg-link, #3b82f6);
+        color: #fff;
+        border-color: transparent !important;
+    }
+    .cta-primary:hover {
+        filter: brightness(1.08);
+    }
+    .cta-secondary {
+        background: var(--canvas-elevated, var(--canvas));
+        color: var(--fg);
     }
     .cards {
         display: grid;
@@ -419,13 +521,41 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     }
     .srow {
         display: grid;
-        grid-template-columns: 1fr auto auto;
+        grid-template-columns: 1fr auto auto auto auto;
         gap: 1rem;
         padding: 0.3rem 0;
         border-bottom: 1px solid var(--border);
     }
+    .smem,
+    .scards,
+    .scov {
+        color: var(--fg-subtle);
+        font-size: 0.9em;
+        white-space: nowrap;
+    }
     .muted {
         color: var(--fg-subtle);
+    }
+    .stats {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.15rem 0.6rem;
+        margin: 0.6rem 0 0;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--border);
+        font-size: 0.85em;
+    }
+    .stats dt {
+        color: var(--fg-subtle);
+    }
+    .stats dd {
+        margin: 0;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+    .stats dd.met {
+        color: var(--state-new, #2e7d32);
+        font-weight: 600;
     }
     .xp {
         display: flex;

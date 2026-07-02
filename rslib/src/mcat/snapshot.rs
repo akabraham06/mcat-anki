@@ -11,15 +11,47 @@ use std::collections::HashMap;
 use fsrs::FSRS;
 use fsrs::FSRS5_DEFAULT_DECAY;
 
+use crate::card::Card;
 use crate::card::CardQueue;
+use crate::card::CardType;
 use crate::mcat::taxonomy::Taxonomy;
 use crate::prelude::*;
+use crate::scheduler::timing::SchedTimingToday;
 use crate::search::SortMode;
 
 /// Notetype name that marks a card as an exam-style performance question.
 pub(crate) const PERF_NOTETYPE: &str = "MCATPerf";
 
 const DAY_SECS: i64 = 86_400;
+
+/// Minimum stability (in days) used when estimating recall for non-FSRS
+/// (classic SM-2) cards, so a freshly-graded learning card with a tiny
+/// interval still yields a sensible forgetting curve rather than collapsing to
+/// zero recall.
+const FALLBACK_MIN_STABILITY_DAYS: f64 = 1.0;
+
+/// A reviewed card is "mature" once its interval reaches this many days. This
+/// mirrors Anki's long-standing mature/young boundary.
+const MATURE_INTERVAL_DAYS: u32 = 21;
+
+/// Estimate current recall (0..1) for a card that has no FSRS memory state
+/// (i.e. the collection uses the classic SM-2 scheduler).
+///
+/// Never-reviewed cards return `None` (they contribute to coverage but not to
+/// the memory/retention signal). Reviewed cards use an exponential forgetting
+/// curve `R = exp(-elapsed_days / stability)` with the card's current interval
+/// as a stability proxy — the same shape as the FSRS curve, so the FSRS and
+/// non-FSRS paths stay consistent.
+fn fallback_recall(card: &Card, timing: &SchedTimingToday) -> Option<f64> {
+    // Truly new / never-reviewed cards have no retention signal yet.
+    if card.ctype == CardType::New || card.reps == 0 {
+        return None;
+    }
+    let elapsed_days = card.seconds_since_last_review(timing)? as f64 / DAY_SECS as f64;
+    let stability = (card.interval as f64).max(FALLBACK_MIN_STABILITY_DAYS);
+    let recall = (-elapsed_days / stability).exp();
+    Some(recall.clamp(0.0, 1.0))
+}
 
 /// Per-topic aggregates, one entry per taxonomy topic (present or not).
 #[derive(Debug, Clone)]
@@ -67,6 +99,14 @@ pub(crate) struct Snapshot {
     pub reviews_today: i64,
     pub streak_days: i64,
     pub now_secs: i64,
+    /// Distinct tagged knowledge (non-perf) cards, regardless of review state.
+    pub knowledge_cards_total: i64,
+    /// Distinct tagged knowledge cards with a recall estimate (reviewed).
+    pub knowledge_cards_reviewed: i64,
+    /// Reviewed knowledge cards with interval >= [`MATURE_INTERVAL_DAYS`].
+    pub mature_cards: i64,
+    /// Reviewed knowledge cards below the mature interval.
+    pub young_cards: i64,
 }
 
 impl Snapshot {
@@ -93,6 +133,21 @@ impl Snapshot {
             .map(|t| t.weight)
             .sum();
         covered as f64 / total as f64
+    }
+
+    /// Total number of taxonomy topics.
+    pub(crate) fn total_topics(&self) -> i64 {
+        self.topics.len() as i64
+    }
+
+    /// Number of taxonomy topics that have at least one knowledge card.
+    pub(crate) fn covered_topics(&self) -> i64 {
+        self.topics.iter().filter(|t| t.has_knowledge()).count() as i64
+    }
+
+    /// Number of taxonomy topics with at least one exam-style question review.
+    pub(crate) fn perf_covered_topics(&self) -> i64 {
+        self.topics.iter().filter(|t| t.perf_reviews > 0).count() as i64
     }
 
     pub(crate) fn section_coverage(&self, section_key: &str) -> f64 {
@@ -197,6 +252,10 @@ impl Collection {
         let fsrs = FSRS::new(None).unwrap();
         let mut notetype_is_perf: HashMap<NotetypeId, bool> = HashMap::new();
         let mut graded_reviews: i64 = 0;
+        let mut knowledge_cards_total: i64 = 0;
+        let mut knowledge_cards_reviewed: i64 = 0;
+        let mut mature_cards: i64 = 0;
+        let mut young_cards: i64 = 0;
 
         for card in &cards {
             let note = guard
@@ -225,14 +284,21 @@ impl Collection {
                     .unwrap_or(false)
             });
 
-            let recall = card.memory_state.map(|state| {
-                let elapsed = card.seconds_since_last_review(&timing).unwrap_or_default();
-                fsrs.current_retrievability_seconds(
-                    state.into(),
-                    elapsed,
-                    card.decay.unwrap_or(FSRS5_DEFAULT_DECAY),
-                ) as f64
-            });
+            // Prefer the exact FSRS retrievability when the card has memory
+            // state. Otherwise (classic SM-2 collections) fall back to an
+            // estimated recall from the card's scheduling, so the Memory score
+            // still populates without FSRS.
+            let recall = match card.memory_state {
+                Some(state) => {
+                    let elapsed = card.seconds_since_last_review(&timing).unwrap_or_default();
+                    Some(fsrs.current_retrievability_seconds(
+                        state.into(),
+                        elapsed,
+                        card.decay.unwrap_or(FSRS5_DEFAULT_DECAY),
+                    ) as f64)
+                }
+                None => fallback_recall(card, &timing),
+            };
 
             let is_due = match card.queue {
                 CardQueue::New | CardQueue::Learn | CardQueue::DayLearn => true,
@@ -243,6 +309,19 @@ impl Collection {
             let rev = per_card.get(&card.id);
             if let Some(rev) = rev {
                 graded_reviews += rev.total as i64;
+            }
+
+            // Distinct card-level rollups for the knowledge (memory) side.
+            if !is_perf {
+                knowledge_cards_total += 1;
+                if recall.is_some() {
+                    knowledge_cards_reviewed += 1;
+                    if card.interval >= MATURE_INTERVAL_DAYS {
+                        mature_cards += 1;
+                    } else {
+                        young_cards += 1;
+                    }
+                }
             }
 
             for &ti in &topic_indices {
@@ -280,6 +359,10 @@ impl Collection {
             reviews_today,
             streak_days,
             now_secs,
+            knowledge_cards_total,
+            knowledge_cards_reviewed,
+            mature_cards,
+            young_cards,
         })
     }
 }
