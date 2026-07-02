@@ -30,3 +30,5 @@ mobile/build/
 mobile/AnkiCompanion/build/
 **/xcuserdata/
 *.xcuserstate
+**/DerivedData/
+**/*.hmap

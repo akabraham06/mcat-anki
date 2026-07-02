@@ -769,3 +769,142 @@ async fn regular_sync(ctx: &SyncTestContext) -> Result<()> {
     ));
     Ok(())
 }
+
+/// Reproduces the exact AnkiWeb flow that fails on the mobile FFI: after a
+/// successful login, the first authenticated request (`meta`) is redirected by
+/// the central server to the user's shard, and the shard replies with a
+/// zstd-encoded body carrying the `anki-original-size` header. This exercises
+/// the real client the backend builds (`Client::builder().http1_only()`), and
+/// asserts (a) the client advertises a zstd-capable sync version in its
+/// `anki-sync` header, and (b) it decodes the shard's zstd response instead of
+/// failing with "missing original size".
+#[tokio::test]
+async fn meta_negotiates_zstd_across_shard_redirect() -> Result<()> {
+    use serde_json::Value;
+    use wiremock::matchers::method;
+    use wiremock::matchers::path;
+
+    use crate::sync::request::header_and_stream::SYNC_HEADER_NAME;
+    use crate::sync::response::ORIGINAL_SIZE;
+
+    let meta_json = serde_json::to_vec(&crate::sync::collection::meta::SyncMeta::default()).unwrap();
+    let original_size = meta_json.len();
+    let zstd_body = zstd::encode_all(std::io::Cursor::new(meta_json), 0).unwrap();
+
+    // The shard AnkiWeb assigns the account to: replies with a zstd body.
+    let shard = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/sync/meta"))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .insert_header(ORIGINAL_SIZE.as_str(), original_size.to_string().as_str())
+                .set_body_bytes(zstd_body),
+        )
+        .mount(&shard)
+        .await;
+
+    // The central endpoint: 308-redirects authenticated requests to the shard,
+    // exactly as AnkiWeb does for v11 clients (hostNum was replaced by this).
+    let central = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/sync/meta"))
+        .respond_with(ResponseTemplate::new(308).insert_header("location", shard.uri().as_str()))
+        .mount(&central)
+        .await;
+
+    let client = Client::builder().http1_only().build().unwrap();
+    let auth = SyncAuth {
+        hkey: "dummy-hkey".into(),
+        endpoint: Some(Url::try_from(format!("{}/", central.uri()).as_str()).unwrap()),
+        io_timeout_secs: None,
+    };
+    let mut sync_client = HttpSyncClient::new(auth, client);
+
+    let (_remote, new_endpoint) = sync_client.meta_with_redirect().await?;
+    assert!(
+        new_endpoint.is_some(),
+        "client should have followed the shard redirect"
+    );
+
+    // Confirm the outgoing anki-sync header advertised a zstd-capable version.
+    let reqs = shard.received_requests().await.unwrap();
+    assert_eq!(reqs.len(), 1, "shard should receive exactly one meta request");
+    let hdr = reqs[0]
+        .headers
+        .get(SYNC_HEADER_NAME.as_str())
+        .expect("anki-sync header present");
+    let parsed: Value = serde_json::from_slice(hdr.as_bytes()).unwrap();
+    let sent_version = parsed["v"].as_u64().unwrap();
+    assert!(
+        sent_version >= crate::sync::version::SYNC_VERSION_11_DIRECT_POST as u64,
+        "client sent a non-zstd sync version: {sent_version}"
+    );
+    Ok(())
+}
+
+/// A full up/download must be sent to the endpoint AnkiWeb redirected the
+/// client to (`new_endpoint`), because only that shard serves the zstd
+/// full-sync body with the `anki-original-size` header. This reproduces the
+/// mobile "missing original size" failure: driving `download` against the
+/// pre-redirect endpoint (which does not serve the sharded zstd response)
+/// yields exactly that error, while driving it against the shard succeeds.
+/// The mobile fix routes the full sync through `new_endpoint`, matching the
+/// desktop client (qt/aqt/sync.py applies `set_current_sync_url` before the
+/// full sync).
+#[tokio::test]
+async fn full_download_requires_the_redirected_shard_endpoint() -> Result<()> {
+    use wiremock::matchers::method;
+    use wiremock::matchers::path;
+
+    use crate::sync::collection::protocol::EmptyInput;
+    use crate::sync::response::ORIGINAL_SIZE;
+
+    let col_bytes = b"pretend-collection-bytes".to_vec();
+    let original_size = col_bytes.len();
+    let zstd_body = zstd::encode_all(std::io::Cursor::new(col_bytes.clone()), 0).unwrap();
+
+    // The shard: serves the download as a zstd body with the size header.
+    let shard = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/sync/download"))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .insert_header(ORIGINAL_SIZE.as_str(), original_size.to_string().as_str())
+                .set_body_bytes(zstd_body),
+        )
+        .mount(&shard)
+        .await;
+
+    // The pre-redirect endpoint: replies 200 but WITHOUT the size header, the
+    // way the mobile client saw it when it (incorrectly) kept the old endpoint.
+    let stale = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/sync/download"))
+        .respond_with(ResponseTemplate::new(200).set_body_bytes(b"not-zstd".to_vec()))
+        .mount(&stale)
+        .await;
+
+    let make_client = |uri: String| {
+        let client = Client::builder().http1_only().build().unwrap();
+        let auth = SyncAuth {
+            hkey: "dummy-hkey".into(),
+            endpoint: Some(Url::try_from(format!("{uri}/").as_str()).unwrap()),
+            io_timeout_secs: None,
+        };
+        HttpSyncClient::new(auth, client)
+    };
+
+    // Stale endpoint -> the exact production failure.
+    let stale_err = make_client(stale.uri())
+        .download(EmptyInput::request())
+        .await
+        .unwrap_err();
+    assert_eq!(stale_err.context, "missing original size");
+
+    // Redirected shard endpoint -> success, body decoded.
+    let ok = make_client(shard.uri())
+        .download(EmptyInput::request())
+        .await?;
+    assert_eq!(ok.data, col_bytes);
+    Ok(())
+}

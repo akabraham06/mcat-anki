@@ -14,8 +14,22 @@ name = "ankiffi"
 crate-type = ["staticlib"]
 
 [dependencies]
-anki = { path = "../../rslib" }
+# `rustls` pulls in a self-contained TLS backend (reqwest/rustls-tls +
+# rustls-tls-native-roots). Without it, the workspace's reqwest is built with
+# default-features = false and NO TLS backend, so any HTTPS request from the
+# iOS static library fails at dispatch with a url-less "error sending request
+# for url ()". Desktop avoids this because pylib/rsbridge (and rslib/sync)
+# enable the same feature; mobile must opt in too. iOS is non-Windows, matching
+# the rustls choice used by rslib/sync on non-Windows targets.
+anki = { path = "../../rslib", features = ["rustls"] }
 # anki relies on tokio's io-util being unified in by other workspace members;
 # depend on it explicitly so this crate also builds standalone (e.g. when
 # cross-compiling the iOS static library on its own).
 tokio = { workspace = true, features = ["io-util"] }
+
+[dev-dependencies]
+# Only needed to construct a client for the network-gated verification test.
+# The TLS backend is decided by feature unification with `anki/rustls` above,
+# so this exercises the exact reqwest build the iOS static library uses.
+reqwest = { workspace = true }
+tokio = { workspace = true, features = ["rt", "io-util"] }

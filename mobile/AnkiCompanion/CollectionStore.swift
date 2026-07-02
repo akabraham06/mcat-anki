@@ -144,16 +144,30 @@ final class CollectionStore: ObservableObject {
         do {
             let result: Anki_Sync_SyncCollectionResponse = try await background {
                 let response = try backend.syncCollection(auth: auth, syncMedia: false)
+                // AnkiWeb assigns each account to a shard and tells the client to
+                // continue there via `new_endpoint`. The full up/download body is
+                // only served (zstd-encoded, with the `anki-original-size` header)
+                // by that shard — issuing it against the original endpoint comes
+                // back without the header and fails with
+                // "HttpError { code: 400, context: \"missing original size\" }".
+                // The desktop client applies the redirect BEFORE the full sync
+                // (qt/aqt/sync.py calls set_current_sync_url, then rebuilds the
+                // full-sync auth from it); do the same here rather than only
+                // persisting it afterwards (which we never reach on failure).
+                var fullSyncAuth = auth
+                if response.hasNewEndpoint {
+                    fullSyncAuth.endpoint = response.newEndpoint
+                }
                 switch response.required {
                 case .fullDownload:
-                    try backend.fullUploadOrDownload(auth: auth, upload: false)
+                    try backend.fullUploadOrDownload(auth: fullSyncAuth, upload: false)
                 case .fullUpload:
-                    try backend.fullUploadOrDownload(auth: auth, upload: true)
+                    try backend.fullUploadOrDownload(auth: fullSyncAuth, upload: true)
                 case .fullSync:
                     // Both sides diverged and the server can't pick a direction.
                     // Default to pulling the desktop's collection, which is the
                     // source of truth for study history.
-                    try backend.fullUploadOrDownload(auth: auth, upload: false)
+                    try backend.fullUploadOrDownload(auth: fullSyncAuth, upload: false)
                 case .noChanges, .normalSync, .UNRECOGNIZED:
                     break
                 }

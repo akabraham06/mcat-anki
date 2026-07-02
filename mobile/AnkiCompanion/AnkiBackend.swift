@@ -58,6 +58,7 @@ final class AnkiBackend {
         case answerCard = 4
         case countsForDeckToday = 10
         case getSchedulingStates = 23
+        case describeNextStates = 24
     }
 
     /// Method indices within NotesService (backend dispatch order).
@@ -72,8 +73,14 @@ final class AnkiBackend {
 
     /// Method indices within DecksService (backend dispatch order).
     enum DecksMethod: UInt32 {
+        case deckTree = 4
         case getDeckIdByName = 7
         case setCurrentDeck = 22
+    }
+
+    /// Method indices within CardRenderingService (backend dispatch order).
+    enum CardRenderingMethod: UInt32 {
+        case renderExistingCard = 6
     }
 
     /// Method indices within BackendSyncService (proto declaration order).
@@ -88,6 +95,14 @@ final class AnkiBackend {
         case abortSync = 7
         case setCustomCertificate = 8
     }
+
+    /// The built-in AnkiWeb sync endpoint, matching rslib's default
+    /// (`rslib/src/sync/http_client/mod.rs`, which falls back to this URL when
+    /// no endpoint is supplied). We resolve a blank custom-server field to this
+    /// explicitly so the FFI never receives an empty endpoint — an empty string
+    /// is used verbatim as the request URL and fails with "error sending request
+    /// for url ()" instead of reaching AnkiWeb.
+    static let defaultSyncEndpoint = "https://sync.ankiweb.net/"
 
     private let handle: OpaquePointer
 
@@ -256,6 +271,53 @@ final class AnkiBackend {
         return try Anki_Notes_Note(serializedBytes: out)
     }
 
+    // MARK: - Deck tree + rendering (generic reviewer)
+
+    /// Fetch the full deck tree with today's new/learning/review counts (the
+    /// same data the desktop deck list shows). Passing `now` includes counts.
+    func deckTree() throws -> Anki_Decks_DeckTreeNode {
+        var request = Anki_Decks_DeckTreeRequest()
+        request.now = Int64(Date().timeIntervalSince1970)
+        let out = try run(
+            service: Service.decks.rawValue,
+            method: DecksMethod.deckTree.rawValue,
+            input: try request.serializedData()
+        )
+        return try Anki_Decks_DeckTreeNode(serializedBytes: out)
+    }
+
+    /// Render an existing card's question/answer using the engine's template
+    /// renderer (the same path the desktop reviewer uses), so we never have to
+    /// reimplement templates. `partialRender: false` lets the engine apply all
+    /// filters it can.
+    func renderExistingCard(cardId: Int64, browser: Bool = false)
+        throws -> Anki_CardRendering_RenderCardResponse
+    {
+        var request = Anki_CardRendering_RenderExistingCardRequest()
+        request.cardID = cardId
+        request.browser = browser
+        request.partialRender = false
+        let out = try run(
+            service: Service.cardRendering.rawValue,
+            method: CardRenderingMethod.renderExistingCard.rawValue,
+            input: try request.serializedData()
+        )
+        return try Anki_CardRendering_RenderCardResponse(serializedBytes: out)
+    }
+
+    /// Human-readable next-interval labels for the four ratings (again/hard/
+    /// good/easy), matching the desktop reviewer's answer buttons.
+    func describeNextStates(_ states: Anki_Scheduler_SchedulingStates)
+        throws -> [String]
+    {
+        let out = try run(
+            service: Service.scheduler.rawValue,
+            method: SchedulerMethod.describeNextStates.rawValue,
+            input: try states.serializedData()
+        )
+        return try Anki_Generic_StringList(serializedBytes: out).vals
+    }
+
     // MARK: - Sync (AnkiWeb)
     //
     // These drive the exact SyncService the desktop uses, over the generic FFI.
@@ -269,7 +331,13 @@ final class AnkiBackend {
         var request = Anki_Sync_SyncLoginRequest()
         request.username = username
         request.password = password
-        if let endpoint, !endpoint.isEmpty { request.endpoint = endpoint }
+        // A blank/whitespace custom-server field means "use AnkiWeb". Resolve it
+        // to the built-in default rather than leaving the endpoint empty, which
+        // the sync client would send as an empty request URL.
+        let trimmed = (endpoint ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let resolved = trimmed.isEmpty ? AnkiBackend.defaultSyncEndpoint : trimmed
+        request.endpoint = resolved
+        NSLog("[AnkiCompanion] sync login endpoint resolved to \(resolved)")
         let out = try run(
             service: Service.sync.rawValue,
             method: SyncMethod.syncLogin.rawValue,

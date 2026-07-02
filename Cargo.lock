@@ -170,6 +170,7 @@ name = "anki-ffi"
 version = "0.0.0"
 dependencies = [
  "anki",
+ "reqwest 0.12.23",
  "tokio",
 ]
 

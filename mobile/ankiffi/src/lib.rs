@@ -171,4 +171,43 @@ mod tests {
         assert!(!handle.is_null(), "backend should open from empty init");
         unsafe { anki_backend_close(handle) };
     }
+
+    /// Proves the engine can perform an HTTPS request on this crate's exact
+    /// feature set (`anki/rustls` -> `reqwest/rustls-tls`), which is what the
+    /// iOS static library is compiled with. With dummy credentials AnkiWeb
+    /// rejects the login at the HTTP layer; the point is that we reach that
+    /// layer at all. A missing TLS backend instead fails at dispatch with the
+    /// url-less "error sending request for url ()" reported on the device.
+    ///
+    /// Network-gated: run explicitly with
+    ///   `cargo test -p anki-ffi -- --ignored host_key_reaches_ankiweb`
+    #[test]
+    #[ignore = "hits the network; run explicitly to verify the iOS TLS/HTTP stack"]
+    fn host_key_reaches_ankiweb_over_https() {
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        // Same construction as the backend's web_client(): http1-only, default
+        // (rustls) TLS backend selected via feature unification.
+        let client = reqwest::Client::builder().http1_only().build().unwrap();
+        let result = rt.block_on(anki::sync::login::sync_login(
+            "ankiffi-network-probe@example.com",
+            "not-a-real-password",
+            None,
+            client,
+        ));
+        let err = match result {
+            Ok(_) => panic!("dummy credentials must not authenticate"),
+            Err(e) => e,
+        };
+        let msg = format!("{err:?}");
+        assert!(
+            !msg.contains("error sending request for url ()"),
+            "request failed before reaching the server (missing TLS backend?): {msg}"
+        );
+        // Sanity: it should look like an HTTP/auth-level rejection, proving the
+        // TLS handshake + request round-trip succeeded.
+        println!("host_key error (expected auth/HTTP-level): {msg}");
+    }
 }

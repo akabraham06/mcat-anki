@@ -108,6 +108,8 @@ struct ReadinessView: View {
                 TransferGapSection(gaps: readiness.transferGaps)
             }
 
+            DeckBrowseSection(store: store)
+
             InterleaveSection(store: store)
 
             ExamEntrySection(store: store)
@@ -408,6 +410,29 @@ struct InterleaveSection: View {
                 if !session.log.isEmpty {
                     Text(session.log)
                         .font(.caption2).foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Generic deck browser entry
+
+struct DeckBrowseSection: View {
+    @ObservedObject var store: CollectionStore
+    var body: some View {
+        Section("All decks") {
+            NavigationLink {
+                DeckListView(collection: store)
+            } label: {
+                Label {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Browse & review decks")
+                        Text("Review any synced deck. Answers count and sync.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                } icon: {
+                    Image(systemName: "rectangle.stack")
                 }
             }
         }
