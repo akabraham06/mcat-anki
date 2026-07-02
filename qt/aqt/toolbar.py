@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import enum
+import html
+import json
 import re
 from collections.abc import Callable
 from typing import Any, cast
@@ -301,6 +303,7 @@ class Toolbar:
     def redraw(self) -> None:
         self.set_sync_active(self.mw.media_syncer.is_syncing())
         self.update_sync_status()
+        self.update_mcat_readiness()
         gui_hooks.top_toolbar_did_redraw(self)
 
     # Available links
@@ -345,6 +348,14 @@ class Toolbar:
     def _centerLinks(self) -> str:
         links = [
             self.create_link(
+                "mcat",
+                "MCAT",
+                self._mcatLinkHandler,
+                tip="MCAT Home",
+                id="mcat",
+            ),
+            self._mcat_readiness_pill(),
+            self.create_link(
                 "decks",
                 tr.actions_decks(),
                 self._deckLinkHandler,
@@ -379,6 +390,63 @@ class Toolbar:
         gui_hooks.top_toolbar_did_init_links(links, self)
 
         return "\n".join(links)
+
+    # MCAT Anki Mastery readiness pill
+    ######################################################################
+
+    def _mcat_readiness_pill(self) -> str:
+        """A lightweight, non-clickable pill showing the current readiness
+        score (or an em-dash when the give-up rule fired / data is unavailable).
+        """
+        label, tip = self._mcat_readiness_label()
+        return (
+            f"""<span class="hitem mcat-pill" id="mcat-readiness" """
+            f"""title="{html.escape(tip)}">{html.escape(label)}</span>"""
+        )
+
+    def update_mcat_readiness(self) -> None:
+        """Refresh the readiness pill in-place.
+
+        The center links (and thus the pill) are only rendered on ``draw()``,
+        which happens before the collection is open, so we update the pill's
+        text/tooltip on each ``redraw()`` (fired on every state change).
+        """
+        label, tip = self._mcat_readiness_label()
+        self.web.eval(
+            "(function(){{ var el = document.getElementById('mcat-readiness');"
+            " if (el) {{ el.textContent = {label}; el.title = {tip}; }} }})();".format(
+                label=json.dumps(label), tip=json.dumps(tip)
+            )
+        )
+
+    def _mcat_readiness_label(self) -> tuple[str, str]:
+        """Return (label, tooltip) for the readiness pill.
+
+        Fetches readiness synchronously from the collection, mirroring the
+        dashboard. Any failure (collection not open, backend busy, etc.)
+        degrades gracefully to an em-dash rather than breaking the toolbar.
+        """
+        col = self.mw.col
+        if not col:
+            return "MCAT —", "MCAT readiness unavailable"
+        try:
+            readiness = col.mcat_exam_readiness()
+        except Exception:
+            return "MCAT —", "MCAT readiness unavailable"
+
+        est = readiness.readiness
+        if est.available:
+            point = round(est.point)
+            label = f"Readiness {point}"
+            tip = (
+                f"{readiness.exam} readiness {point} "
+                f"(range {round(est.low)}–{round(est.high)}), "
+                f"coverage {round(readiness.overall_coverage_percent)}%"
+            )
+        else:
+            label = "Readiness —"
+            tip = est.abstain_reason or "Not enough data yet to estimate readiness"
+        return label, tip
 
     # Add-ons
     ######################################################################
@@ -429,6 +497,9 @@ class Toolbar:
         if link in self.link_handlers:
             self.link_handlers[link]()
         return False
+
+    def _mcatLinkHandler(self) -> None:
+        self.mw.moveToState("mcat")
 
     def _deckLinkHandler(self) -> None:
         self.mw.moveToState("deckBrowser")

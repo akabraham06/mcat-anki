@@ -839,6 +839,13 @@ def _check_dynamic_request_permissions():
         "/_anki/setSchedulingStates",
         "/_anki/i18nResources",
         "/_anki/congratsInfo",
+        # MCAT Anki Mastery home renders in the main webview (no full API
+        # access), so its read-only McatService RPCs are whitelisted here.
+        "/_anki/getExamReadiness",
+        "/_anki/getTopicMastery",
+        "/_anki/getStudyRecommendation",
+        "/_anki/buildInterleavedSession",
+        "/_anki/getTopicTargets",
     ):
         pass
     else:

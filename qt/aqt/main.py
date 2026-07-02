@@ -83,7 +83,13 @@ from aqt.webview import AnkiWebView, AnkiWebViewKind
 install_pylib_legacy()
 
 MainWindowState = Literal[
-    "startup", "deckBrowser", "overview", "review", "resetRequired", "profileManager"
+    "startup",
+    "mcat",
+    "deckBrowser",
+    "overview",
+    "review",
+    "resetRequired",
+    "profileManager",
 ]
 
 
@@ -239,6 +245,7 @@ class AnkiQt(QMainWindow):
         self.updateTitleBar()
         self.setup_focus()
         # screens
+        self.setupMCATHome()
         self.setupDeckBrowser()
         self.setupOverview()
         self.setupReviewer()
@@ -662,7 +669,8 @@ class AnkiQt(QMainWindow):
             self.update_undo_actions()
             gui_hooks.collection_did_load(self.col)
             self.apply_collection_options()
-            self.moveToState("deckBrowser")
+            # MCAT Anki Mastery: land on the MCAT home dashboard by default.
+            self.moveToState("mcat")
         except Exception:
             # dump error to stderr so it gets picked up by errors.py
             traceback.print_exc()
@@ -769,6 +777,9 @@ class AnkiQt(QMainWindow):
             self.bottomWeb.adjustHeightToFit()
         gui_hooks.state_did_change(state, oldState)
 
+    def _mcatState(self, oldState: MainWindowState) -> None:
+        self.mcatHome.show()
+
     def _deckBrowserState(self, oldState: MainWindowState) -> None:
         self.deckBrowser.show()
 
@@ -848,6 +859,8 @@ class AnkiQt(QMainWindow):
             dirty = self.overview.op_executed(changes, handler, focused)
         elif self.state == "deckBrowser":
             dirty = self.deckBrowser.op_executed(changes, handler, focused)
+        elif self.state == "mcat":
+            dirty = self.mcatHome.op_executed(changes, handler, focused)
         else:
             dirty = False
 
@@ -871,6 +884,8 @@ class AnkiQt(QMainWindow):
                 self.overview.refresh_if_needed()
             elif self.state == "deckBrowser":
                 self.deckBrowser.refresh_if_needed()
+            elif self.state == "mcat":
+                self.mcatHome.refresh_if_needed()
 
     def fade_out_webview(self) -> None:
         self.web.eval("document.body.style.opacity = 0.3")
@@ -1056,6 +1071,11 @@ title="{}" {}>{}</button>""".format(
 
     def inMainThread(self) -> bool:
         return self._mainThread == QThread.currentThread()
+
+    def setupMCATHome(self) -> None:
+        from aqt.mcat import MCATHome
+
+        self.mcatHome = MCATHome(self)
 
     def setupDeckBrowser(self) -> None:
         from aqt.deckbrowser import DeckBrowser
@@ -1312,7 +1332,10 @@ title="{}" {}>{}</button>""".format(
             aqt.dialogs.open("NewDeckStats", self)
 
     def on_mcat_dashboard(self) -> None:
-        aqt.dialogs.open("MCATDashboard", self)
+        # Primary entry point for MCAT Anki Mastery: switch to the MCAT home
+        # main-window state. The legacy floating dialog (MCATDashboard) remains
+        # available for callers that open it directly.
+        self.moveToState("mcat")
 
     def onPrefs(self) -> None:
         aqt.dialogs.open("Preferences", self)
@@ -1451,8 +1474,8 @@ title="{}" {}>{}</button>""".format(
         qconnect(m.action_check_for_updates.triggered, self.on_check_for_updates)
         qconnect(m.actionPreferences.triggered, self.onPrefs)
 
-        # Tools: MCAT Anki Mastery dashboard
-        self.action_mcat_dashboard = QAction("MCAT Dashboard", self)
+        # Tools: MCAT Anki Mastery home
+        self.action_mcat_dashboard = QAction("MCAT Home", self)
         qconnect(self.action_mcat_dashboard.triggered, self.on_mcat_dashboard)
         m.menuTools.addAction(self.action_mcat_dashboard)
 
@@ -1551,6 +1574,8 @@ title="{}" {}>{}</button>""".format(
             self.deckBrowser.refresh()
         elif self.state == "overview":
             self.overview.refresh()
+        elif self.state == "mcat":
+            self.mcatHome.refresh()
 
     def on_periodic_sync_timer(self) -> None:
         elap = self.media_syncer.seconds_since_last_sync()
@@ -1836,7 +1861,7 @@ title="{}" {}>{}</button>""".format(
 
     def interactiveState(self) -> bool:
         "True if not in profile manager, syncing, etc."
-        return self.state in ("overview", "review", "deckBrowser")
+        return self.state in ("mcat", "overview", "review", "deckBrowser")
 
     # GC
     ##########################################################################
