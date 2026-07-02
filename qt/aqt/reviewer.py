@@ -491,6 +491,7 @@ class Reviewer:
         self.mw.web.setFocus()
         # user hook
         gui_hooks.reviewer_did_show_answer(c)
+        self._maybe_offer_mcat_explanation()
         self._auto_advance_to_question_if_enabled()
 
     def _auto_advance_to_question_if_enabled(self) -> None:
@@ -704,7 +705,15 @@ class Reviewer:
             self.web.update()
         elif url == "statesMutated":
             self._states_mutated = True
-        elif url.startswith("mcat_answer:"):
+        elif url.startswith("mcat_"):
+            self._mcat_link_handler(url)
+        else:
+            print("unrecognized anki link:", url)
+
+    def _mcat_link_handler(self, url: str) -> None:
+        """Handle the ``mcat_*`` reviewer bridge commands (exam auto-grade and
+        the AI explain-miss button), keeping the main link handler small."""
+        if url.startswith("mcat_answer:"):
             # An MCQ option was clicked on an exam card. Record the auto-grade
             # (correct -> 3, wrong -> 1) and freeze the countdown; do NOT
             # auto-advance (user presses Next).
@@ -720,6 +729,8 @@ class Reviewer:
                 self._mcat_advance()
         elif url == "mcat_timeout":
             self._mcat_on_timeout()
+        elif url == "mcat_explain":
+            self._mcat_explain_current()
         else:
             print("unrecognized anki link:", url)
 
@@ -964,6 +975,102 @@ timerStopped = false;
         # the user can see it.
         self.web.eval("if (window.mcatReveal) { mcatReveal(); }")
         self.mw.progress.single_shot(1500, self._mcat_advance)
+
+    # MCAT AI explanations for missed questions (9.5)
+    #
+    # A lazily-fetched, source-grounded explanation offered on the answer side
+    # of any MCAT-tagged card. It is never used as scoring evidence, and failure
+    # (AI off/offline/erroring) shows a friendly note and never blocks review.
+
+    def _is_mcat_card(self) -> bool:
+        if self.card is None:
+            return False
+        try:
+            return any(
+                t == "mcat" or t.startswith("mcat::") for t in self.card.note().tags
+            )
+        except Exception:
+            return False
+
+    def _maybe_offer_mcat_explanation(self) -> None:
+        if not self._is_mcat_card():
+            return
+        try:
+            if not self.mw.col.mcat_ai_status().available:
+                return
+        except Exception:
+            return
+        button = (
+            "<button onclick=\"pycmd('mcat_explain')\" "
+            'style="padding:6px 14px;border-radius:6px;cursor:pointer;'
+            'font-size:13px">Explain this (AI)</button>'
+        )
+        self.web.eval(
+            "(function(){var qa=document.getElementById('qa');"
+            "if(qa && !document.getElementById('mcat-explain-wrap')){"
+            "var d=document.createElement('div');d.id='mcat-explain-wrap';"
+            "d.style.textAlign='center';d.style.marginTop='16px';"
+            f"d.innerHTML={json.dumps(button)};qa.appendChild(d);}}}})();"
+        )
+
+    def _mcat_explain_current(self) -> None:
+        if self.card is None:
+            return
+        cid = self.card.id
+        # If the exam auto-grade recorded a wrong pick, pass that as context.
+        chosen = "wrong option" if self._mcat_pending_ease == 1 else ""
+
+        def op(col: Any) -> Any:
+            return col.mcat_explain_miss(card_id=cid, chosen_answer=chosen)
+
+        def done(res: Any) -> None:
+            if not res.ai_available:
+                tooltip(
+                    f"AI explanation unavailable: {res.unavailable_reason}",
+                    parent=self.mw,
+                )
+                return
+            self._show_mcat_explanation(res)
+
+        def failed(_exc: Exception) -> None:
+            tooltip("AI explanation unavailable.", parent=self.mw)
+
+        (
+            aqt.operations.QueryOp(parent=self.mw, op=op, success=done)
+            .failure(failed)
+            .with_progress("Fetching explanation…")
+            .run_in_background()
+        )
+
+    def _show_mcat_explanation(self, res: Any) -> None:
+        def row(label: str, value: str) -> str:
+            if not value:
+                return ""
+            return f"<p><b>{label}:</b> {value}</p>"
+
+        html = "".join(
+            [
+                row("Why the answer is correct", res.why_correct),
+                row("Why your choice was wrong", res.why_chosen_wrong),
+                row("Source", res.source_citation),
+                row("Related topic", res.related_topic),
+                row("Suggested review", res.suggested_review_action),
+            ]
+        )
+        dlg = QDialog(self.mw)
+        dlg.setWindowTitle("AI explanation")
+        dlg.setMinimumSize(520, 360)
+        layout = QVBoxLayout(dlg)
+        browser = QTextBrowser()
+        browser.setHtml(html or "<p>No explanation was produced.</p>")
+        layout.addWidget(browser)
+        note = QLabel("AI-generated study aid — not used for scoring.")
+        note.setStyleSheet("color: gray; font-size: 11px;")
+        layout.addWidget(note)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        qconnect(buttons.rejected, dlg.reject)
+        layout.addWidget(buttons)
+        dlg.exec()
 
     def _showEaseButtons(self) -> None:
         if not self._states_mutated:

@@ -4,6 +4,8 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 -->
 <script lang="ts">
     import type {
+        AiStatus,
+        AiStudyPlan,
         ExamReadiness,
         InterleavedSession,
         ScoreEstimate,
@@ -16,6 +18,14 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     export let readiness: ExamReadiness;
     export let targets: TopicTargetList;
     export let mastery: TopicMasteryList;
+    export let aiStatus: AiStatus | undefined = undefined;
+    export let aiPlan: AiStudyPlan | undefined = undefined;
+
+    // The plan card prefers the AI plan, but always has the deterministic
+    // recommender available as a fallback (and shows which one is in use).
+    $: planItems = aiPlan?.items ?? [];
+    $: planEvidence = aiPlan?.evidence ?? [];
+    $: usingFallback = aiPlan?.usedFallback ?? true;
 
     // Only meaningful when hosted inside the desktop main window (the MCAT home
     // state). In dev/preview there is no Qt bridge, so hide the buttons.
@@ -165,6 +175,16 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
             <span>Coverage {pct(readiness.overallCoveragePercent)}</span>
             <span>•</span>
             <span>{readiness.gradedReviews} graded reviews</span>
+            {#if aiStatus}
+                <span>•</span>
+                <span
+                    class="ai-pill"
+                    class:on={aiStatus.available}
+                    title={aiStatus.reason}
+                >
+                    AI {aiStatus.available ? "ready" : "off"}
+                </span>
+            {/if}
         </div>
         {#if giveUpRule}
             <p class="rule">{giveUpRule.description}</p>
@@ -291,6 +311,52 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
             </div>
         {/each}
     </section>
+
+    {#if aiPlan && planItems.length}
+        <section class="ai-plan">
+            <h2>
+                AI Study Plan
+                <span class="src" class:fallback={usingFallback}>
+                    {usingFallback
+                        ? "deterministic fallback"
+                        : "AI · evidence-grounded"}
+                </span>
+            </h2>
+            {#if aiPlan.summary}
+                <p class="explain">{aiPlan.summary}</p>
+            {/if}
+            <ol class="plan">
+                {#each planItems as item, i (i)}
+                    <li>
+                        <div class="plan-head">
+                            <span class="plan-action">{item.action}</span>
+                            <span class="plan-min">{item.minutes} min</span>
+                        </div>
+                        {#if item.reason}
+                            <p class="plan-reason">{item.reason}</p>
+                        {/if}
+                        {#if item.evidence.length}
+                            <ul class="plan-evidence">
+                                {#each item.evidence as ev (ev)}
+                                    <li>{ev}</li>
+                                {/each}
+                            </ul>
+                        {/if}
+                    </li>
+                {/each}
+            </ol>
+            {#if planEvidence.length}
+                <details class="evidence">
+                    <summary>Data behind this plan</summary>
+                    <ul>
+                        {#each planEvidence as ev (ev)}
+                            <li>{ev}</li>
+                        {/each}
+                    </ul>
+                </details>
+            {/if}
+        </section>
+    {/if}
 
     {#if recommendation && recommendation.available}
         <section class="reco">
@@ -421,7 +487,8 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         </div>
         {#if session}
             <p class="log">
-                <strong>{session.cardIds.length}</strong> cards
+                <strong>{session.cardIds.length}</strong>
+                cards
                 <span class="dot">•</span>
                 target ~{Math.round(sessionTargetSecs / 60)} min
                 <span class="dot">•</span>
@@ -480,6 +547,75 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         font-style: italic;
         color: var(--fg-subtle);
         margin-top: 0.25rem;
+    }
+    .ai-pill {
+        border-radius: 999px;
+        padding: 0.05rem 0.55rem;
+        font-size: 0.85em;
+        font-weight: 600;
+        background: rgba(198, 40, 40, 0.16);
+        color: var(--flag-1, #c62828);
+    }
+    .ai-pill.on {
+        background: rgba(46, 125, 50, 0.18);
+        color: var(--state-new, #2e7d32);
+    }
+    .ai-plan .src {
+        font-size: 0.7em;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        margin-left: 0.5rem;
+        color: var(--state-new, #2e7d32);
+    }
+    .ai-plan .src.fallback {
+        color: var(--fg-subtle);
+    }
+    .plan {
+        list-style: none;
+        margin: 0.5rem 0 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .plan > li {
+        border: 1px solid var(--border);
+        border-radius: var(--border-radius, 6px);
+        padding: 0.5rem 0.75rem;
+        background: var(--canvas-elevated, var(--canvas));
+    }
+    .plan-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+    .plan-action {
+        font-weight: 600;
+    }
+    .plan-min {
+        color: var(--fg-subtle);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+    .plan-reason {
+        margin: 0.25rem 0 0;
+        color: var(--fg-subtle);
+        font-size: 0.9em;
+    }
+    .plan-evidence {
+        margin: 0.35rem 0 0;
+        padding-left: 1.1rem;
+        font-size: 0.82em;
+        color: var(--fg-subtle);
+    }
+    .evidence {
+        margin-top: 0.6rem;
+        font-size: 0.85em;
+        color: var(--fg-subtle);
+    }
+    .evidence summary {
+        cursor: pointer;
     }
     .cta {
         display: flex;

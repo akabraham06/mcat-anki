@@ -1337,6 +1337,9 @@ title="{}" {}>{}</button>""".format(
         # available for callers that open it directly.
         self.moveToState("mcat")
 
+    def on_mcat_ai_studio(self) -> None:
+        aqt.dialogs.open("MCATAiStudio", self)
+
     def onPrefs(self) -> None:
         aqt.dialogs.open("Preferences", self)
 
@@ -1478,6 +1481,11 @@ title="{}" {}>{}</button>""".format(
         self.action_mcat_dashboard = QAction("MCAT Home", self)
         qconnect(self.action_mcat_dashboard.triggered, self.on_mcat_dashboard)
         m.menuTools.addAction(self.action_mcat_dashboard)
+
+        # Tools: MCAT AI Card Studio (Phase 2)
+        self.action_mcat_ai_studio = QAction("MCAT AI Card Studio", self)
+        qconnect(self.action_mcat_ai_studio.triggered, self.on_mcat_ai_studio)
+        m.menuTools.addAction(self.action_mcat_ai_studio)
 
         # View
         qconnect(
