@@ -10,9 +10,16 @@ import SwiftProtobuf
 /// of pylib's rsbridge: it drives the exact same Rust engine the desktop uses,
 /// so the companion shows identical scores for a synced collection.
 final class AnkiBackend {
-    enum BackendError: Error {
+    enum BackendError: LocalizedError {
         case open(String)
         case command(String)
+
+        var errorDescription: String? {
+            switch self {
+            case let .open(message): return message
+            case let .command(message): return message
+            }
+        }
     }
 
     /// Backend service indices, taken from the generated backend
@@ -20,6 +27,7 @@ final class AnkiBackend {
     /// `patch_service_indices.sh` after regenerating the backend to keep these
     /// in sync. Method indices below are the declaration order within the proto.
     enum Service: UInt32 {
+        case sync = 1
         case collection = 3
         case mcat = 41
     }
@@ -30,6 +38,19 @@ final class AnkiBackend {
         case getStudyRecommendation = 2
         case buildInterleavedSession = 3
         case getTopicTargets = 4
+    }
+
+    /// Method indices within BackendSyncService (proto declaration order).
+    enum SyncMethod: UInt32 {
+        case syncMedia = 0
+        case abortMediaSync = 1
+        case mediaSyncStatus = 2
+        case syncLogin = 3
+        case syncStatus = 4
+        case syncCollection = 5
+        case fullUploadOrDownload = 6
+        case abortSync = 7
+        case setCustomCertificate = 8
     }
 
     private let handle: OpaquePointer
@@ -74,7 +95,10 @@ final class AnkiBackend {
             bytes = Data()
         }
         if buffer.is_error {
-            throw BackendError.command("backend error (\(bytes.count) bytes)")
+            // The engine encodes failures as an anki.backend.BackendError whose
+            // `message` is a localized, user-facing string.
+            let message = (try? Anki_Backend_BackendError(serializedBytes: bytes))?.message
+            throw BackendError.command(message ?? "backend error (\(bytes.count) bytes)")
         }
         return bytes
     }
@@ -102,5 +126,71 @@ final class AnkiBackend {
             input: try request.serializedData()
         )
         return try Anki_Mcat_InterleavedSession(serializedBytes: out)
+    }
+
+    // MARK: - Sync (AnkiWeb)
+    //
+    // These drive the exact SyncService the desktop uses, over the generic FFI.
+    // The engine performs the network I/O synchronously on its own runtime, so
+    // callers must invoke them off the main thread (see CollectionStore).
+
+    /// Exchange AnkiWeb credentials for a sync key (hkey) + resolved endpoint.
+    func syncLogin(username: String, password: String, endpoint: String?)
+        throws -> Anki_Sync_SyncAuth
+    {
+        var request = Anki_Sync_SyncLoginRequest()
+        request.username = username
+        request.password = password
+        if let endpoint, !endpoint.isEmpty { request.endpoint = endpoint }
+        let out = try run(
+            service: Service.sync.rawValue,
+            method: SyncMethod.syncLogin.rawValue,
+            input: try request.serializedData()
+        )
+        return try Anki_Sync_SyncAuth(serializedBytes: out)
+    }
+
+    /// Lightweight check of whether the server has changes to offer.
+    func syncStatus(auth: Anki_Sync_SyncAuth) throws -> Anki_Sync_SyncStatusResponse {
+        let out = try run(
+            service: Service.sync.rawValue,
+            method: SyncMethod.syncStatus.rawValue,
+            input: try auth.serializedData()
+        )
+        return try Anki_Sync_SyncStatusResponse(serializedBytes: out)
+    }
+
+    /// Perform a normal (incremental) sync of the open collection. The response
+    /// tells us whether a one-way full upload/download is required instead.
+    func syncCollection(auth: Anki_Sync_SyncAuth, syncMedia: Bool)
+        throws -> Anki_Sync_SyncCollectionResponse
+    {
+        var request = Anki_Sync_SyncCollectionRequest()
+        request.auth = auth
+        request.syncMedia = syncMedia
+        let out = try run(
+            service: Service.sync.rawValue,
+            method: SyncMethod.syncCollection.rawValue,
+            input: try request.serializedData()
+        )
+        return try Anki_Sync_SyncCollectionResponse(serializedBytes: out)
+    }
+
+    /// One-way full sync. The engine closes, transfers, and reopens the
+    /// collection internally (mirroring the desktop's close_for_full_sync +
+    /// reopen(after_full_sync:) dance), so no reopen is needed afterwards.
+    /// `serverUsn` is only supplied when media syncing; omitting it skips media.
+    func fullUploadOrDownload(auth: Anki_Sync_SyncAuth, upload: Bool, serverUsn: Int32? = nil)
+        throws
+    {
+        var request = Anki_Sync_FullUploadOrDownloadRequest()
+        request.auth = auth
+        request.upload = upload
+        if let serverUsn { request.serverUsn = serverUsn }
+        _ = try run(
+            service: Service.sync.rawValue,
+            method: SyncMethod.fullUploadOrDownload.rawValue,
+            input: try request.serializedData()
+        )
     }
 }

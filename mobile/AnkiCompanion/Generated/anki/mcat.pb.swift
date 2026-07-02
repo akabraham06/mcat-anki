@@ -98,6 +98,103 @@ public nonisolated struct Anki_Mcat_SectionScore: Sendable {
 
   public var recall: Double = 0
 
+  /// Mean recall as a percentage (recall * 100), for display convenience.
+  public var memoryPercent: Double = 0
+
+  /// Reviewed knowledge cards contributing recall in this section.
+  public var cardsReviewed: Int64 = 0
+
+  /// Total tagged knowledge cards in this section.
+  public var cardsTotal: Int64 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Extra memory-side detail so users can see the evidence behind the Memory
+/// score: how much has been studied, how well it is retained, and how broadly.
+public nonisolated struct Anki_Mcat_MemoryDetail: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Distinct tagged knowledge cards that have been reviewed at least once.
+  public var cardsReviewed: Int64 = 0
+
+  /// Distinct tagged knowledge cards in the deck.
+  public var cardsTotal: Int64 = 0
+
+  /// Mean recall across reviewed knowledge cards, as a percentage.
+  public var averageRetentionPercent: Double = 0
+
+  /// Number of graded knowledge-card reviews.
+  public var gradedReviews: Int64 = 0
+
+  /// Reviewed cards with a mature interval (>= 21 days).
+  public var matureCards: Int64 = 0
+
+  /// Reviewed cards below the mature interval.
+  public var youngCards: Int64 = 0
+
+  /// Taxonomy topics with at least one knowledge card.
+  public var coveredTopics: Int64 = 0
+
+  /// Total taxonomy topics.
+  public var totalTopics: Int64 = 0
+
+  /// Breadth = covered_topics / total_topics, as a percentage.
+  public var breadthPercent: Double = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Extra performance-side detail (exam-style questions).
+public nonisolated struct Anki_Mcat_PerformanceDetail: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Exam-style questions answered (graded reviews on perf notes).
+  public var questionsAnswered: Int64 = 0
+
+  /// Accuracy across those questions, as a percentage.
+  public var accuracyPercent: Double = 0
+
+  /// Number answered correctly.
+  public var correct: Int64 = 0
+
+  /// Taxonomy topics with at least one exam-style question review.
+  public var coveredTopics: Int64 = 0
+
+  /// Total taxonomy topics.
+  public var totalTopics: Int64 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Progress toward the readiness give-up gate, so the abstention is transparent.
+public nonisolated struct Anki_Mcat_ReadinessDetail: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var gradedReviews: Int64 = 0
+
+  public var requiredGradedReviews: Int64 = 0
+
+  public var coveragePercent: Double = 0
+
+  public var requiredCoveragePercent: Double = 0
+
+  public var gradedReviewsMet: Bool = false
+
+  public var coverageMet: Bool = false
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -186,6 +283,33 @@ public nonisolated struct Anki_Mcat_ExamReadiness: @unchecked Sendable {
   public var hasGiveUpRule: Bool {_storage._giveUpRule != nil}
   /// Clears the value of `giveUpRule`. Subsequent reads from it will return its default value.
   public mutating func clearGiveUpRule() {_uniqueStorage()._giveUpRule = nil}
+
+  public var memoryDetail: Anki_Mcat_MemoryDetail {
+    get {_storage._memoryDetail ?? Anki_Mcat_MemoryDetail()}
+    set {_uniqueStorage()._memoryDetail = newValue}
+  }
+  /// Returns true if `memoryDetail` has been explicitly set.
+  public var hasMemoryDetail: Bool {_storage._memoryDetail != nil}
+  /// Clears the value of `memoryDetail`. Subsequent reads from it will return its default value.
+  public mutating func clearMemoryDetail() {_uniqueStorage()._memoryDetail = nil}
+
+  public var performanceDetail: Anki_Mcat_PerformanceDetail {
+    get {_storage._performanceDetail ?? Anki_Mcat_PerformanceDetail()}
+    set {_uniqueStorage()._performanceDetail = newValue}
+  }
+  /// Returns true if `performanceDetail` has been explicitly set.
+  public var hasPerformanceDetail: Bool {_storage._performanceDetail != nil}
+  /// Clears the value of `performanceDetail`. Subsequent reads from it will return its default value.
+  public mutating func clearPerformanceDetail() {_uniqueStorage()._performanceDetail = nil}
+
+  public var readinessDetail: Anki_Mcat_ReadinessDetail {
+    get {_storage._readinessDetail ?? Anki_Mcat_ReadinessDetail()}
+    set {_uniqueStorage()._readinessDetail = newValue}
+  }
+  /// Returns true if `readinessDetail` has been explicitly set.
+  public var hasReadinessDetail: Bool {_storage._readinessDetail != nil}
+  /// Clears the value of `readinessDetail`. Subsequent reads from it will return its default value.
+  public mutating func clearReadinessDetail() {_uniqueStorage()._readinessDetail = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -604,7 +728,7 @@ nonisolated extension Anki_Mcat_ScoreEstimate: SwiftProtobuf.Message, SwiftProto
 
 nonisolated extension Anki_Mcat_SectionScore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SectionScore"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}section_key\0\u{3}section_name\0\u{1}available\0\u{1}point\0\u{1}low\0\u{1}high\0\u{3}coverage_percent\0\u{1}recall\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}section_key\0\u{3}section_name\0\u{1}available\0\u{1}point\0\u{1}low\0\u{1}high\0\u{3}coverage_percent\0\u{1}recall\0\u{3}memory_percent\0\u{3}cards_reviewed\0\u{3}cards_total\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -620,6 +744,9 @@ nonisolated extension Anki_Mcat_SectionScore: SwiftProtobuf.Message, SwiftProtob
       case 6: try { try decoder.decodeSingularDoubleField(value: &self.high) }()
       case 7: try { try decoder.decodeSingularDoubleField(value: &self.coveragePercent) }()
       case 8: try { try decoder.decodeSingularDoubleField(value: &self.recall) }()
+      case 9: try { try decoder.decodeSingularDoubleField(value: &self.memoryPercent) }()
+      case 10: try { try decoder.decodeSingularInt64Field(value: &self.cardsReviewed) }()
+      case 11: try { try decoder.decodeSingularInt64Field(value: &self.cardsTotal) }()
       default: break
       }
     }
@@ -650,6 +777,15 @@ nonisolated extension Anki_Mcat_SectionScore: SwiftProtobuf.Message, SwiftProtob
     if self.recall.bitPattern != 0 {
       try visitor.visitSingularDoubleField(value: self.recall, fieldNumber: 8)
     }
+    if self.memoryPercent.bitPattern != 0 {
+      try visitor.visitSingularDoubleField(value: self.memoryPercent, fieldNumber: 9)
+    }
+    if self.cardsReviewed != 0 {
+      try visitor.visitSingularInt64Field(value: self.cardsReviewed, fieldNumber: 10)
+    }
+    if self.cardsTotal != 0 {
+      try visitor.visitSingularInt64Field(value: self.cardsTotal, fieldNumber: 11)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -662,6 +798,184 @@ nonisolated extension Anki_Mcat_SectionScore: SwiftProtobuf.Message, SwiftProtob
     if lhs.high != rhs.high {return false}
     if lhs.coveragePercent != rhs.coveragePercent {return false}
     if lhs.recall != rhs.recall {return false}
+    if lhs.memoryPercent != rhs.memoryPercent {return false}
+    if lhs.cardsReviewed != rhs.cardsReviewed {return false}
+    if lhs.cardsTotal != rhs.cardsTotal {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Anki_Mcat_MemoryDetail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".MemoryDetail"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}cards_reviewed\0\u{3}cards_total\0\u{3}average_retention_percent\0\u{3}graded_reviews\0\u{3}mature_cards\0\u{3}young_cards\0\u{3}covered_topics\0\u{3}total_topics\0\u{3}breadth_percent\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularInt64Field(value: &self.cardsReviewed) }()
+      case 2: try { try decoder.decodeSingularInt64Field(value: &self.cardsTotal) }()
+      case 3: try { try decoder.decodeSingularDoubleField(value: &self.averageRetentionPercent) }()
+      case 4: try { try decoder.decodeSingularInt64Field(value: &self.gradedReviews) }()
+      case 5: try { try decoder.decodeSingularInt64Field(value: &self.matureCards) }()
+      case 6: try { try decoder.decodeSingularInt64Field(value: &self.youngCards) }()
+      case 7: try { try decoder.decodeSingularInt64Field(value: &self.coveredTopics) }()
+      case 8: try { try decoder.decodeSingularInt64Field(value: &self.totalTopics) }()
+      case 9: try { try decoder.decodeSingularDoubleField(value: &self.breadthPercent) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.cardsReviewed != 0 {
+      try visitor.visitSingularInt64Field(value: self.cardsReviewed, fieldNumber: 1)
+    }
+    if self.cardsTotal != 0 {
+      try visitor.visitSingularInt64Field(value: self.cardsTotal, fieldNumber: 2)
+    }
+    if self.averageRetentionPercent.bitPattern != 0 {
+      try visitor.visitSingularDoubleField(value: self.averageRetentionPercent, fieldNumber: 3)
+    }
+    if self.gradedReviews != 0 {
+      try visitor.visitSingularInt64Field(value: self.gradedReviews, fieldNumber: 4)
+    }
+    if self.matureCards != 0 {
+      try visitor.visitSingularInt64Field(value: self.matureCards, fieldNumber: 5)
+    }
+    if self.youngCards != 0 {
+      try visitor.visitSingularInt64Field(value: self.youngCards, fieldNumber: 6)
+    }
+    if self.coveredTopics != 0 {
+      try visitor.visitSingularInt64Field(value: self.coveredTopics, fieldNumber: 7)
+    }
+    if self.totalTopics != 0 {
+      try visitor.visitSingularInt64Field(value: self.totalTopics, fieldNumber: 8)
+    }
+    if self.breadthPercent.bitPattern != 0 {
+      try visitor.visitSingularDoubleField(value: self.breadthPercent, fieldNumber: 9)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Anki_Mcat_MemoryDetail, rhs: Anki_Mcat_MemoryDetail) -> Bool {
+    if lhs.cardsReviewed != rhs.cardsReviewed {return false}
+    if lhs.cardsTotal != rhs.cardsTotal {return false}
+    if lhs.averageRetentionPercent != rhs.averageRetentionPercent {return false}
+    if lhs.gradedReviews != rhs.gradedReviews {return false}
+    if lhs.matureCards != rhs.matureCards {return false}
+    if lhs.youngCards != rhs.youngCards {return false}
+    if lhs.coveredTopics != rhs.coveredTopics {return false}
+    if lhs.totalTopics != rhs.totalTopics {return false}
+    if lhs.breadthPercent != rhs.breadthPercent {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Anki_Mcat_PerformanceDetail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".PerformanceDetail"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}questions_answered\0\u{3}accuracy_percent\0\u{1}correct\0\u{3}covered_topics\0\u{3}total_topics\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularInt64Field(value: &self.questionsAnswered) }()
+      case 2: try { try decoder.decodeSingularDoubleField(value: &self.accuracyPercent) }()
+      case 3: try { try decoder.decodeSingularInt64Field(value: &self.correct) }()
+      case 4: try { try decoder.decodeSingularInt64Field(value: &self.coveredTopics) }()
+      case 5: try { try decoder.decodeSingularInt64Field(value: &self.totalTopics) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.questionsAnswered != 0 {
+      try visitor.visitSingularInt64Field(value: self.questionsAnswered, fieldNumber: 1)
+    }
+    if self.accuracyPercent.bitPattern != 0 {
+      try visitor.visitSingularDoubleField(value: self.accuracyPercent, fieldNumber: 2)
+    }
+    if self.correct != 0 {
+      try visitor.visitSingularInt64Field(value: self.correct, fieldNumber: 3)
+    }
+    if self.coveredTopics != 0 {
+      try visitor.visitSingularInt64Field(value: self.coveredTopics, fieldNumber: 4)
+    }
+    if self.totalTopics != 0 {
+      try visitor.visitSingularInt64Field(value: self.totalTopics, fieldNumber: 5)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Anki_Mcat_PerformanceDetail, rhs: Anki_Mcat_PerformanceDetail) -> Bool {
+    if lhs.questionsAnswered != rhs.questionsAnswered {return false}
+    if lhs.accuracyPercent != rhs.accuracyPercent {return false}
+    if lhs.correct != rhs.correct {return false}
+    if lhs.coveredTopics != rhs.coveredTopics {return false}
+    if lhs.totalTopics != rhs.totalTopics {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Anki_Mcat_ReadinessDetail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".ReadinessDetail"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}graded_reviews\0\u{3}required_graded_reviews\0\u{3}coverage_percent\0\u{3}required_coverage_percent\0\u{3}graded_reviews_met\0\u{3}coverage_met\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularInt64Field(value: &self.gradedReviews) }()
+      case 2: try { try decoder.decodeSingularInt64Field(value: &self.requiredGradedReviews) }()
+      case 3: try { try decoder.decodeSingularDoubleField(value: &self.coveragePercent) }()
+      case 4: try { try decoder.decodeSingularDoubleField(value: &self.requiredCoveragePercent) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self.gradedReviewsMet) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.coverageMet) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.gradedReviews != 0 {
+      try visitor.visitSingularInt64Field(value: self.gradedReviews, fieldNumber: 1)
+    }
+    if self.requiredGradedReviews != 0 {
+      try visitor.visitSingularInt64Field(value: self.requiredGradedReviews, fieldNumber: 2)
+    }
+    if self.coveragePercent.bitPattern != 0 {
+      try visitor.visitSingularDoubleField(value: self.coveragePercent, fieldNumber: 3)
+    }
+    if self.requiredCoveragePercent.bitPattern != 0 {
+      try visitor.visitSingularDoubleField(value: self.requiredCoveragePercent, fieldNumber: 4)
+    }
+    if self.gradedReviewsMet != false {
+      try visitor.visitSingularBoolField(value: self.gradedReviewsMet, fieldNumber: 5)
+    }
+    if self.coverageMet != false {
+      try visitor.visitSingularBoolField(value: self.coverageMet, fieldNumber: 6)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Anki_Mcat_ReadinessDetail, rhs: Anki_Mcat_ReadinessDetail) -> Bool {
+    if lhs.gradedReviews != rhs.gradedReviews {return false}
+    if lhs.requiredGradedReviews != rhs.requiredGradedReviews {return false}
+    if lhs.coveragePercent != rhs.coveragePercent {return false}
+    if lhs.requiredCoveragePercent != rhs.requiredCoveragePercent {return false}
+    if lhs.gradedReviewsMet != rhs.gradedReviewsMet {return false}
+    if lhs.coverageMet != rhs.coverageMet {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -669,7 +983,7 @@ nonisolated extension Anki_Mcat_SectionScore: SwiftProtobuf.Message, SwiftProtob
 
 nonisolated extension Anki_Mcat_ExamReadiness: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ExamReadiness"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}exam\0\u{1}memory\0\u{1}performance\0\u{1}readiness\0\u{1}sections\0\u{3}overall_coverage_percent\0\u{3}graded_reviews\0\u{1}recommendation\0\u{3}transfer_gaps\0\u{1}xp\0\u{3}give_up_rule\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}exam\0\u{1}memory\0\u{1}performance\0\u{1}readiness\0\u{1}sections\0\u{3}overall_coverage_percent\0\u{3}graded_reviews\0\u{1}recommendation\0\u{3}transfer_gaps\0\u{1}xp\0\u{3}give_up_rule\0\u{3}memory_detail\0\u{3}performance_detail\0\u{3}readiness_detail\0")
 
   fileprivate class _StorageClass {
     var _exam: String = String()
@@ -683,6 +997,9 @@ nonisolated extension Anki_Mcat_ExamReadiness: SwiftProtobuf.Message, SwiftProto
     var _transferGaps: [Anki_Mcat_TransferGap] = []
     var _xp: Anki_Mcat_XpSummary? = nil
     var _giveUpRule: Anki_Mcat_GiveUpRule? = nil
+    var _memoryDetail: Anki_Mcat_MemoryDetail? = nil
+    var _performanceDetail: Anki_Mcat_PerformanceDetail? = nil
+    var _readinessDetail: Anki_Mcat_ReadinessDetail? = nil
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -704,6 +1021,9 @@ nonisolated extension Anki_Mcat_ExamReadiness: SwiftProtobuf.Message, SwiftProto
       _transferGaps = source._transferGaps
       _xp = source._xp
       _giveUpRule = source._giveUpRule
+      _memoryDetail = source._memoryDetail
+      _performanceDetail = source._performanceDetail
+      _readinessDetail = source._readinessDetail
     }
   }
 
@@ -733,6 +1053,9 @@ nonisolated extension Anki_Mcat_ExamReadiness: SwiftProtobuf.Message, SwiftProto
         case 9: try { try decoder.decodeRepeatedMessageField(value: &_storage._transferGaps) }()
         case 10: try { try decoder.decodeSingularMessageField(value: &_storage._xp) }()
         case 11: try { try decoder.decodeSingularMessageField(value: &_storage._giveUpRule) }()
+        case 12: try { try decoder.decodeSingularMessageField(value: &_storage._memoryDetail) }()
+        case 13: try { try decoder.decodeSingularMessageField(value: &_storage._performanceDetail) }()
+        case 14: try { try decoder.decodeSingularMessageField(value: &_storage._readinessDetail) }()
         default: break
         }
       }
@@ -778,6 +1101,15 @@ nonisolated extension Anki_Mcat_ExamReadiness: SwiftProtobuf.Message, SwiftProto
       try { if let v = _storage._giveUpRule {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
       } }()
+      try { if let v = _storage._memoryDetail {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+      } }()
+      try { if let v = _storage._performanceDetail {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
+      } }()
+      try { if let v = _storage._readinessDetail {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 14)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -798,6 +1130,9 @@ nonisolated extension Anki_Mcat_ExamReadiness: SwiftProtobuf.Message, SwiftProto
         if _storage._transferGaps != rhs_storage._transferGaps {return false}
         if _storage._xp != rhs_storage._xp {return false}
         if _storage._giveUpRule != rhs_storage._giveUpRule {return false}
+        if _storage._memoryDetail != rhs_storage._memoryDetail {return false}
+        if _storage._performanceDetail != rhs_storage._performanceDetail {return false}
+        if _storage._readinessDetail != rhs_storage._readinessDetail {return false}
         return true
       }
       if !storagesAreEqual {return false}

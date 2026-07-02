@@ -23,17 +23,19 @@ index_for() {
         | sed -E 's/.*_run_command\(([0-9]+),.*/\1/'
 }
 
+SYNC=$(index_for "sync_collection_raw")
 COLLECTION=$(index_for "open_collection_raw")
 MCAT=$(index_for "get_exam_readiness_raw")
 
-[ -n "$COLLECTION" ] && [ -n "$MCAT" ] || {
+[ -n "$SYNC" ] && [ -n "$COLLECTION" ] && [ -n "$MCAT" ] || {
     echo "error: could not extract service indices (backend regenerated?)"; exit 1
 }
 
-echo "collection = $COLLECTION, mcat = $MCAT"
+echo "sync = $SYNC, collection = $COLLECTION, mcat = $MCAT"
 
-# Rewrite the two enum lines in place.
+# Rewrite the enum lines in place.
 /usr/bin/sed -i '' -E \
+    -e "s/(case sync = )[0-9]+/\1$SYNC/" \
     -e "s/(case collection = )[0-9]+/\1$COLLECTION/" \
     -e "s/(case mcat = )[0-9]+/\1$MCAT/" \
     "$SWIFT"
