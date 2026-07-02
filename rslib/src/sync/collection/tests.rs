@@ -787,7 +787,8 @@ async fn meta_negotiates_zstd_across_shard_redirect() -> Result<()> {
     use crate::sync::request::header_and_stream::SYNC_HEADER_NAME;
     use crate::sync::response::ORIGINAL_SIZE;
 
-    let meta_json = serde_json::to_vec(&crate::sync::collection::meta::SyncMeta::default()).unwrap();
+    let meta_json =
+        serde_json::to_vec(&crate::sync::collection::meta::SyncMeta::default()).unwrap();
     let original_size = meta_json.len();
     let zstd_body = zstd::encode_all(std::io::Cursor::new(meta_json), 0).unwrap();
 
@@ -828,7 +829,11 @@ async fn meta_negotiates_zstd_across_shard_redirect() -> Result<()> {
 
     // Confirm the outgoing anki-sync header advertised a zstd-capable version.
     let reqs = shard.received_requests().await.unwrap();
-    assert_eq!(reqs.len(), 1, "shard should receive exactly one meta request");
+    assert_eq!(
+        reqs.len(),
+        1,
+        "shard should receive exactly one meta request"
+    );
     let hdr = reqs[0]
         .headers
         .get(SYNC_HEADER_NAME.as_str())

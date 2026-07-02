@@ -5,7 +5,7 @@
 A desktop study app and an iOS companion, **built on a fork of [Anki](https://apps.ankiweb.net)** and sharing **one Rust engine**. It goes beyond flashcard memory to answer three separate questions, each with an honest uncertainty range:
 
 1. **Memory** — can you recall a fact right now? (built on Anki's FSRS)
-2. **Performance** — can you answer a *new, exam-style* question that uses it?
+2. **Performance** — can you answer a _new, exam-style_ question that uses it?
 3. **Readiness** — what MCAT score would you get today, and how sure are we?
 
 The app follows an **honesty rule**: it refuses to show a readiness score until it has enough evidence (a written-down give-up rule), and every score ships with its point estimate, likely range, exam coverage, confidence, last-updated time, and the reasons behind it.
@@ -18,11 +18,11 @@ The app follows an **honesty rule**: it refuses to show a readiness score until 
 
 ## Two apps, one engine
 
-| | Desktop (main app) | iOS companion |
-|---|---|---|
-| Runtime | PyQt + web frontend over `pylib` → `rslib` | SwiftUI over `rslib` via a C‑FFI (`mobile/ankiffi`) |
-| Purpose | Full review + MCAT dashboard | Review-on-the-go + readiness check |
-| Engine | **Same Rust `rslib` engine** | **Same Rust `rslib` engine** (linked as `AnkiEngine.xcframework`) |
+|         | Desktop (main app)                         | iOS companion                                                     |
+| ------- | ------------------------------------------ | ----------------------------------------------------------------- |
+| Runtime | PyQt + web frontend over `pylib` → `rslib` | SwiftUI over `rslib` via a C‑FFI (`mobile/ankiffi`)               |
+| Purpose | Full review + MCAT dashboard               | Review-on-the-go + readiness check                                |
+| Engine  | **Same Rust `rslib` engine**               | **Same Rust `rslib` engine** (linked as `AnkiEngine.xcframework`) |
 
 The MCAT logic lives in the Rust engine (`rslib/src/mcat`), so both apps compute **identical** scores. The engine is exposed through a new protobuf `McatService`, consumed by Python, TypeScript (the dashboard), and Swift (the companion).
 

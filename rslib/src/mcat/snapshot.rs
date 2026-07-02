@@ -180,8 +180,8 @@ struct RevAgg {
     total: u32,
     correct: u32,
     last_reviewed_at: i64,
-    /// Response times (seconds) for each rated review, so per-topic overtime can
-    /// be computed against the topic's target time.
+    /// Response times (seconds) for each rated review, so per-topic overtime
+    /// can be computed against the topic's target time.
     times_secs: Vec<f64>,
 }
 
@@ -294,10 +294,7 @@ impl Collection {
             // tag, or if its notetype is one of the exam notetypes. The tag check
             // is authoritative (deck-independent); the notetype set is a fallback
             // for decks built without the marker tag.
-            let tag_marks_perf = note
-                .tags
-                .iter()
-                .any(|t| PERF_TAGS.iter().any(|p| t == p));
+            let tag_marks_perf = note.tags.iter().any(|t| PERF_TAGS.iter().any(|p| t == p));
             let notetype_is_perf = *notetype_is_perf.entry(note.notetype_id).or_insert_with(|| {
                 guard
                     .col

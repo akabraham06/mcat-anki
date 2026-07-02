@@ -71,16 +71,12 @@ def get_briefcase_sources_path(out_dir: Path) -> Path:
     if sys.platform == "win32":
         path = out_dir / "build" / "anki" / "windows" / "app" / "src"
     elif sys.platform == "darwin":
-        path = (
-            out_dir
-            / "build"
-            / "anki"
-            / "macos"
-            / "app"
-            / "Anki.app"
-            / "Contents"
-            / "Resources"
-        )
+        # The bundle takes its name from the Briefcase formal_name (e.g.
+        # "Anki.app", or "Anki MCAT.app" for this fork), so resolve it
+        # dynamically rather than hardcoding a single name.
+        app_root = out_dir / "build" / "anki" / "macos" / "app"
+        app_bundle = next(app_root.glob("*.app"), app_root / "Anki.app")
+        path = app_bundle / "Contents" / "Resources"
     else:
         path = out_dir / "build" / "anki" / "linux" / "zip" / "anki"
     return path

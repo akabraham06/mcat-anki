@@ -246,11 +246,7 @@ fn interleaving_alternates_sections_and_differs_from_blocked() {
 
     // Interleaved: every consecutive pair crosses a section boundary, even
     // though each topic only has one due card.
-    let inter_sections: Vec<&str> = inter
-        .topic_keys
-        .iter()
-        .map(|t| section_of_tag(t))
-        .collect();
+    let inter_sections: Vec<&str> = inter.topic_keys.iter().map(|t| section_of_tag(t)).collect();
     for pair in inter_sections.windows(2) {
         assert_ne!(
             pair[0], pair[1],
@@ -314,8 +310,9 @@ fn performance_and_transfer_gap() {
     assert!((gap.gap - (gap.memory_recall - gap.performance_accuracy)).abs() < 1e-6);
 }
 
-/// The speed/pacing sub-signal reads the revlog time-taken against the per-topic
-/// target and folds an honest speed_factor into readiness (never hidden).
+/// The speed/pacing sub-signal reads the revlog time-taken against the
+/// per-topic target and folds an honest speed_factor into readiness (never
+/// hidden).
 #[test]
 fn performance_pacing_records_overtime_and_speed() {
     let mut col = Collection::new();
@@ -333,13 +330,21 @@ fn performance_pacing_records_overtime_and_speed() {
     let r = col.mcat_exam_readiness(rreq()).unwrap();
 
     let pd = r.performance_detail.unwrap();
-    assert!((pd.overtime_rate - 1.0).abs() < 1e-6, "overtime={}", pd.overtime_rate);
+    assert!(
+        (pd.overtime_rate - 1.0).abs() < 1e-6,
+        "overtime={}",
+        pd.overtime_rate
+    );
     assert!((pd.on_time_rate - 0.0).abs() < 1e-6);
     assert!(pd.average_response_time_secs > 100.0);
 
     let rd = r.readiness_detail.unwrap();
     // Every review was overtime -> speed_factor collapses to 0.
-    assert!((rd.speed_factor - 0.0).abs() < 1e-6, "speed={}", rd.speed_factor);
+    assert!(
+        (rd.speed_factor - 0.0).abs() < 1e-6,
+        "speed={}",
+        rd.speed_factor
+    );
     assert!((rd.overtime_rate - 1.0).abs() < 1e-6);
     assert!(!rd.speed_reason.is_empty());
     // Weights are surfaced transparently.
