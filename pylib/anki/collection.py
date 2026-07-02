@@ -1079,6 +1079,146 @@ class Collection(DeprecatedNamesMixin):
             default_target_seconds=default_target_seconds,
         )
 
+    # MCAT Anki Mastery — Phase 2 AI features
+    ##########################################################################
+    #
+    # Every AI call degrades gracefully: results carry `ai_available` +
+    # `unavailable_reason` and callers fall back to deterministic behaviour, so
+    # the app runs and scores with AI OFF.
+
+    def mcat_ai_status(self) -> mcat_pb2.AiStatus:
+        """Whether AI is configured/enabled, plus provider/model/cutoff."""
+        return self._backend.get_ai_status(tag_prefix="")
+
+    def mcat_ai_get_config(self) -> mcat_pb2.AiConfig:
+        """The current AI config with the api key masked."""
+        return self._backend.get_ai_config(tag_prefix="")
+
+    def mcat_ai_set_config(
+        self,
+        base_url: str = "",
+        model: str = "",
+        api_key: str = "",
+        checker_cutoff: float = 0.0,
+        enabled: bool = True,
+    ) -> mcat_pb2.AiStatus:
+        """Persist AI config. An empty (or masked) api_key leaves the stored key
+        untouched; pass "-" to clear it."""
+        return self._backend.set_ai_config(
+            mcat_pb2.AiConfig(
+                base_url=base_url,
+                model=model,
+                api_key=api_key,
+                checker_cutoff=checker_cutoff,
+                enabled=enabled,
+            )
+        )
+
+    def mcat_register_ai_source(
+        self,
+        source_name: str,
+        excerpt: str,
+        source_section: str = "",
+        source_id: str = "",
+    ) -> mcat_pb2.AiSourceList:
+        """Register a named, inspectable source used to ground generation."""
+        return self._backend.register_ai_source(
+            mcat_pb2.AiSource(
+                source_id=source_id,
+                source_name=source_name,
+                source_section=source_section,
+                excerpt=excerpt,
+            )
+        )
+
+    def mcat_list_ai_sources(self) -> mcat_pb2.AiSourceList:
+        return self._backend.list_ai_sources(tag_prefix="")
+
+    def mcat_remove_ai_source(self, source_id: str) -> mcat_pb2.AiSourceList:
+        return self._backend.remove_ai_source(source_id=source_id)
+
+    def mcat_generate_cards(
+        self,
+        source_id: str,
+        count: int = 5,
+        topic_hint: str = "",
+        tag_prefix: str = "",
+    ) -> mcat_pb2.GeneratedCardList:
+        """9.3: generate a review queue of source-grounded, checked candidates
+        (never auto-added to the deck)."""
+        return self._backend.generate_cards(
+            source_id=source_id,
+            count=count,
+            topic_hint=topic_hint,
+            tag_prefix=tag_prefix,
+        )
+
+    def mcat_check_card(
+        self,
+        question: str,
+        answer: str,
+        topic_tag: str = "",
+        source_id: str = "",
+        source_excerpt: str = "",
+        tag_prefix: str = "",
+    ) -> mcat_pb2.CardQualityReport:
+        """9.4: run the quality checker on a single card."""
+        return self._backend.check_card(
+            question=question,
+            answer=answer,
+            topic_tag=topic_tag,
+            source_id=source_id,
+            source_excerpt=source_excerpt,
+            tag_prefix=tag_prefix,
+        )
+
+    def mcat_accept_generated_cards(
+        self,
+        cards: Sequence[mcat_pb2.GeneratedCard],
+        deck_name: str = "",
+        tag_prefix: str = "",
+    ) -> mcat_pb2.AcceptCardsResponse:
+        """9.3: turn accepted candidates into real, ai-generated-tagged notes."""
+        return self._backend.accept_generated_cards(
+            cards=cards, deck_name=deck_name, tag_prefix=tag_prefix
+        )
+
+    def mcat_explain_miss(
+        self, card_id: int, chosen_answer: str = "", tag_prefix: str = ""
+    ) -> mcat_pb2.MissExplanation:
+        """9.5: source-grounded explanation for a missed question. Never used as
+        scoring evidence; unavailable offline (review still works)."""
+        return self._backend.explain_miss(
+            card_id=card_id, chosen_answer=chosen_answer, tag_prefix=tag_prefix
+        )
+
+    def mcat_ai_study_plan(self, tag_prefix: str = "") -> mcat_pb2.AiStudyPlan:
+        """9.6: an evidence-grounded study plan, falling back to the
+        deterministic recommender when AI is off/unavailable."""
+        return self._backend.get_ai_study_plan(
+            search="", tag_prefix=tag_prefix, default_target_seconds=0.0
+        )
+
+    def mcat_generate_perf_questions(
+        self, card_id: int, tag_prefix: str = "", source_id: str = ""
+    ) -> mcat_pb2.GeneratedPerfQuestionList:
+        """9.8: generate paraphrased application questions from a card, with a
+        leakage / near-duplicate check."""
+        return self._backend.generate_perf_questions(
+            card_id=card_id, tag_prefix=tag_prefix, source_id=source_id
+        )
+
+    def mcat_accept_perf_questions(
+        self,
+        questions: Sequence[mcat_pb2.GeneratedPerfQuestion],
+        deck_name: str = "",
+        tag_prefix: str = "",
+    ) -> mcat_pb2.AcceptCardsResponse:
+        """9.8: create MCATPerf-style notes labelled AI-generated."""
+        return self._backend.accept_perf_questions(
+            questions=questions, deck_name=deck_name, tag_prefix=tag_prefix
+        )
+
     def studied_today(self) -> str:
         return self._backend.studied_today()
 

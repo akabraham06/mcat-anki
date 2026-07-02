@@ -772,6 +772,20 @@ exposed_backend_list = [
     "get_study_recommendation",
     "build_interleaved_session",
     "get_topic_targets",
+    # McatService — Phase 2 AI features
+    "get_ai_status",
+    "get_ai_config",
+    "set_ai_config",
+    "register_ai_source",
+    "list_ai_sources",
+    "remove_ai_source",
+    "generate_cards",
+    "check_card",
+    "accept_generated_cards",
+    "explain_miss",
+    "get_ai_study_plan",
+    "generate_perf_questions",
+    "accept_perf_questions",
 ]
 
 
@@ -846,6 +860,13 @@ def _check_dynamic_request_permissions():
         "/_anki/getStudyRecommendation",
         "/_anki/buildInterleavedSession",
         "/_anki/getTopicTargets",
+        # Read-only AI RPCs used by the dashboard status pill / AI study plan
+        # and the reviewer's "Explain this miss" button. These never mutate the
+        # collection; generation/acceptance run through the Qt AI Card Studio.
+        "/_anki/getAiStatus",
+        "/_anki/getAiStudyPlan",
+        "/_anki/listAiSources",
+        "/_anki/explainMiss",
     ):
         pass
     else:

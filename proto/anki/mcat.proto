@@ -29,6 +29,47 @@ service McatService {
       returns (InterleavedSession);
   // Per-topic target answer times (and exam metadata) for timed review.
   rpc GetTopicTargets(ExamReadinessRequest) returns (TopicTargetList);
+
+  // --- Phase 2: AI features (all gated; degrade to deterministic behaviour)
+  // ---
+
+  // Reports whether AI is configured/enabled and reachable, plus the provider,
+  // model and checker cutoff, so the dashboard can show an honest status pill.
+  rpc GetAiStatus(AiStatusRequest) returns (AiStatus);
+  // Reads the current (masked) AI configuration.
+  rpc GetAiConfig(AiStatusRequest) returns (AiConfig);
+  // Persists AI configuration (base URL, model, api key, cutoff, enable flag).
+  rpc SetAiConfig(AiConfig) returns (AiStatus);
+
+  // Source registry (9.3 + 9.9 fake-source defence): register a named,
+  // inspectable source with an excerpt used to ground generation.
+  rpc RegisterAiSource(AiSource) returns (AiSourceList);
+  rpc ListAiSources(AiStatusRequest) returns (AiSourceList);
+  rpc RemoveAiSource(AiSourceId) returns (AiSourceList);
+
+  // 9.3 Source-grounded card generation. Never auto-adds notes; returns a
+  // review queue of typed/checked candidates.
+  rpc GenerateCards(GenerateCardsRequest) returns (GeneratedCardList);
+  // 9.4 AI card quality checker: the gate every AI card passes before students
+  // see it. Exposed so the UI and eval harness can call it directly.
+  rpc CheckCard(CheckCardRequest) returns (CardQualityReport);
+  // 9.3 acceptance: turn accepted candidates into real, tagged notes.
+  rpc AcceptGeneratedCards(AcceptCardsRequest) returns (AcceptCardsResponse);
+
+  // 9.5 AI explanation for a missed question. Source-grounded, never used as
+  // scoring evidence, unavailable offline (review still works).
+  rpc ExplainMiss(ExplainMissRequest) returns (MissExplanation);
+
+  // 9.6 AI study planner. Cites app evidence; falls back to the deterministic
+  // recommender when AI is off/unavailable.
+  rpc GetAiStudyPlan(ExamReadinessRequest) returns (AiStudyPlan);
+
+  // 9.8 AI-assisted performance-question generation from an existing card.
+  rpc GeneratePerfQuestions(GeneratePerfQuestionsRequest)
+      returns (GeneratedPerfQuestionList);
+  // 9.8 acceptance: create MCATPerf-style notes labelled AI-generated.
+  rpc AcceptPerfQuestions(AcceptPerfQuestionsRequest)
+      returns (AcceptCardsResponse);
 }
 
 // Implicitly includes any of the above methods that are not listed in the
@@ -277,4 +318,233 @@ message TopicMasteryList {
   uint32 cards_total = 2;
   uint32 cards_seen = 3;
   double overall_coverage_percent = 4;
+}
+
+// ---------------------------------------------------------------------------
+// Phase 2: AI features.
+//
+// Every AI response carries `ai_available` + `unavailable_reason`, so callers
+// can fall back to deterministic behaviour when AI is unconfigured, offline,
+// erroring or rate-limited. Core review/scoring/sync never depend on these.
+// ---------------------------------------------------------------------------
+
+// An empty-ish request used by status/list RPCs (tag_prefix optional).
+message AiStatusRequest {
+  string tag_prefix = 1;
+}
+
+// Provider-agnostic, OpenAI-compatible configuration. The api key is masked on
+// read (never returned in full) so it is safe to surface in the UI.
+message AiConfig {
+  string base_url = 1;
+  string model = 2;
+  // On write: the raw key to store. On read: a masked placeholder (e.g.
+  // "sk-...abcd") or empty when unset.
+  string api_key = 3;
+  // Card-quality passing cutoff (0..1), set before testing. Default 0.7.
+  double checker_cutoff = 4;
+  bool enabled = 5;
+  // True on read when a key is actually stored (so the UI can show "set"
+  // without revealing the value).
+  bool api_key_set = 6;
+}
+
+message AiStatus {
+  // available = enabled && (has key or a local/keyless endpoint).
+  bool available = 1;
+  string reason = 2;
+  string provider = 3;
+  string model = 4;
+  bool configured = 5;
+  bool enabled = 6;
+  double checker_cutoff = 7;
+}
+
+message AiSourceId {
+  string source_id = 1;
+}
+
+// A named, inspectable source used to ground generation (9.3/9.9).
+message AiSource {
+  string source_id = 1;
+  string source_name = 2;
+  // Section / page / chapter reference within the source.
+  string source_section = 3;
+  // The excerpt/text used for grounding and shown in the source trace.
+  string excerpt = 4;
+  int64 registered_at = 5;
+}
+
+message AiSourceList {
+  repeated AiSource sources = 1;
+}
+
+// Candidate card status through the review queue (9.3).
+enum GeneratedCardStatus {
+  GENERATED_CARD_STATUS_UNKNOWN = 0;
+  // Failed the quality gate (wrong/vague/trivial/unsupported) — never studied.
+  GENERATED_CARD_STATUS_BLOCKED = 1;
+  // Passed automated checks; awaiting human acceptance.
+  GENERATED_CARD_STATUS_NEEDS_REVIEW = 2;
+  // Accepted by the user and turned into a real note.
+  GENERATED_CARD_STATUS_ACCEPTED = 3;
+  // Rejected by the user.
+  GENERATED_CARD_STATUS_REJECTED = 4;
+  // Duplicate of an existing note.
+  GENERATED_CARD_STATUS_DUPLICATE = 5;
+}
+
+// One quality category from the 9.4 checker.
+message QualityCategory {
+  string key = 1;
+  string label = 2;
+  bool passed = 3;
+  double score = 4;
+  string reason = 5;
+}
+
+// The 9.4 checker report for a single card.
+message CardQualityReport {
+  bool ai_available = 1;
+  string unavailable_reason = 2;
+  repeated QualityCategory categories = 3;
+  double overall_score = 4;
+  double cutoff = 5;
+  bool passed = 6;
+  bool duplicate = 7;
+  // "Blocked" or "NeedsReview".
+  string verdict = 8;
+}
+
+message GenerateCardsRequest {
+  string source_id = 1;
+  uint32 count = 2;
+  // Optional taxonomy topic tag or hint (e.g. "mcat::biobiochem::enzymes").
+  string topic_hint = 3;
+  string tag_prefix = 4;
+}
+
+message GeneratedCard {
+  string source_id = 1;
+  string source_name = 2;
+  string source_section = 3;
+  string question = 4;
+  string answer = 5;
+  // Full taxonomy tag, e.g. "mcat::biobiochem::enzymes".
+  string topic_tag = 6;
+  // "easy" | "medium" | "hard".
+  string difficulty = 7;
+  GeneratedCardStatus status = 8;
+  CardQualityReport quality = 9;
+  // The source excerpt this card was grounded in (inspectable trace).
+  string source_excerpt = 10;
+}
+
+message GeneratedCardList {
+  bool ai_available = 1;
+  string unavailable_reason = 2;
+  repeated GeneratedCard cards = 3;
+  string source_id = 4;
+}
+
+message CheckCardRequest {
+  string question = 1;
+  string answer = 2;
+  string topic_tag = 3;
+  // Optional; when set it must resolve to a registered source.
+  string source_id = 4;
+  string source_excerpt = 5;
+  string tag_prefix = 6;
+}
+
+message AcceptCardsRequest {
+  repeated GeneratedCard cards = 1;
+  // Destination deck; default "MCAT::AI Generated".
+  string deck_name = 2;
+  string tag_prefix = 3;
+}
+
+message AcceptCardsResponse {
+  repeated int64 note_ids = 1;
+  uint32 created = 2;
+  uint32 skipped = 3;
+}
+
+message ExplainMissRequest {
+  int64 card_id = 1;
+  // Optional: the answer the student chose (for MCQ misses).
+  string chosen_answer = 2;
+  string tag_prefix = 3;
+}
+
+message MissExplanation {
+  bool ai_available = 1;
+  string unavailable_reason = 2;
+  string why_correct = 3;
+  string why_chosen_wrong = 4;
+  string source_citation = 5;
+  string related_topic = 6;
+  string suggested_review_action = 7;
+  int64 card_id = 8;
+}
+
+message AiStudyPlanItem {
+  string action = 1;
+  int32 minutes = 2;
+  string reason = 3;
+  // The measured app data behind this item.
+  repeated string evidence = 4;
+}
+
+message AiStudyPlan {
+  bool ai_available = 1;
+  string unavailable_reason = 2;
+  repeated AiStudyPlanItem items = 3;
+  string summary = 4;
+  // True when the deterministic recommender was used instead of AI.
+  bool used_fallback = 5;
+  // The app evidence supplied to (and cited by) the plan.
+  repeated string evidence = 6;
+  // The deterministic recommender, always available as a fallback.
+  StudyRecommendation fallback = 7;
+}
+
+message GeneratePerfQuestionsRequest {
+  int64 card_id = 1;
+  string tag_prefix = 2;
+  // Optional registered source id to ground the questions in.
+  string source_id = 3;
+}
+
+message GeneratedPerfQuestion {
+  string question = 1;
+  // The correct option / answer.
+  string answer = 2;
+  string explanation = 3;
+  string difficulty = 4;
+  string topic_tag = 5;
+  string source_id = 6;
+  string source_name = 7;
+  string source_excerpt = 8;
+  GeneratedCardStatus status = 9;
+  CardQualityReport quality = 10;
+  // Leakage / near-duplicate against existing training/test questions.
+  bool leakage = 11;
+  string leakage_reason = 12;
+}
+
+message GeneratedPerfQuestionList {
+  bool ai_available = 1;
+  string unavailable_reason = 2;
+  int64 card_id = 3;
+  string topic_tag = 4;
+  string source_id = 5;
+  repeated GeneratedPerfQuestion questions = 6;
+}
+
+message AcceptPerfQuestionsRequest {
+  repeated GeneratedPerfQuestion questions = 1;
+  // Destination deck; default "MCAT::AI Generated".
+  string deck_name = 2;
+  string tag_prefix = 3;
 }
