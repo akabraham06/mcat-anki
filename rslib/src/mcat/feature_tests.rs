@@ -314,6 +314,55 @@ fn performance_and_transfer_gap() {
     assert!((gap.gap - (gap.memory_recall - gap.performance_accuracy)).abs() < 1e-6);
 }
 
+/// The speed/pacing sub-signal reads the revlog time-taken against the per-topic
+/// target and folds an honest speed_factor into readiness (never hidden).
+#[test]
+fn performance_pacing_records_overtime_and_speed() {
+    let mut col = Collection::new();
+    let perf_nt = perf_notetype(&mut col);
+    // metabolism's target is 50s (taxonomy.json).
+    add_perf(&mut col, &perf_nt, "q1", &["mcat::biobiochem::metabolism"]);
+    col.answer_good();
+    col.clear_study_queues();
+    // Force the review to 120s -> well over the 50s target (overtime).
+    col.storage
+        .db
+        .execute_batch("UPDATE revlog SET time = 120000")
+        .unwrap();
+
+    let r = col.mcat_exam_readiness(rreq()).unwrap();
+
+    let pd = r.performance_detail.unwrap();
+    assert!((pd.overtime_rate - 1.0).abs() < 1e-6, "overtime={}", pd.overtime_rate);
+    assert!((pd.on_time_rate - 0.0).abs() < 1e-6);
+    assert!(pd.average_response_time_secs > 100.0);
+
+    let rd = r.readiness_detail.unwrap();
+    // Every review was overtime -> speed_factor collapses to 0.
+    assert!((rd.speed_factor - 0.0).abs() < 1e-6, "speed={}", rd.speed_factor);
+    assert!((rd.overtime_rate - 1.0).abs() < 1e-6);
+    assert!(!rd.speed_reason.is_empty());
+    // Weights are surfaced transparently.
+    assert!((rd.memory_weight - 0.35).abs() < 1e-6);
+    assert!((rd.performance_weight - 0.5).abs() < 1e-6);
+    assert!((rd.speed_weight - 0.15).abs() < 1e-6);
+}
+
+/// With no timed exam questions, pacing defaults to a full speed_factor so it
+/// never silently penalises an untimed user.
+#[test]
+fn pacing_defaults_to_full_speed_without_timing() {
+    let mut col = Collection::new();
+    add_knowledge(&mut col, "a", &["mcat::biobiochem::metabolism"]);
+
+    let r = col.mcat_exam_readiness(rreq()).unwrap();
+    let rd = r.readiness_detail.unwrap();
+    assert!((rd.speed_factor - 1.0).abs() < 1e-6);
+    assert!((rd.overtime_rate - 0.0).abs() < 1e-6);
+    let pd = r.performance_detail.unwrap();
+    assert!((pd.on_time_rate - 1.0).abs() < 1e-6);
+}
+
 #[test]
 fn xp_tracks_reviews() {
     let mut col = Collection::new();

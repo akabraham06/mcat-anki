@@ -19,8 +19,15 @@ use crate::prelude::*;
 use crate::scheduler::timing::SchedTimingToday;
 use crate::search::SortMode;
 
-/// Notetype name that marks a card as an exam-style performance question.
-pub(crate) const PERF_NOTETYPE: &str = "MCATPerf";
+/// Notetype names that mark a card as an exam-style performance question. Kept
+/// as a set so both the legacy self-graded `MCATPerf` cards and the new
+/// auto-graded `MCATExam` / `MCATCarsPassage` cards feed the performance model.
+pub(crate) const PERF_NOTETYPES: &[&str] = &["MCATPerf", "MCATExam", "MCATCarsPassage"];
+
+/// Tags that explicitly mark a note's reviews as performance evidence,
+/// independent of its notetype. `mcat::exam` is applied to every generated exam
+/// card; `mcat::perf` is retained for older decks.
+const PERF_TAGS: &[&str] = &["mcat::exam", "mcat::perf"];
 
 const DAY_SECS: i64 = 86_400;
 
@@ -70,6 +77,10 @@ pub(crate) struct TopicAgg {
     /// Exam-style performance-question reviews.
     pub perf_reviews: u32,
     pub perf_correct: u32,
+    /// Sum of response times (seconds) across perf reviews, for pacing.
+    pub perf_time_sum_secs: f64,
+    /// Perf reviews that exceeded this topic's `target_seconds` (overtime).
+    pub perf_overtime: u32,
     /// Knowledge-card reviews (for transfer-gap evidence).
     pub knowledge_reviews: u32,
     pub due_card_ids: Vec<CardId>,
@@ -169,6 +180,9 @@ struct RevAgg {
     total: u32,
     correct: u32,
     last_reviewed_at: i64,
+    /// Response times (seconds) for each rated review, so per-topic overtime can
+    /// be computed against the topic's target time.
+    times_secs: Vec<f64>,
 }
 
 impl Collection {
@@ -201,6 +215,8 @@ impl Collection {
                     recall_count: 0,
                     perf_reviews: 0,
                     perf_correct: 0,
+                    perf_time_sum_secs: 0.0,
+                    perf_overtime: 0,
                     knowledge_reviews: 0,
                     due_card_ids: Vec::new(),
                     last_reviewed_at: 0,
@@ -230,6 +246,7 @@ impl Collection {
             if entry.button_chosen >= 3 {
                 agg.correct += 1;
             }
+            agg.times_secs.push(entry.taken_millis as f64 / 1000.0);
             if reviewed_at > agg.last_reviewed_at {
                 agg.last_reviewed_at = reviewed_at;
             }
@@ -273,16 +290,25 @@ impl Collection {
                 continue;
             }
 
-            let is_perf = *notetype_is_perf.entry(note.notetype_id).or_insert_with(|| {
+            // A card feeds the performance model if its note carries a perf/exam
+            // tag, or if its notetype is one of the exam notetypes. The tag check
+            // is authoritative (deck-independent); the notetype set is a fallback
+            // for decks built without the marker tag.
+            let tag_marks_perf = note
+                .tags
+                .iter()
+                .any(|t| PERF_TAGS.iter().any(|p| t == p));
+            let notetype_is_perf = *notetype_is_perf.entry(note.notetype_id).or_insert_with(|| {
                 guard
                     .col
                     .storage
                     .get_notetype(note.notetype_id)
                     .ok()
                     .flatten()
-                    .map(|nt| nt.name == PERF_NOTETYPE)
+                    .map(|nt| PERF_NOTETYPES.contains(&nt.name.as_str()))
                     .unwrap_or(false)
             });
+            let is_perf = tag_marks_perf || notetype_is_perf;
 
             // Prefer the exact FSRS retrievability when the card has memory
             // state. Otherwise (classic SM-2 collections) fall back to an
@@ -330,6 +356,13 @@ impl Collection {
                     if let Some(rev) = rev {
                         agg.perf_reviews += rev.total;
                         agg.perf_correct += rev.correct;
+                        let target = agg.target_seconds;
+                        for &secs in &rev.times_secs {
+                            agg.perf_time_sum_secs += secs;
+                            if secs > target {
+                                agg.perf_overtime += 1;
+                            }
+                        }
                     }
                 } else {
                     agg.knowledge_cards += 1;

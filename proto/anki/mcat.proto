@@ -111,6 +111,12 @@ message PerformanceDetail {
   int64 covered_topics = 4;
   // Total taxonomy topics.
   int64 total_topics = 5;
+  // Mean response time on exam-style questions, in seconds.
+  double average_response_time_secs = 6;
+  // Fraction of exam reviews that exceeded the per-topic time target (0..1).
+  double overtime_rate = 7;
+  // Fraction answered within the time target (1 - overtime_rate).
+  double on_time_rate = 8;
 }
 
 // Progress toward the readiness give-up gate, so the abstention is transparent.
@@ -121,6 +127,16 @@ message ReadinessDetail {
   double required_coverage_percent = 4;
   bool graded_reviews_met = 5;
   bool coverage_met = 6;
+  // Speed/pacing sub-signal folded into readiness: speed_factor in 0..1
+  // (1 = always within the time target). Reported honestly with its weight and
+  // a human-readable reason so it is never a hidden penalty.
+  double speed_factor = 7;
+  double overtime_rate = 8;
+  string speed_reason = 9;
+  // The weights used to blend readiness (memory / performance / speed).
+  double memory_weight = 10;
+  double performance_weight = 11;
+  double speed_weight = 12;
 }
 
 message ExamReadiness {

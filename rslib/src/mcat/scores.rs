@@ -18,6 +18,13 @@ pub(crate) const MIN_COVERAGE: f64 = 0.5;
 const XP_PER_REVIEW: i64 = 10;
 const XP_PER_LEVEL: i64 = 500;
 
+/// Readiness blend weights: memory retention, application accuracy, and pacing
+/// (speed). Kept explicit and reported to the UI so the speed component is an
+/// honest sub-signal rather than a hidden penalty.
+pub(crate) const READINESS_MEMORY_WEIGHT: f64 = 0.35;
+pub(crate) const READINESS_PERFORMANCE_WEIGHT: f64 = 0.5;
+pub(crate) const READINESS_SPEED_WEIGHT: f64 = 0.15;
+
 /// Deterministic point estimate + range on an exam scale.
 ///
 /// `fraction` is the raw ability (0..1); `coverage` and `evidence` drive the
@@ -54,7 +61,38 @@ struct Totals {
     knowledge_reviews: i64,
     perf_reviews: i64,
     perf_correct: i64,
+    perf_time_sum_secs: f64,
+    perf_overtime: i64,
     last_updated: i64,
+}
+
+impl Totals {
+    /// Fraction of exam reviews answered within the per-topic time target
+    /// (0..1). Defaults to 1.0 when there is no timing evidence yet, so pacing
+    /// never penalises a user who has not been timed.
+    fn on_time_rate(&self) -> f64 {
+        if self.perf_reviews > 0 {
+            1.0 - self.perf_overtime as f64 / self.perf_reviews as f64
+        } else {
+            1.0
+        }
+    }
+
+    fn overtime_rate(&self) -> f64 {
+        if self.perf_reviews > 0 {
+            self.perf_overtime as f64 / self.perf_reviews as f64
+        } else {
+            0.0
+        }
+    }
+
+    fn avg_response_time_secs(&self) -> f64 {
+        if self.perf_reviews > 0 {
+            self.perf_time_sum_secs / self.perf_reviews as f64
+        } else {
+            0.0
+        }
+    }
 }
 
 fn totals(snap: &Snapshot) -> Totals {
@@ -64,6 +102,8 @@ fn totals(snap: &Snapshot) -> Totals {
         knowledge_reviews: 0,
         perf_reviews: 0,
         perf_correct: 0,
+        perf_time_sum_secs: 0.0,
+        perf_overtime: 0,
         last_updated: 0,
     };
     for topic in &snap.topics {
@@ -72,6 +112,8 @@ fn totals(snap: &Snapshot) -> Totals {
         t.knowledge_reviews += topic.knowledge_reviews as i64;
         t.perf_reviews += topic.perf_reviews as i64;
         t.perf_correct += topic.perf_correct as i64;
+        t.perf_time_sum_secs += topic.perf_time_sum_secs;
+        t.perf_overtime += topic.perf_overtime as i64;
         t.last_updated = t.last_updated.max(topic.last_reviewed_at);
     }
     t
@@ -184,11 +226,32 @@ impl Collection {
             )
         };
 
+        // --- Speed / pacing sub-signal (honest, reported separately) ---
+        // speed_factor is 1.0 when every timed exam review beat its per-topic
+        // target and falls toward 0 as the overtime rate rises. With no timing
+        // evidence it defaults to 1.0 so pacing never silently penalises.
+        let overtime_rate = t.overtime_rate();
+        let on_time_rate = t.on_time_rate();
+        let speed_factor = (1.0 - overtime_rate).clamp(0.0, 1.0);
+        let speed_reason = if t.perf_reviews == 0 {
+            "No timed exam questions yet — pacing not counted.".to_string()
+        } else {
+            format!(
+                "{:.0}% of exam questions answered within the topic time target (avg {:.0}s)",
+                on_time_rate * 100.0,
+                t.avg_response_time_secs()
+            )
+        };
+
         // --- Readiness (gated by the give-up rule) ---
         let give_up_ok = snap.graded_reviews >= MIN_GRADED_REVIEWS && coverage >= MIN_COVERAGE;
         let readiness = if give_up_ok && memory.available && performance.available {
-            // Performance weighted higher: it is closer to the real exam.
-            let readiness_fraction = 0.4 * memory_fraction + 0.6 * performance_fraction;
+            // Blend retention, application accuracy, and pacing. Performance is
+            // weighted highest (closest to the real exam); speed is a smaller,
+            // transparent component.
+            let readiness_fraction = READINESS_MEMORY_WEIGHT * memory_fraction
+                + READINESS_PERFORMANCE_WEIGHT * performance_fraction
+                + READINESS_SPEED_WEIGHT * speed_factor;
             let (point, low, high, confidence) = estimate(
                 scale.total_min,
                 scale.total_max,
@@ -210,10 +273,18 @@ impl Collection {
                 last_updated,
                 reasons: vec![
                     format!(
-                        "Blends memory ({:.0}%) and performance ({:.0}%)",
+                        "Blends memory ({:.0}%), performance ({:.0}%) and speed ({:.0}%)",
                         memory_fraction * 100.0,
-                        performance_fraction * 100.0
+                        performance_fraction * 100.0,
+                        speed_factor * 100.0
                     ),
+                    format!(
+                        "Weights: {:.0}% memory / {:.0}% performance / {:.0}% speed",
+                        READINESS_MEMORY_WEIGHT * 100.0,
+                        READINESS_PERFORMANCE_WEIGHT * 100.0,
+                        READINESS_SPEED_WEIGHT * 100.0
+                    ),
+                    speed_reason.clone(),
                     format!(
                         "{} graded reviews, {:.0}% coverage",
                         snap.graded_reviews,
@@ -319,6 +390,9 @@ impl Collection {
             correct: t.perf_correct,
             covered_topics: snap.perf_covered_topics(),
             total_topics: snap.total_topics(),
+            average_response_time_secs: t.avg_response_time_secs(),
+            overtime_rate,
+            on_time_rate,
         };
         let readiness_detail = pb::ReadinessDetail {
             graded_reviews: snap.graded_reviews,
@@ -327,6 +401,12 @@ impl Collection {
             required_coverage_percent: MIN_COVERAGE * 100.0,
             graded_reviews_met: snap.graded_reviews >= MIN_GRADED_REVIEWS,
             coverage_met: coverage >= MIN_COVERAGE,
+            speed_factor,
+            overtime_rate,
+            speed_reason,
+            memory_weight: READINESS_MEMORY_WEIGHT,
+            performance_weight: READINESS_PERFORMANCE_WEIGHT,
+            speed_weight: READINESS_SPEED_WEIGHT,
         };
 
         Ok(pb::ExamReadiness {
