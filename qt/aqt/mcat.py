@@ -12,17 +12,94 @@ show identical figures for a synced collection.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import Any
 
 import aqt
 import aqt.main
-from anki.collection import OpChanges
+from anki.collection import Collection, OpChanges
+from anki.consts import QUEUE_TYPE_REV
+from anki.decks import DeckId, FilteredDeckConfig
+from anki.utils import int_time
 from aqt.qt import *
 from aqt.sound import av_player
 from aqt.toolbar import BottomBar
-from aqt.utils import disable_help_button, restoreGeom, saveGeom, tr
+from aqt.utils import (
+    disable_help_button,
+    restoreGeom,
+    saveGeom,
+    showWarning,
+    tooltip,
+    tr,
+)
 from aqt.webview import AnkiWebView, AnkiWebViewKind
+
+# Reusable native filtered deck backing the "Timed interleaved session" block.
+# It is rebuilt (not duplicated) on every launch, and being filtered it is
+# non-destructive: emptying/deleting it returns every card to its home deck.
+MCAT_SESSION_DECK_NAME = "MCAT Session"
+
+
+def build_mcat_session_deck(col: Collection, card_ids: Sequence[int]) -> DeckId:
+    """Create/reuse the "MCAT Session" filtered deck holding exactly `card_ids`,
+    then reposition them so the reviewer presents them in the given order.
+
+    Returns the filtered deck's id. Kept free of any Qt dependency so it can be
+    exercised directly against a collection. Raises if `card_ids` is empty.
+    """
+    if not card_ids:
+        raise ValueError("no cards to study")
+
+    existing = col.decks.id_for_name(MCAT_SESSION_DECK_NAME)
+    deck = col.sched.get_or_create_filtered_deck(deck_id=existing or DeckId(0))
+    deck.name = MCAT_SESSION_DECK_NAME
+    # Reschedule on: studying updates real scheduling/FSRS/revlog (which feeds the
+    # MCAT scores), and cards are returned to their home decks when emptied.
+    deck.config.reschedule = True
+    # allow_empty avoids a hard error if a race means nothing matches.
+    deck.allow_empty = True
+
+    search = "cid:" + ",".join(str(c) for c in card_ids)
+    del deck.config.search_terms[:]
+    deck.config.search_terms.append(
+        FilteredDeckConfig.SearchTerm(
+            search=search,
+            limit=len(card_ids),
+            order=FilteredDeckConfig.SearchTerm.ADDED,
+        )
+    )
+
+    out = col.sched.add_or_update_filtered_deck(deck)
+    did = DeckId(out.id)
+    _reposition_session_cards(col, did, card_ids)
+    return did
+
+
+def _reposition_session_cards(
+    col: Collection, did: DeckId, card_ids: Sequence[int]
+) -> None:
+    """Best-effort order fidelity: within a filtered deck a review card's queue
+    position is stored in `due`, and the v3 scheduler serves review cards by
+    ascending `due`. Rewriting `due` to the interleaved rank therefore reproduces
+    the planned sequence for review cards without disturbing real scheduling
+    (`odue` is preserved, so emptying/rebuilding restores the true due date).
+
+    Only review-queue cards are touched; new and interday-learning cards are
+    positioned by Anki's queue-mixing rules, so cross-type interleaving is
+    approximate for those.
+    """
+    usn = col.usn()
+    mod = int_time()
+    for rank, cid in enumerate(card_ids):
+        col.db.execute(
+            "update cards set due=?, usn=?, mod=? where id=? and did=? and queue=?",
+            rank,
+            usn,
+            mod,
+            cid,
+            did,
+            QUEUE_TYPE_REV,
+        )
 
 
 class MCATHomeBottomBar:
@@ -85,12 +162,47 @@ class MCATHome:
             self._study_now()
         elif url == "decks":
             self.mw.moveToState("deckBrowser")
+        elif url.startswith("mcat:start-session"):
+            # url form: "mcat:start-session:<1|0>" (interleave on/off)
+            interleave = not url.endswith(":0")
+            self._start_interleaved_session(interleave)
         return False
 
     def _study_now(self) -> None:
         # Move into the deck overview (which falls back to the deck browser if no
         # deck is selected); from there the user can begin reviewing.
         self.mw.onOverview()
+
+    def _start_interleaved_session(self, interleave: bool) -> None:
+        """Turn the previewed interleaved plan into a real review.
+
+        Recomputes the session on the Qt side with the same interleave flag so
+        the order matches the preview deterministically, materialises it as the
+        reusable "MCAT Session" filtered deck, then opens the reviewer on it.
+        """
+        col = self.mw.col
+        session = col.mcat_interleaved_session(interleave=interleave)
+        card_ids = list(session.card_ids)
+        if not card_ids:
+            tooltip(tr.studying_no_cards_are_due_yet(), parent=self.mw)
+            return
+
+        try:
+            did = build_mcat_session_deck(col, card_ids)
+        except Exception as exc:
+            showWarning(f"Couldn't build the MCAT session deck: {exc}", parent=self.mw)
+            return
+
+        # Guarded log so a headless run can confirm the handler fired and the
+        # filtered-deck build completed without exceptions.
+        print(
+            f"MCAT: launched session deck did={did} cards={len(card_ids)} "
+            f"interleave={interleave} mode={'interleaved' if session.interleaved else 'blocked'}"
+        )
+
+        col.decks.select(did)
+        col.startTimebox()
+        self.mw.moveToState("review")
 
     # Bottom bar
     ##########################################################################

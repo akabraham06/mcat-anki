@@ -54,6 +54,8 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     const targetByKey = new Map(targets.targets.map((t) => [t.topicKey, t]));
     async function buildSession(): Promise<void> {
         building = true;
+        // A freshly toggled interleave setting invalidates any previous preview.
+        session = null;
         try {
             session = await buildInterleavedSession({
                 tagPrefix: "",
@@ -63,6 +65,17 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         } finally {
             building = false;
         }
+    }
+
+    // Hand the built session to the Qt layer, which rebuilds a native filtered
+    // ("MCAT Session") deck from the same deterministic order and opens the
+    // reviewer on it. The interleave flag is forwarded so Qt recomputes the
+    // identical sequence rather than us shipping a huge id list over the bridge.
+    function startSession(): void {
+        if (!session) {
+            return;
+        }
+        bridgeCommand(`mcat:start-session:${interleave ? 1 : 0}`);
     }
     $: sessionTargetSecs = session
         ? session.topicKeys.reduce(
@@ -96,6 +109,29 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     };
     const sectionColor = (key: string): string =>
         sectionColors[key] ?? "var(--fg-subtle, #888)";
+
+    // Compact section labels so each row stays a single tidy line. The full
+    // section names (e.g. "Biological and Biochemical Foundations of Living
+    // Systems") are far too wide for an inline badge, so map the known
+    // sectionKeys to short labels and fall back to a truncated name otherwise.
+    const sectionShortLabels: Record<string, string> = {
+        biobiochem: "Bio/Biochem",
+        chemphys: "Chem/Phys",
+        cars: "CARS",
+        psychsoc: "Psych/Soc",
+    };
+    const sectionShort = (item: SessionItem): string => {
+        const known = sectionShortLabels[item.sectionKey];
+        if (known) {
+            return known;
+        }
+        if (item.sectionName) {
+            return item.sectionName.length > 12
+                ? `${item.sectionName.slice(0, 11)}…`
+                : item.sectionName;
+        }
+        return item.sectionKey || "—";
+    };
 
     function barLeft(est: ScoreEstimate): number {
         const range = est.scaleMax - est.scaleMin || 1;
@@ -350,7 +386,19 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
             <input type="checkbox" bind:checked={interleave} />
             Interleave topics (off = blocked practice)
         </label>
-        <button on:click={buildSession} disabled={building}>Build session</button>
+        <div class="session-actions">
+            <button on:click={buildSession} disabled={building}>Build session</button>
+            {#if inDesktopShell}
+                <button
+                    class="start"
+                    on:click={startSession}
+                    disabled={building || !session || session.cardIds.length === 0}
+                    title="Open these cards in Anki's reviewer via a filtered deck"
+                >
+                    Start session in Anki
+                </button>
+            {/if}
+        </div>
         {#if session}
             <p class="log">
                 <strong>{session.cardIds.length}</strong> cards
@@ -368,9 +416,9 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                         <span
                             class="chip"
                             style="--chip:{sectionColor(item.sectionKey)}"
-                            title={item.sectionName}
+                            title={item.sectionName || item.sectionKey}
                         >
-                            {item.sectionName || item.sectionKey}
+                            {sectionShort(item)}
                         </span>
                         <span class="topic">{item.topicName}</span>
                     </li>
@@ -632,6 +680,21 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         opacity: 0.6;
         cursor: default;
     }
+    .session-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    .session-actions .start {
+        background: var(--fg-link, #3b82f6);
+        color: #fff;
+        border-color: transparent;
+        font-weight: 600;
+    }
+    .session-actions .start:not(:disabled):hover {
+        filter: brightness(1.08);
+    }
     .log {
         color: var(--fg-subtle);
         margin: 0.75rem 0;
@@ -663,39 +726,48 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         list-style: none;
         margin: 0.5rem 0 0;
         padding: 0;
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-        gap: 0.3rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
         font-size: 0.9em;
     }
     .order li {
         display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.2rem 0;
+        align-items: baseline;
+        gap: 0.55rem;
+        padding: 0.15rem 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .order li:last-child {
+        border-bottom: none;
     }
     .order .idx {
+        flex: none;
         color: var(--fg-subtle);
         font-variant-numeric: tabular-nums;
-        min-width: 1.4em;
+        min-width: 1.6em;
         text-align: right;
         font-size: 0.85em;
     }
     .order .chip {
         flex: none;
-        min-width: 5.5em;
+        width: 6.5em;
         text-align: center;
         border-radius: 999px;
-        padding: 0.05rem 0.5rem;
-        font-size: 0.78em;
+        padding: 0.05rem 0.4rem;
+        font-size: 0.75em;
         font-weight: 600;
         color: #fff;
         background: var(--chip, var(--fg-subtle));
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        align-self: center;
     }
     .order .topic {
+        flex: 1;
+        min-width: 0;
         color: var(--fg);
+        overflow-wrap: anywhere;
     }
 </style>
