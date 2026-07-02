@@ -172,6 +172,15 @@ public nonisolated struct Anki_Mcat_PerformanceDetail: Sendable {
   /// Total taxonomy topics.
   public var totalTopics: Int64 = 0
 
+  /// Mean response time on exam-style questions, in seconds.
+  public var averageResponseTimeSecs: Double = 0
+
+  /// Fraction of exam reviews that exceeded the per-topic time target (0..1).
+  public var overtimeRate: Double = 0
+
+  /// Fraction answered within the time target (1 - overtime_rate).
+  public var onTimeRate: Double = 0
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -194,6 +203,22 @@ public nonisolated struct Anki_Mcat_ReadinessDetail: Sendable {
   public var gradedReviewsMet: Bool = false
 
   public var coverageMet: Bool = false
+
+  /// Speed/pacing sub-signal folded into readiness: speed_factor in 0..1
+  /// (1 = always within the time target). Reported honestly with its weight and
+  /// a human-readable reason so it is never a hidden penalty.
+  public var speedFactor: Double = 0
+
+  public var overtimeRate: Double = 0
+
+  public var speedReason: String = String()
+
+  /// The weights used to blend readiness (memory / performance / speed).
+  public var memoryWeight: Double = 0
+
+  public var performanceWeight: Double = 0
+
+  public var speedWeight: Double = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -878,7 +903,7 @@ nonisolated extension Anki_Mcat_MemoryDetail: SwiftProtobuf.Message, SwiftProtob
 
 nonisolated extension Anki_Mcat_PerformanceDetail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PerformanceDetail"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}questions_answered\0\u{3}accuracy_percent\0\u{1}correct\0\u{3}covered_topics\0\u{3}total_topics\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}questions_answered\0\u{3}accuracy_percent\0\u{1}correct\0\u{3}covered_topics\0\u{3}total_topics\0\u{3}average_response_time_secs\0\u{3}overtime_rate\0\u{3}on_time_rate\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -891,6 +916,9 @@ nonisolated extension Anki_Mcat_PerformanceDetail: SwiftProtobuf.Message, SwiftP
       case 3: try { try decoder.decodeSingularInt64Field(value: &self.correct) }()
       case 4: try { try decoder.decodeSingularInt64Field(value: &self.coveredTopics) }()
       case 5: try { try decoder.decodeSingularInt64Field(value: &self.totalTopics) }()
+      case 6: try { try decoder.decodeSingularDoubleField(value: &self.averageResponseTimeSecs) }()
+      case 7: try { try decoder.decodeSingularDoubleField(value: &self.overtimeRate) }()
+      case 8: try { try decoder.decodeSingularDoubleField(value: &self.onTimeRate) }()
       default: break
       }
     }
@@ -912,6 +940,15 @@ nonisolated extension Anki_Mcat_PerformanceDetail: SwiftProtobuf.Message, SwiftP
     if self.totalTopics != 0 {
       try visitor.visitSingularInt64Field(value: self.totalTopics, fieldNumber: 5)
     }
+    if self.averageResponseTimeSecs.bitPattern != 0 {
+      try visitor.visitSingularDoubleField(value: self.averageResponseTimeSecs, fieldNumber: 6)
+    }
+    if self.overtimeRate.bitPattern != 0 {
+      try visitor.visitSingularDoubleField(value: self.overtimeRate, fieldNumber: 7)
+    }
+    if self.onTimeRate.bitPattern != 0 {
+      try visitor.visitSingularDoubleField(value: self.onTimeRate, fieldNumber: 8)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -921,6 +958,9 @@ nonisolated extension Anki_Mcat_PerformanceDetail: SwiftProtobuf.Message, SwiftP
     if lhs.correct != rhs.correct {return false}
     if lhs.coveredTopics != rhs.coveredTopics {return false}
     if lhs.totalTopics != rhs.totalTopics {return false}
+    if lhs.averageResponseTimeSecs != rhs.averageResponseTimeSecs {return false}
+    if lhs.overtimeRate != rhs.overtimeRate {return false}
+    if lhs.onTimeRate != rhs.onTimeRate {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -928,7 +968,7 @@ nonisolated extension Anki_Mcat_PerformanceDetail: SwiftProtobuf.Message, SwiftP
 
 nonisolated extension Anki_Mcat_ReadinessDetail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ReadinessDetail"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}graded_reviews\0\u{3}required_graded_reviews\0\u{3}coverage_percent\0\u{3}required_coverage_percent\0\u{3}graded_reviews_met\0\u{3}coverage_met\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}graded_reviews\0\u{3}required_graded_reviews\0\u{3}coverage_percent\0\u{3}required_coverage_percent\0\u{3}graded_reviews_met\0\u{3}coverage_met\0\u{3}speed_factor\0\u{3}overtime_rate\0\u{3}speed_reason\0\u{3}memory_weight\0\u{3}performance_weight\0\u{3}speed_weight\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -942,6 +982,12 @@ nonisolated extension Anki_Mcat_ReadinessDetail: SwiftProtobuf.Message, SwiftPro
       case 4: try { try decoder.decodeSingularDoubleField(value: &self.requiredCoveragePercent) }()
       case 5: try { try decoder.decodeSingularBoolField(value: &self.gradedReviewsMet) }()
       case 6: try { try decoder.decodeSingularBoolField(value: &self.coverageMet) }()
+      case 7: try { try decoder.decodeSingularDoubleField(value: &self.speedFactor) }()
+      case 8: try { try decoder.decodeSingularDoubleField(value: &self.overtimeRate) }()
+      case 9: try { try decoder.decodeSingularStringField(value: &self.speedReason) }()
+      case 10: try { try decoder.decodeSingularDoubleField(value: &self.memoryWeight) }()
+      case 11: try { try decoder.decodeSingularDoubleField(value: &self.performanceWeight) }()
+      case 12: try { try decoder.decodeSingularDoubleField(value: &self.speedWeight) }()
       default: break
       }
     }
@@ -966,6 +1012,24 @@ nonisolated extension Anki_Mcat_ReadinessDetail: SwiftProtobuf.Message, SwiftPro
     if self.coverageMet != false {
       try visitor.visitSingularBoolField(value: self.coverageMet, fieldNumber: 6)
     }
+    if self.speedFactor.bitPattern != 0 {
+      try visitor.visitSingularDoubleField(value: self.speedFactor, fieldNumber: 7)
+    }
+    if self.overtimeRate.bitPattern != 0 {
+      try visitor.visitSingularDoubleField(value: self.overtimeRate, fieldNumber: 8)
+    }
+    if !self.speedReason.isEmpty {
+      try visitor.visitSingularStringField(value: self.speedReason, fieldNumber: 9)
+    }
+    if self.memoryWeight.bitPattern != 0 {
+      try visitor.visitSingularDoubleField(value: self.memoryWeight, fieldNumber: 10)
+    }
+    if self.performanceWeight.bitPattern != 0 {
+      try visitor.visitSingularDoubleField(value: self.performanceWeight, fieldNumber: 11)
+    }
+    if self.speedWeight.bitPattern != 0 {
+      try visitor.visitSingularDoubleField(value: self.speedWeight, fieldNumber: 12)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -976,6 +1040,12 @@ nonisolated extension Anki_Mcat_ReadinessDetail: SwiftProtobuf.Message, SwiftPro
     if lhs.requiredCoveragePercent != rhs.requiredCoveragePercent {return false}
     if lhs.gradedReviewsMet != rhs.gradedReviewsMet {return false}
     if lhs.coverageMet != rhs.coverageMet {return false}
+    if lhs.speedFactor != rhs.speedFactor {return false}
+    if lhs.overtimeRate != rhs.overtimeRate {return false}
+    if lhs.speedReason != rhs.speedReason {return false}
+    if lhs.memoryWeight != rhs.memoryWeight {return false}
+    if lhs.performanceWeight != rhs.performanceWeight {return false}
+    if lhs.speedWeight != rhs.speedWeight {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

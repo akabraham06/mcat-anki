@@ -224,6 +224,10 @@ struct PerformanceDetailView: View {
             if detail.questionsAnswered > 0 {
                 rows.append(("Accuracy", pct(detail.accuracyPercent)))
                 rows.append(("Correct", "\(detail.correct) / \(detail.questionsAnswered)"))
+                // Pacing: how fast (mean seconds) and how often within the target.
+                rows.append(("Avg time", "\(one(detail.averageResponseTimeSecs))s"))
+                rows.append(("On time", pct(detail.onTimeRate * 100)))
+                rows.append(("Overtime", pct(detail.overtimeRate * 100)))
             }
             rows.append(("Topics covered", "\(detail.coveredTopics) / \(detail.totalTopics)"))
             return rows
@@ -234,14 +238,33 @@ struct PerformanceDetailView: View {
 struct ReadinessDetailView: View {
     let detail: Anki_Mcat_ReadinessDetail
     var body: some View {
-        StatGrid(rows: [
-            ("Graded reviews",
-             "\(detail.gradedReviews) / \(detail.requiredGradedReviews)",
-             detail.gradedReviewsMet),
-            ("Coverage",
-             "\(pct(detail.coveragePercent)) / \(pct(detail.requiredCoveragePercent))",
-             detail.coverageMet),
-        ])
+        VStack(alignment: .leading, spacing: 2) {
+            StatGrid(rows: [
+                ("Graded reviews",
+                 "\(detail.gradedReviews) / \(detail.requiredGradedReviews)",
+                 detail.gradedReviewsMet),
+                ("Coverage",
+                 "\(pct(detail.coveragePercent)) / \(pct(detail.requiredCoveragePercent))",
+                 detail.coverageMet),
+                // Speed/pacing sub-signal folded into readiness. 100% = every
+                // answer within its per-topic time target (untimed = full speed).
+                ("Speed factor", pct(detail.speedFactor * 100), detail.speedFactor >= 0.999),
+                ("Overtime rate", pct(detail.overtimeRate * 100), false),
+            ])
+            // The weights are shown so the blend is transparent, never hidden.
+            StatGrid(rows: [
+                ("Weights (mem / perf / speed)",
+                 "\(pct(detail.memoryWeight * 100)) / "
+                    + "\(pct(detail.performanceWeight * 100)) / "
+                    + "\(pct(detail.speedWeight * 100))"),
+            ])
+            if !detail.speedReason.isEmpty {
+                Text(detail.speedReason)
+                    .font(.caption2).italic()
+                    .foregroundStyle(.secondary)
+                    .padding(.top, 1)
+            }
+        }
     }
 }
 
