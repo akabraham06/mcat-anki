@@ -169,6 +169,11 @@ class Reviewer:
         self._show_question_timer: QTimer | None = None
         self._show_answer_timer: QTimer | None = None
         self.auto_advance_enabled = False
+        # MCAT exam mode: pending auto-grade from a clicked MCQ option, timeout
+        # guard, and a cached per-topic time-budget lookup.
+        self._mcat_pending_ease: Literal[1, 3] | None = None
+        self._mcat_timed_out = False
+        self._mcat_targets: dict[str, float] | None = None
         gui_hooks.av_player_did_end_playing.append(self._on_av_player_did_end_playing)
 
     def show(self) -> None:
@@ -373,6 +378,9 @@ class Reviewer:
         self._reps += 1
         self.state = "question"
         self.typedAnswer: str | None = None
+        # Reset MCAT exam-mode per-question state.
+        self._mcat_pending_ease = None
+        self._mcat_timed_out = False
         c = self.card
         # grab the question and play audio
         q = c.question()
@@ -658,6 +666,11 @@ class Reviewer:
 
     def onEnterKey(self) -> None:
         if self.state == "question":
+            # On an MCAT exam card, once an option has been selected Space/Enter
+            # acts as "Next" (advance with the auto-grade) rather than revealing.
+            if self._mcat_pending_ease is not None and self._is_mcat_exam_card():
+                self._mcat_advance()
+                return
             self._getTypedAnswer()
         elif self.state == "answer" and aqt.mw.pm.spacebar_rates_card():
             self.bottom.web.evalWithCallback(
@@ -691,6 +704,22 @@ class Reviewer:
             self.web.update()
         elif url == "statesMutated":
             self._states_mutated = True
+        elif url.startswith("mcat_answer:"):
+            # An MCQ option was clicked on an exam card. Record the auto-grade
+            # (correct -> 3, wrong -> 1) and freeze the countdown; do NOT
+            # auto-advance (user presses Next).
+            if self._is_mcat_exam_card():
+                try:
+                    ease = int(url.split(":", 1)[1])
+                except ValueError:
+                    ease = 1
+                self._mcat_pending_ease = 3 if ease >= 3 else 1
+                self.bottom.web.eval("if (window.mcatFreeze) { mcatFreeze(); }")
+        elif url == "mcat_next":
+            if self._is_mcat_exam_card():
+                self._mcat_advance()
+        elif url == "mcat_timeout":
+            self._mcat_on_timeout()
         else:
             print("unrecognized anki link:", url)
 
@@ -852,11 +881,89 @@ timerStopped = false;
             "<table cellpadding=0><tr><td class=stat2 align=center>%s</td></tr></table>"
             % middle
         )
-        if self.card.should_show_timer():
+        # MCAT exam cards get a per-question COUNTDOWN using the topic's target
+        # time; every other card keeps Anki's standard count-up behaviour.
+        if self._is_mcat_exam_card():
+            maxTime = float(self._mcat_time_budget())
+            countdown = True
+        elif self.card.should_show_timer():
             maxTime = self.card.time_limit() / 1000
+            countdown = False
         else:
             maxTime = 0
-        self.bottom.web.eval("showQuestion(%s,%d);" % (json.dumps(middle), maxTime))
+            countdown = False
+        self.bottom.web.eval(
+            "showQuestion(%s,%d,%s);"
+            % (json.dumps(middle), maxTime, json.dumps(countdown))
+        )
+
+    # MCAT exam mode
+    ##########################################################################
+    #
+    # Exam cards (MCATExam / MCATCarsPassage, marked with the ``mcat::exam``
+    # tag) are auto-graded from a clicked multiple-choice option: the card JS
+    # bridges the selection back here via ``pycmd``, and we map correct -> Good
+    # (3) and wrong -> Again (1). Per the product decision the reviewer does NOT
+    # auto-advance after a selection; the user presses Next (or Space). Only a
+    # countdown timeout auto-reveals the answer and moves on. All of this is
+    # gated on the exam tag so normal decks are completely unaffected.
+
+    def _is_mcat_exam_card(self) -> bool:
+        if self.card is None:
+            return False
+        try:
+            return self.card.note().has_tag("mcat::exam")
+        except Exception:
+            return False
+
+    def _mcat_time_budget(self) -> int:
+        """Per-question countdown budget (seconds) from the card's MCAT topic
+        target, falling back to the CARS/default target if unknown."""
+        default = 90
+        try:
+            if self._mcat_targets is None:
+                targets = self.mw.col.mcat_topic_targets()
+                self._mcat_targets = {
+                    t.topic_key: t.target_seconds for t in targets.targets
+                }
+            for tag in self.card.note().tags:
+                if tag in ("mcat::exam", "mcat::perf"):
+                    continue
+                if tag.startswith("mcat::") and tag.count("::") >= 2:
+                    secs = self._mcat_targets.get(tag)
+                    if secs:
+                        return int(secs)
+        except Exception:
+            pass
+        return default
+
+    def _mcat_advance(self) -> None:
+        """Answer the current exam card with the pending auto-grade and move on."""
+        if self._mcat_pending_ease is None:
+            return
+        if self.mw.state != "review" or self.card is None:
+            return
+        ease = self._mcat_pending_ease
+        self._mcat_pending_ease = None
+        # Allow _answerCard to proceed (it requires the "answer" state).
+        self.state = "answer"
+        self._answerCard(ease)
+
+    def _mcat_on_timeout(self) -> None:
+        """Countdown hit zero: reveal the answer and move on (auto-graded Again
+        if nothing was selected)."""
+        if not self._is_mcat_exam_card() or self.state != "question":
+            return
+        if self._mcat_timed_out:
+            return
+        self._mcat_timed_out = True
+        if self._mcat_pending_ease is None:
+            # No option chosen in time -> wrong.
+            self._mcat_pending_ease = 1
+        # Reveal the correct answer in the card, then advance shortly after so
+        # the user can see it.
+        self.web.eval("if (window.mcatReveal) { mcatReveal(); }")
+        self.mw.progress.single_shot(1500, self._mcat_advance)
 
     def _showEaseButtons(self) -> None:
         if not self._states_mutated:

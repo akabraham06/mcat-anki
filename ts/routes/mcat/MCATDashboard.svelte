@@ -248,6 +248,14 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                             <dd>
                                 {performanceDetail.correct} / {performanceDetail.questionsAnswered}
                             </dd>
+                            <dt>On-time rate</dt>
+                            <dd class:met={performanceDetail.onTimeRate >= 0.5}>
+                                {pct(performanceDetail.onTimeRate * 100)}
+                            </dd>
+                            <dt>Avg answer time</dt>
+                            <dd class:slow={performanceDetail.overtimeRate > 0.5}>
+                                {one(performanceDetail.averageResponseTimeSecs)}s
+                            </dd>
                         {/if}
                         <dt>Topics covered</dt>
                         <dd>
@@ -266,7 +274,19 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                                 readinessDetail.requiredCoveragePercent,
                             )}
                         </dd>
+                        <dt title={readinessDetail.speedReason}>
+                            Speed factor
+                            <span class="wt">
+                                ({pct(readinessDetail.speedWeight * 100)} of score)
+                            </span>
+                        </dt>
+                        <dd class:slow={readinessDetail.overtimeRate > 0.5}>
+                            {pct(readinessDetail.speedFactor * 100)}
+                        </dd>
                     </dl>
+                    {#if readinessDetail.speedReason}
+                        <p class="speed-note">{readinessDetail.speedReason}</p>
+                    {/if}
                 {/if}
             </div>
         {/each}
@@ -643,6 +663,20 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     .stats dd.met {
         color: var(--state-new, #2e7d32);
         font-weight: 600;
+    }
+    .stats dd.slow {
+        color: var(--flag-1, #c62828);
+        font-weight: 600;
+    }
+    .stats dt .wt {
+        font-size: 0.85em;
+        opacity: 0.75;
+    }
+    .speed-note {
+        margin: 0.5rem 0 0;
+        font-size: 0.8em;
+        color: var(--fg-subtle);
+        font-style: italic;
     }
     .xp {
         display: flex;
