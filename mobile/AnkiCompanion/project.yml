@@ -49,5 +49,10 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: "MCAT"
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1,2"
+        # The engine xcframework (mobile/build_ios.sh) ships only the Apple-silicon
+        # simulator + device slices (aarch64-apple-ios-sim / aarch64-apple-ios).
+        # There is no x86_64 slice, so exclude it from simulator builds — every
+        # supported Mac here runs the arm64 simulator.
+        "EXCLUDED_ARCHS[sdk=iphonesimulator*]": x86_64
         # The Rust static library pulls in these system libs/frameworks.
         OTHER_LDFLAGS: "-lc++ -lz -liconv -framework Security -framework SystemConfiguration -framework CoreFoundation"

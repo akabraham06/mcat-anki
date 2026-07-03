@@ -225,7 +225,9 @@ final class ReviewStore: ObservableObject {
 }
 
 /// The generic reviewer screen: a WKWebView showing the rendered card, with a
-/// "Show Answer" button that flips to the four rating buttons.
+/// "Show answer" button that flips to the four rating buttons. The card itself
+/// is engine-rendered HTML; the surrounding cockpit (background, dividers,
+/// buttons) is themed to match the instrument.
 struct ReviewView: View {
     @ObservedObject var collection: CollectionStore
     @StateObject private var review: ReviewStore
@@ -238,23 +240,36 @@ struct ReviewView: View {
     }
 
     var body: some View {
-        Group {
-            if review.loading {
-                ProgressView("Loading…")
-            } else if let message = review.errorMessage {
-                errorState(message)
-            } else if let card = review.card {
-                cardView(card)
-            } else if review.finished {
-                summary
-            } else {
-                ProgressView()
+        ZStack {
+            Theme.ink.ignoresSafeArea()
+            Group {
+                if review.loading {
+                    loadingState
+                } else if let message = review.errorMessage {
+                    errorState(message)
+                } else if let card = review.card {
+                    cardView(card)
+                } else if review.finished {
+                    summary
+                } else {
+                    ProgressView().tint(Theme.chemphys)
+                }
             }
         }
         .navigationTitle(review.deckName)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(Theme.panel, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
         .task { await review.start() }
         .onDisappear { Task { await review.endSession() } }
+    }
+
+    private var loadingState: some View {
+        VStack(spacing: 12) {
+            ProgressView().tint(Theme.chemphys)
+            Text("Loading cards")
+                .font(.mcatMono(13, relativeTo: .caption)).foregroundStyle(Theme.muted)
+        }
     }
 
     private func cardView(_ card: ReviewStore.RenderedCard) -> some View {
@@ -262,7 +277,7 @@ struct ReviewView: View {
             CardWebView(html: review.revealed ? card.answerHTML : card.questionHTML)
                 .id("\(card.cardId)-\(review.revealed)")
 
-            Divider()
+            Rectangle().fill(Theme.hairline).frame(height: 1)
 
             if review.revealed {
                 ratingButtons
@@ -270,13 +285,10 @@ struct ReviewView: View {
                 Button {
                     review.showAnswer()
                 } label: {
-                    Text("Show Answer")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
+                    Text("Show answer")
                 }
-                .buttonStyle(.borderedProminent)
-                .padding()
+                .buttonStyle(InstrumentButtonStyle(tint: Theme.chemphys))
+                .padding(16)
             }
         }
     }
@@ -287,69 +299,79 @@ struct ReviewView: View {
                 Button {
                     Task { await review.answer(button.rating) }
                 } label: {
-                    VStack(spacing: 2) {
-                        Text(button.title).font(.subheadline.bold())
+                    VStack(spacing: 3) {
+                        Text(button.title)
+                            .font(.mcatBody(14, relativeTo: .subheadline, semibold: true))
+                            .foregroundStyle(Theme.text)
                         if !button.label.isEmpty {
                             Text(button.label)
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
+                                .font(.mcatMono(10, relativeTo: .caption2))
+                                .foregroundStyle(Theme.muted)
                         }
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
+                    .padding(.vertical, 10)
                     .background(color(for: button.rating).opacity(0.15))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 8)
+                        RoundedRectangle(cornerRadius: 10)
                             .stroke(color(for: button.rating), lineWidth: 1)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Theme.panel)
     }
 
     private func color(for rating: Anki_Scheduler_CardAnswer.Rating) -> Color {
         switch rating {
-        case .again: return .red
-        case .hard: return .orange
-        case .good: return .green
-        case .easy: return .blue
-        case .UNRECOGNIZED: return .gray
+        case .again: return Theme.miss
+        case .hard: return Theme.warn
+        case .good: return Theme.ready
+        case .easy: return Theme.chemphys
+        case .UNRECOGNIZED: return Theme.muted
         }
     }
 
     private var summary: some View {
         VStack(spacing: 16) {
             Image(systemName: "checkmark.seal.fill")
-                .font(.system(size: 52)).foregroundStyle(.green)
-            Text("All done").font(.title2.bold())
+                .font(.system(size: 48)).foregroundStyle(Theme.ready)
+            Text("All done")
+                .font(.mcatDisplay(26, relativeTo: .title, bold: true))
+                .foregroundStyle(Theme.text)
             Text(review.answeredCount > 0
                 ? "\(review.answeredCount) card\(review.answeredCount == 1 ? "" : "s") reviewed."
                 : "No cards were due in this deck.")
-                .font(.subheadline).foregroundStyle(.secondary)
+                .font(.mcatBody(14, relativeTo: .subheadline))
+                .foregroundStyle(Theme.muted)
             Text("Your reviews were written to the collection and "
                 + "\(review.answeredCount > 0 ? "synced" : "will sync") to AnkiWeb.")
-                .font(.caption).foregroundStyle(.secondary)
-                .multilineTextAlignment(.center).padding(.horizontal)
+                .font(.mcatBody(12, relativeTo: .caption))
+                .foregroundStyle(Theme.muted)
+                .multilineTextAlignment(.center)
             Button("Done") { dismiss() }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(InstrumentButtonStyle(tint: Theme.chemphys))
+                .padding(.horizontal, 40)
         }
-        .padding()
+        .padding(24)
     }
 
     private func errorState(_ message: String) -> some View {
         VStack(spacing: 12) {
             Image(systemName: "exclamationmark.triangle")
-                .font(.largeTitle).foregroundStyle(.secondary)
-            Text("Couldn't load cards").font(.headline)
+                .font(.title).foregroundStyle(Theme.warn)
+            Text("Couldn't load cards")
+                .font(.mcatBody(17, relativeTo: .headline, semibold: true))
+                .foregroundStyle(Theme.text)
             Text(message)
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.mcatMono(12, relativeTo: .caption)).foregroundStyle(Theme.muted)
                 .multilineTextAlignment(.center)
         }
-        .padding()
+        .padding(24)
     }
 }
 

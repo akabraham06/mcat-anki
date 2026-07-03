@@ -10,18 +10,21 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if store.loading {
-                    ProgressView("Loading engine…")
-                } else if let readiness = store.readiness {
-                    ReadinessView(readiness: readiness, store: store)
-                } else if let message = store.errorMessage {
-                    errorState(message)
-                } else {
-                    Text("No data")
+            ZStack {
+                Theme.ink.ignoresSafeArea()
+                Group {
+                    if store.loading {
+                        loadingState
+                    } else if let readiness = store.readiness {
+                        ReadinessView(readiness: readiness, store: store)
+                    } else if let message = store.errorMessage {
+                        errorState(message)
+                    } else {
+                        Text("No data").font(.mcatBody(16)).foregroundStyle(Theme.muted)
+                    }
                 }
             }
-            .navigationTitle("MCAT Readiness")
+            .navigationTitle("Readiness")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     SyncButton(store: store, showingLogin: $showingLogin)
@@ -30,14 +33,18 @@ struct ContentView: View {
             .safeAreaInset(edge: .bottom) {
                 if let message = store.syncMessage {
                     Text(message)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.mcatMono(12, relativeTo: .caption))
+                        .foregroundStyle(Theme.muted)
                         .frame(maxWidth: .infinity)
-                        .padding(6)
-                        .background(.thinMaterial)
+                        .padding(8)
+                        .background(Theme.panel)
+                        .overlay(Rectangle().fill(Theme.hairline).frame(height: 1), alignment: .top)
                 }
             }
+            .toolbarBackground(Theme.panel, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
         }
+        .tint(Theme.chemphys)
         .sheet(isPresented: $showingLogin) {
             LoginView(store: store)
         }
@@ -50,21 +57,256 @@ struct ContentView: View {
         }
     }
 
+    private var loadingState: some View {
+        VStack(spacing: 14) {
+            ProgressView().tint(Theme.chemphys)
+            Text("Warming up the engine")
+                .font(.mcatMono(13, relativeTo: .caption)).foregroundStyle(Theme.muted)
+        }
+    }
+
     private func errorState(_ message: String) -> some View {
         VStack(spacing: 12) {
-            Text("Couldn't load readiness").font(.headline)
+            Image(systemName: "exclamationmark.triangle")
+                .font(.title).foregroundStyle(Theme.warn)
+            Text("Couldn't load readiness").font(.mcatBody(17, relativeTo: .headline, semibold: true))
+                .foregroundStyle(Theme.text)
             Text(message)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.mcatMono(12, relativeTo: .caption)).foregroundStyle(Theme.muted)
                 .multilineTextAlignment(.center)
         }
-        .padding()
+        .padding(24)
     }
 }
 
-// MARK: - Readiness dashboard
+// MARK: - Readiness instrument panel (viewport-fit primary content)
 
+/// The cockpit. The primary content — the readiness gauge, the two supporting
+/// scores, a "study next" cue and the actions — is sized to sit in one viewport
+/// without scrolling. The dense rubric lives behind "Full breakdown".
 struct ReadinessView: View {
+    let readiness: Anki_Mcat_ExamReadiness
+    @ObservedObject var store: CollectionStore
+
+    /// Semantic accent for the headline gauge: green once the readiness gate
+    /// (enough graded reviews + coverage) is met, amber while still below it.
+    private var readinessMet: Bool {
+        readiness.hasReadinessDetail
+            && readiness.readinessDetail.gradedReviewsMet
+            && readiness.readinessDetail.coverageMet
+    }
+    private var heroAccent: Color { readinessMet ? Theme.ready : Theme.warn }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HeroGauge(score: readiness.readiness, accent: heroAccent)
+
+            if readiness.hasRecommendation, readiness.recommendation.available {
+                StudyNextCue(recommendation: readiness.recommendation)
+            }
+
+            HStack(spacing: 12) {
+                MiniScore(score: readiness.memory)
+                MiniScore(score: readiness.performance)
+            }
+
+            CoverageStrip(readiness: readiness)
+
+            Spacer(minLength: 0)
+
+            actions
+        }
+        .padding(16)
+    }
+
+    private var actions: some View {
+        VStack(spacing: 10) {
+            NavigationLink {
+                ExamView(collection: store)
+            } label: {
+                Label("Start timed exam", systemImage: "timer")
+            }
+            .buttonStyle(InstrumentButtonStyle(tint: Theme.chemphys))
+
+            HStack(spacing: 10) {
+                NavigationLink {
+                    DeckListView(collection: store)
+                } label: {
+                    Label("Browse decks", systemImage: "rectangle.stack")
+                }
+                .buttonStyle(InstrumentButtonStyle(tint: Theme.biobiochem, prominent: false))
+
+                NavigationLink {
+                    BreakdownView(readiness: readiness, store: store)
+                } label: {
+                    Label("Full breakdown", systemImage: "chart.bar.doc.horizontal")
+                }
+                .buttonStyle(InstrumentButtonStyle(tint: Theme.cars, prominent: false))
+            }
+        }
+    }
+}
+
+/// The headline readiness gauge: the one big Space Grotesk number, its
+/// confidence interval, and the signature range needle.
+private struct HeroGauge: View {
+    let score: Anki_Mcat_ScoreEstimate
+    let accent: Color
+
+    var body: some View {
+        InstrumentCard(accent: accent, padding: 16) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Eyebrow("Exam readiness", accent: accent)
+                    Spacer()
+                    if score.available { ConfidenceBadge(confidence: score.confidence) }
+                }
+                if score.available {
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        Text("\(Int(score.point.rounded()))")
+                            .font(.mcatDisplay(60, relativeTo: .largeTitle, bold: true))
+                            .foregroundStyle(Theme.text)
+                            .monospacedDigit()
+                            .minimumScaleFactor(0.6)
+                            .lineLimit(1)
+                        Text("\(Int(score.low.rounded()))–\(Int(score.high.rounded()))")
+                            .font(.mcatMono(15, relativeTo: .callout))
+                            .foregroundStyle(Theme.muted)
+                        Spacer()
+                    }
+                    GaugeBar(
+                        point: score.point, low: score.low, high: score.high,
+                        scaleMin: score.scaleMin, scaleMax: score.scaleMax,
+                        tint: accent, height: 12
+                    )
+                    HStack {
+                        Text("\(Int(score.scaleMin.rounded()))")
+                        Spacer()
+                        Text("\(Int(score.scaleMax.rounded()))")
+                    }
+                    .font(.mcatMono(11, relativeTo: .caption2))
+                    .foregroundStyle(Theme.muted)
+                    if let reason = score.reasons.first {
+                        Text(reason)
+                            .font(.mcatBody(13, relativeTo: .footnote))
+                            .foregroundStyle(Theme.muted)
+                            .lineLimit(2)
+                    }
+                } else {
+                    Text("No score yet")
+                        .font(.mcatDisplay(30, relativeTo: .title))
+                        .foregroundStyle(Theme.muted)
+                    Text(score.abstainReason)
+                        .font(.mcatBody(13, relativeTo: .footnote))
+                        .foregroundStyle(Theme.muted)
+                        .lineLimit(3)
+                }
+            }
+        }
+    }
+}
+
+/// One of the two supporting scores (Memory, Performance) as a compact gauge.
+private struct MiniScore: View {
+    let score: Anki_Mcat_ScoreEstimate
+
+    var body: some View {
+        InstrumentCard(padding: 12) {
+            VStack(alignment: .leading, spacing: 6) {
+                Eyebrow(score.label)
+                if score.available {
+                    Text("\(Int(score.point.rounded()))")
+                        .font(.mcatDisplay(30, relativeTo: .title, bold: true))
+                        .foregroundStyle(Theme.text)
+                        .monospacedDigit()
+                        .minimumScaleFactor(0.6)
+                        .lineLimit(1)
+                    Text("\(Int(score.low.rounded()))–\(Int(score.high.rounded()))")
+                        .font(.mcatMono(11, relativeTo: .caption2))
+                        .foregroundStyle(Theme.muted)
+                    GaugeBar(
+                        point: score.point, low: score.low, high: score.high,
+                        scaleMin: score.scaleMin, scaleMax: score.scaleMax,
+                        tint: Theme.needle, height: 6
+                    )
+                    Text("cov \(pct(score.coveragePercent))")
+                        .font(.mcatMono(11, relativeTo: .caption2))
+                        .foregroundStyle(Theme.muted)
+                } else {
+                    Text("—")
+                        .font(.mcatDisplay(30, relativeTo: .title, bold: true))
+                        .foregroundStyle(Theme.muted)
+                    Text("no score yet")
+                        .font(.mcatMono(11, relativeTo: .caption2))
+                        .foregroundStyle(Theme.muted)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+}
+
+/// A one-line coverage readout under the scores.
+private struct CoverageStrip: View {
+    let readiness: Anki_Mcat_ExamReadiness
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "chart.pie")
+                .font(.system(size: 12))
+                .foregroundStyle(Theme.muted)
+            Text("Coverage \(pct(readiness.overallCoveragePercent))")
+            Text("•").foregroundStyle(Theme.hairline)
+            Text("\(readiness.gradedReviews) graded reviews")
+            Spacer()
+        }
+        .font(.mcatMono(12, relativeTo: .caption))
+        .foregroundStyle(Theme.muted)
+    }
+}
+
+/// A compact "study next" cue: the recommended topic, colour-coded by section.
+private struct StudyNextCue: View {
+    let recommendation: Anki_Mcat_StudyRecommendation
+
+    var body: some View {
+        let hue = MCATSection.hue(for: recommendation.topicName)
+        return HStack(spacing: 10) {
+            Circle().fill(hue).frame(width: 8, height: 8)
+            VStack(alignment: .leading, spacing: 1) {
+                Eyebrow("Study next", accent: hue)
+                Text(recommendation.topicName)
+                    .font(.mcatBody(15, relativeTo: .subheadline, semibold: true))
+                    .foregroundStyle(Theme.text)
+                    .lineLimit(1)
+            }
+            Spacer()
+        }
+        .padding(.horizontal, 12).padding(.vertical, 10)
+        .background(Theme.panel2)
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.hairline, lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+private struct ConfidenceBadge: View {
+    let confidence: String
+    var body: some View {
+        Text(confidence)
+            .font(.mcatMono(10, relativeTo: .caption2, medium: true))
+            .tracking(0.5)
+            .foregroundStyle(Theme.muted)
+            .padding(.horizontal, 8).padding(.vertical, 3)
+            .background(Capsule().fill(Theme.panel2))
+            .overlay(Capsule().stroke(Theme.hairline, lineWidth: 1))
+    }
+}
+
+// MARK: - Full breakdown (scrollable secondary content)
+
+/// The deep rubric: per-score evidence, section vitals, transfer gaps, the
+/// interleave builder and progress. This is genuinely long, so it scrolls.
+struct BreakdownView: View {
     let readiness: Anki_Mcat_ExamReadiness
     @ObservedObject var store: CollectionStore
 
@@ -73,90 +315,136 @@ struct ReadinessView: View {
     }
 
     var body: some View {
-        List {
-            Section {
-                HStack {
-                    Label("Coverage \(pct(readiness.overallCoveragePercent))",
-                          systemImage: "chart.pie")
-                    Spacer()
-                    Text("\(readiness.gradedReviews) graded reviews")
-                        .foregroundStyle(.secondary)
+        ZStack {
+            Theme.ink.ignoresSafeArea()
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    if readiness.hasGiveUpRule {
+                        Text(readiness.giveUpRule.description_p)
+                            .font(.mcatBody(12, relativeTo: .caption))
+                            .foregroundStyle(Theme.muted)
+                            .italic()
+                    }
+
+                    PanelSection("Scores") {
+                        VStack(spacing: 12) {
+                            ForEach(scores, id: \.label) { score in
+                                ScoreCard(score: score, readiness: readiness)
+                            }
+                        }
+                    }
+
+                    if !readiness.sections.isEmpty {
+                        PanelSection("Section vitals") {
+                            SectionBreakdown(sections: readiness.sections)
+                        }
+                    }
+
+                    if !readiness.transferGaps.isEmpty {
+                        PanelSection("Transfer gaps · recall − application") {
+                            TransferGapSection(gaps: readiness.transferGaps)
+                        }
+                    }
+
+                    if readiness.hasRecommendation, readiness.recommendation.available {
+                        PanelSection("Study queue") {
+                            RecommendationSection(recommendation: readiness.recommendation)
+                        }
+                    }
+
+                    PanelSection("Timed interleaved session") {
+                        InterleaveSection(store: store)
+                    }
+
+                    if readiness.hasXp {
+                        PanelSection("Progress") {
+                            XpSection(xp: readiness.xp)
+                        }
+                    }
                 }
-                .font(.caption)
-                if readiness.hasGiveUpRule {
-                    Text(readiness.giveUpRule.description_p)
-                        .font(.caption).italic()
-                        .foregroundStyle(.secondary)
-                }
+                .padding(16)
             }
-
-            Section("Scores") {
-                ForEach(scores, id: \.label) { score in
-                    ScoreRow(score: score, readiness: readiness)
-                }
-            }
-
-            if readiness.hasRecommendation, readiness.recommendation.available {
-                RecommendationSection(recommendation: readiness.recommendation)
-            }
-
-            if !readiness.sections.isEmpty {
-                SectionBreakdown(sections: readiness.sections)
-            }
-
-            if !readiness.transferGaps.isEmpty {
-                TransferGapSection(gaps: readiness.transferGaps)
-            }
-
-            DeckBrowseSection(store: store)
-
-            InterleaveSection(store: store)
-
-            ExamEntrySection(store: store)
-
-            if readiness.hasXp {
-                XpSection(xp: readiness.xp)
-            }
+            .refreshable { await store.sync() }
         }
-        .refreshable { await store.sync() }
+        .navigationTitle("Breakdown")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(Theme.panel, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+    }
+}
+
+/// A titled group: an eyebrow header above a panel.
+struct PanelSection<Content: View>: View {
+    let title: String
+    var accent: Color = Theme.muted
+    @ViewBuilder var content: Content
+    init(_ title: String, accent: Color = Theme.muted, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.accent = accent
+        self.content = content()
+    }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Eyebrow(title, accent: accent)
+            content
+        }
     }
 }
 
 // MARK: - Score card with honesty metadata + per-score detail
 
-struct ScoreRow: View {
+struct ScoreCard: View {
     let score: Anki_Mcat_ScoreEstimate
     let readiness: Anki_Mcat_ExamReadiness
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(score.label).font(.headline)
-            if score.available {
-                Text("\(Int(score.point.rounded())) "
-                    + "(\(Int(score.low.rounded()))–\(Int(score.high.rounded())))")
-                    .font(.title3).bold()
-                RangeBar(score: score)
-                Text("Coverage \(pct(score.coveragePercent)) • "
-                    + "\(score.confidence) confidence")
-                    .font(.caption).foregroundStyle(.secondary)
-                if !score.reasons.isEmpty {
-                    VStack(alignment: .leading, spacing: 1) {
-                        ForEach(score.reasons, id: \.self) { reason in
-                            Text("• \(reason)")
-                        }
-                    }
-                    .font(.caption2).foregroundStyle(.secondary)
+        InstrumentCard(padding: 14) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(score.label)
+                        .font(.mcatBody(15, relativeTo: .headline, semibold: true))
+                        .foregroundStyle(Theme.text)
+                    Spacer()
+                    if score.available { ConfidenceBadge(confidence: score.confidence) }
                 }
-            } else {
-                Text("No score yet").font(.title3).foregroundStyle(.secondary)
-                Text(score.abstainReason)
-                    .font(.caption).foregroundStyle(.secondary)
-                Text("Coverage \(pct(score.coveragePercent))")
-                    .font(.caption2).foregroundStyle(.secondary)
+                if score.available {
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text("\(Int(score.point.rounded()))")
+                            .font(.mcatDisplay(34, relativeTo: .title, bold: true))
+                            .foregroundStyle(Theme.text)
+                            .monospacedDigit()
+                        Text("\(Int(score.low.rounded()))–\(Int(score.high.rounded()))")
+                            .font(.mcatMono(13, relativeTo: .caption))
+                            .foregroundStyle(Theme.muted)
+                        Spacer()
+                    }
+                    GaugeBar(
+                        point: score.point, low: score.low, high: score.high,
+                        scaleMin: score.scaleMin, scaleMax: score.scaleMax,
+                        tint: Theme.needle, height: 8
+                    )
+                    Text("Coverage \(pct(score.coveragePercent))")
+                        .font(.mcatMono(11, relativeTo: .caption2))
+                        .foregroundStyle(Theme.muted)
+                    ForEach(score.reasons, id: \.self) { reason in
+                        Text("• \(reason)")
+                            .font(.mcatBody(12, relativeTo: .caption))
+                            .foregroundStyle(Theme.muted)
+                    }
+                } else {
+                    Text("No score yet")
+                        .font(.mcatDisplay(22, relativeTo: .title3))
+                        .foregroundStyle(Theme.muted)
+                    Text(score.abstainReason)
+                        .font(.mcatBody(12, relativeTo: .caption))
+                        .foregroundStyle(Theme.muted)
+                    Text("Coverage \(pct(score.coveragePercent))")
+                        .font(.mcatMono(11, relativeTo: .caption2))
+                        .foregroundStyle(Theme.muted)
+                }
+                detail
             }
-            detail
         }
-        .padding(.vertical, 2)
     }
 
     @ViewBuilder
@@ -168,31 +456,6 @@ struct ScoreRow: View {
         } else if score.label == "Readiness", readiness.hasReadinessDetail {
             ReadinessDetailView(detail: readiness.readinessDetail)
         }
-    }
-}
-
-struct RangeBar: View {
-    let score: Anki_Mcat_ScoreEstimate
-
-    var body: some View {
-        GeometryReader { geo in
-            let range = max(score.scaleMax - score.scaleMin, 1)
-            let w = geo.size.width
-            let bandLeft = CGFloat((score.low - score.scaleMin) / range) * w
-            let bandWidth = CGFloat((score.high - score.low) / range) * w
-            let pointX = CGFloat((score.point - score.scaleMin) / range) * w
-            ZStack(alignment: .leading) {
-                Capsule().fill(Color.secondary.opacity(0.2)).frame(height: 6)
-                Capsule().fill(Color.accentColor.opacity(0.35))
-                    .frame(width: max(bandWidth, 2), height: 6)
-                    .offset(x: bandLeft)
-                Capsule().fill(Color.accentColor)
-                    .frame(width: 3, height: 12)
-                    .offset(x: min(max(pointX - 1.5, 0), w - 3))
-            }
-            .frame(height: 12)
-        }
-        .frame(height: 12)
     }
 }
 
@@ -228,7 +491,6 @@ struct PerformanceDetailView: View {
             if detail.questionsAnswered > 0 {
                 rows.append(("Accuracy", pct(detail.accuracyPercent)))
                 rows.append(("Correct", "\(detail.correct) / \(detail.questionsAnswered)"))
-                // Pacing: how fast (mean seconds) and how often within the target.
                 rows.append(("Avg time", "\(one(detail.averageResponseTimeSecs))s"))
                 rows.append(("On time", pct(detail.onTimeRate * 100)))
                 rows.append(("Overtime", pct(detail.overtimeRate * 100)))
@@ -242,7 +504,7 @@ struct PerformanceDetailView: View {
 struct ReadinessDetailView: View {
     let detail: Anki_Mcat_ReadinessDetail
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 6) {
             StatGrid(rows: [
                 ("Graded reviews",
                  "\(detail.gradedReviews) / \(detail.requiredGradedReviews)",
@@ -250,12 +512,9 @@ struct ReadinessDetailView: View {
                 ("Coverage",
                  "\(pct(detail.coveragePercent)) / \(pct(detail.requiredCoveragePercent))",
                  detail.coverageMet),
-                // Speed/pacing sub-signal folded into readiness. 100% = every
-                // answer within its per-topic time target (untimed = full speed).
                 ("Speed factor", pct(detail.speedFactor * 100), detail.speedFactor >= 0.999),
                 ("Overtime rate", pct(detail.overtimeRate * 100), false),
             ])
-            // The weights are shown so the blend is transparent, never hidden.
             StatGrid(rows: [
                 ("Weights (mem / perf / speed)",
                  "\(pct(detail.memoryWeight * 100)) / "
@@ -264,16 +523,15 @@ struct ReadinessDetailView: View {
             ])
             if !detail.speedReason.isEmpty {
                 Text(detail.speedReason)
-                    .font(.caption2).italic()
-                    .foregroundStyle(.secondary)
-                    .padding(.top, 1)
+                    .font(.mcatBody(11, relativeTo: .caption2)).italic()
+                    .foregroundStyle(Theme.muted)
             }
         }
     }
 }
 
-/// Two-column label/value grid used by the detail views. Rows may flag a "met"
-/// state (green) so the readiness gate is transparent.
+/// Two-column label/value grid. A "met" row turns green so the readiness gate
+/// is transparent.
 struct StatGrid: View {
     let rows: [(label: String, value: String, met: Bool)]
 
@@ -285,20 +543,21 @@ struct StatGrid: View {
     }
 
     var body: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: 3) {
             ForEach(rows.indices, id: \.self) { i in
-                HStack {
-                    Text(rows[i].label).foregroundStyle(.secondary)
+                HStack(alignment: .firstTextBaseline) {
+                    Text(rows[i].label)
+                        .font(.mcatBody(12, relativeTo: .caption))
+                        .foregroundStyle(Theme.muted)
                     Spacer()
                     Text(rows[i].value)
-                        .foregroundStyle(rows[i].met ? Color.green : Color.primary)
-                        .fontWeight(rows[i].met ? .semibold : .regular)
-                        .monospacedDigit()
+                        .font(.mcatMono(12, relativeTo: .caption, medium: rows[i].met))
+                        .foregroundStyle(rows[i].met ? Theme.ready : Theme.text)
                 }
             }
         }
-        .font(.caption)
-        .padding(.top, 4)
+        .padding(.top, 6)
+        .overlay(Rectangle().fill(Theme.hairline).frame(height: 1), alignment: .top)
     }
 }
 
@@ -307,18 +566,26 @@ struct StatGrid: View {
 struct RecommendationSection: View {
     let recommendation: Anki_Mcat_StudyRecommendation
     var body: some View {
-        Section("Study next") {
-            Text(recommendation.topicName).font(.headline)
-            Text(recommendation.explanation)
-                .font(.caption).foregroundStyle(.secondary)
-            ForEach(recommendation.candidates, id: \.topicKey) { c in
-                HStack {
-                    Text(c.topicName)
-                    Spacer()
-                    Text("w \(one(c.priorityScore)) • \(c.dueCards) due")
-                        .font(.caption).foregroundStyle(.secondary).monospacedDigit()
+        InstrumentCard(accent: MCATSection.hue(for: recommendation.topicName), padding: 14) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(recommendation.topicName)
+                    .font(.mcatBody(15, relativeTo: .headline, semibold: true))
+                    .foregroundStyle(Theme.text)
+                Text(recommendation.explanation)
+                    .font(.mcatBody(12, relativeTo: .caption))
+                    .foregroundStyle(Theme.muted)
+                ForEach(recommendation.candidates, id: \.topicKey) { c in
+                    HStack {
+                        Circle().fill(MCATSection.hue(for: c.topicName)).frame(width: 6, height: 6)
+                        Text(c.topicName)
+                            .font(.mcatBody(13, relativeTo: .subheadline))
+                            .foregroundStyle(Theme.text)
+                        Spacer()
+                        Text("w \(one(c.priorityScore)) • \(c.dueCards) due")
+                            .font(.mcatMono(11, relativeTo: .caption2))
+                            .foregroundStyle(Theme.muted)
+                    }
                 }
-                .font(.subheadline)
             }
         }
     }
@@ -329,28 +596,37 @@ struct RecommendationSection: View {
 struct SectionBreakdown: View {
     let sections: [Anki_Mcat_SectionScore]
     var body: some View {
-        Section("By section (memory)") {
+        VStack(spacing: 10) {
             ForEach(sections, id: \.sectionKey) { s in
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack {
-                        Text(s.sectionName)
-                        Spacer()
-                        if s.available {
-                            Text("\(Int(s.point.rounded())) "
-                                + "(\(Int(s.low.rounded()))–\(Int(s.high.rounded())))")
-                                .monospacedDigit()
-                        } else {
-                            Text("no data").foregroundStyle(.secondary)
+                let hue = MCATSection.hue(for: s.sectionName + " " + s.sectionKey)
+                InstrumentCard(accent: hue, padding: 12) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text(s.sectionName)
+                                .font(.mcatBody(14, relativeTo: .subheadline, semibold: true))
+                                .foregroundStyle(Theme.text)
+                            Spacer()
+                            if s.available {
+                                Text("\(Int(s.point.rounded())) "
+                                    + "(\(Int(s.low.rounded()))–\(Int(s.high.rounded())))")
+                                    .font(.mcatMono(12, relativeTo: .caption))
+                                    .foregroundStyle(Theme.text)
+                            } else {
+                                Text("no data")
+                                    .font(.mcatMono(12, relativeTo: .caption))
+                                    .foregroundStyle(Theme.muted)
+                            }
                         }
+                        HStack {
+                            Text(s.available ? "mem \(pct(s.memoryPercent))" : "—")
+                            Spacer()
+                            Text("\(s.cardsReviewed)/\(s.cardsTotal) cards")
+                            Spacer()
+                            Text("cov \(pct(s.coveragePercent))")
+                        }
+                        .font(.mcatMono(11, relativeTo: .caption2))
+                        .foregroundStyle(Theme.muted)
                     }
-                    HStack {
-                        Text(s.available ? "mem \(pct(s.memoryPercent))" : "—")
-                        Spacer()
-                        Text("\(s.cardsReviewed)/\(s.cardsTotal) cards")
-                        Spacer()
-                        Text("cov \(pct(s.coveragePercent))")
-                    }
-                    .font(.caption).foregroundStyle(.secondary).monospacedDigit()
                 }
             }
         }
@@ -362,20 +638,25 @@ struct SectionBreakdown: View {
 struct TransferGapSection: View {
     let gaps: [Anki_Mcat_TransferGap]
     var body: some View {
-        Section("Transfer gaps (recall − application)") {
+        VStack(spacing: 10) {
             ForEach(gaps, id: \.topicKey) { g in
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(g.topicName)
-                    HStack {
-                        Text("recall \(pct(g.memoryRecall * 100))")
-                        Spacer()
-                        Text("applied \(pct(g.performanceAccuracy * 100))")
-                        Spacer()
-                        Text("gap \(pct(g.gap * 100))")
-                            .foregroundStyle(g.gap > 0.15 ? Color.red : Color.secondary)
-                            .fontWeight(g.gap > 0.15 ? .semibold : .regular)
+                let wide = g.gap > 0.15
+                InstrumentCard(accent: wide ? Theme.warn : MCATSection.hue(for: g.topicName), padding: 12) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(g.topicName)
+                            .font(.mcatBody(14, relativeTo: .subheadline, semibold: true))
+                            .foregroundStyle(Theme.text)
+                        HStack {
+                            Text("recall \(pct(g.memoryRecall * 100))")
+                            Spacer()
+                            Text("applied \(pct(g.performanceAccuracy * 100))")
+                            Spacer()
+                            Text("gap \(pct(g.gap * 100))")
+                                .foregroundStyle(wide ? Theme.warn : Theme.muted)
+                        }
+                        .font(.mcatMono(11, relativeTo: .caption2))
+                        .foregroundStyle(Theme.muted)
                     }
-                    .font(.caption).foregroundStyle(.secondary).monospacedDigit()
                 }
             }
         }
@@ -389,74 +670,40 @@ struct InterleaveSection: View {
     @State private var interleave = true
 
     var body: some View {
-        Section("Timed interleaved session") {
-            Toggle("Interleave topics (off = blocked practice)", isOn: $interleave)
-                .font(.subheadline)
-            Button {
-                Task { await store.buildSession(interleave: interleave) }
-            } label: {
-                if store.buildingSession {
-                    ProgressView()
-                } else {
-                    Text("Build session")
+        InstrumentCard(padding: 14) {
+            VStack(alignment: .leading, spacing: 10) {
+                Toggle(isOn: $interleave) {
+                    Text("Interleave topics")
+                        .font(.mcatBody(14, relativeTo: .subheadline))
+                        .foregroundStyle(Theme.text)
                 }
-            }
-            .disabled(store.buildingSession)
+                .tint(Theme.chemphys)
+                Text(interleave ? "Mixed practice across topics" : "Blocked practice, one topic at a time")
+                    .font(.mcatBody(11, relativeTo: .caption2))
+                    .foregroundStyle(Theme.muted)
 
-            if let session = store.session {
-                Text("\(session.cardIds.count) cards • "
-                    + (session.interleaved ? "interleaved" : "blocked"))
-                    .font(.caption).foregroundStyle(.secondary)
-                if !session.log.isEmpty {
-                    Text(session.log)
-                        .font(.caption2).foregroundStyle(.secondary)
-                }
-            }
-        }
-    }
-}
-
-// MARK: - Generic deck browser entry
-
-struct DeckBrowseSection: View {
-    @ObservedObject var store: CollectionStore
-    var body: some View {
-        Section("All decks") {
-            NavigationLink {
-                DeckListView(collection: store)
-            } label: {
-                Label {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Browse & review decks")
-                        Text("Review any synced deck. Answers count and sync.")
-                            .font(.caption).foregroundStyle(.secondary)
+                Button {
+                    Task { await store.buildSession(interleave: interleave) }
+                } label: {
+                    if store.buildingSession {
+                        ProgressView().tint(.white)
+                    } else {
+                        Text("Build session")
                     }
-                } icon: {
-                    Image(systemName: "rectangle.stack")
                 }
-            }
-        }
-    }
-}
+                .buttonStyle(InstrumentButtonStyle(tint: Theme.chemphys))
+                .disabled(store.buildingSession)
 
-// MARK: - Native timed exam entry
-
-struct ExamEntrySection: View {
-    @ObservedObject var store: CollectionStore
-    var body: some View {
-        Section("Exam mode") {
-            NavigationLink {
-                ExamView(collection: store)
-            } label: {
-                Label {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Start timed exam")
-                        Text("Auto-graded MCQ / CARS from MCAT::Exam. "
-                            + "Answers count and sync.")
-                            .font(.caption).foregroundStyle(.secondary)
+                if let session = store.session {
+                    Text("\(session.cardIds.count) cards • "
+                        + (session.interleaved ? "interleaved" : "blocked"))
+                        .font(.mcatMono(12, relativeTo: .caption))
+                        .foregroundStyle(Theme.muted)
+                    if !session.log.isEmpty {
+                        Text(session.log)
+                            .font(.mcatMono(10, relativeTo: .caption2))
+                            .foregroundStyle(Theme.muted)
                     }
-                } icon: {
-                    Image(systemName: "timer")
                 }
             }
         }
@@ -468,21 +715,29 @@ struct ExamEntrySection: View {
 struct XpSection: View {
     let xp: Anki_Mcat_XpSummary
     var body: some View {
-        Section("Progress") {
-            HStack {
-                Text("Level \(xp.level)")
-                Spacer()
-                Text("\(xp.totalXp) XP").foregroundStyle(.secondary)
-            }
-            HStack {
-                Text("\(xp.streakDays)-day streak")
-                Spacer()
-                Text("+\(xp.xpToday) today").foregroundStyle(.secondary)
-            }
-            .font(.caption)
-            if !xp.badges.isEmpty {
-                Text(xp.badges.joined(separator: " · "))
-                    .font(.caption2).foregroundStyle(.secondary)
+        InstrumentCard(accent: Theme.ready, padding: 14) {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text("Level \(xp.level)")
+                        .font(.mcatBody(15, relativeTo: .headline, semibold: true))
+                        .foregroundStyle(Theme.text)
+                    Spacer()
+                    Text("\(xp.totalXp) XP")
+                        .font(.mcatMono(13, relativeTo: .caption))
+                        .foregroundStyle(Theme.muted)
+                }
+                HStack {
+                    Text("\(xp.streakDays)-day streak")
+                    Spacer()
+                    Text("+\(xp.xpToday) today")
+                }
+                .font(.mcatMono(12, relativeTo: .caption))
+                .foregroundStyle(Theme.muted)
+                if !xp.badges.isEmpty {
+                    Text(xp.badges.joined(separator: " · "))
+                        .font(.mcatBody(11, relativeTo: .caption2))
+                        .foregroundStyle(Theme.muted)
+                }
             }
         }
     }
@@ -496,7 +751,7 @@ struct SyncButton: View {
 
     var body: some View {
         if store.syncing {
-            ProgressView()
+            ProgressView().tint(Theme.chemphys)
         } else if store.loggedIn {
             Button {
                 Task { await store.sync() }
@@ -505,6 +760,7 @@ struct SyncButton: View {
             }
         } else {
             Button("Sign in") { showingLogin = true }
+                .font(.mcatBody(15, relativeTo: .body, semibold: true))
         }
     }
 }
@@ -549,7 +805,8 @@ struct LoginView: View {
                     Text("Sign in with the same AnkiWeb account used on the "
                         + "desktop. Both apps sync to AnkiWeb, which keeps your "
                         + "collection identical across devices.")
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(.mcatBody(12, relativeTo: .caption))
+                        .foregroundStyle(Theme.muted)
                 }
             }
             .navigationTitle("Sync")
@@ -573,6 +830,7 @@ struct LoginView: View {
                 }
             }
         }
+        .tint(Theme.chemphys)
     }
 }
 

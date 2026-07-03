@@ -18,35 +18,50 @@ struct ExamView: View {
     }
 
     var body: some View {
-        Group {
-            if exam.loading {
-                ProgressView("Loading exam…")
-            } else if let message = exam.errorMessage {
-                errorState(message)
-            } else if let question = exam.question {
-                ExamCardView(exam: exam, question: question)
-            } else if exam.finished {
-                SessionSummaryView(exam: exam) { dismiss() }
-            } else {
-                ProgressView()
+        ZStack {
+            Theme.ink.ignoresSafeArea()
+            Group {
+                if exam.loading {
+                    loadingState
+                } else if let message = exam.errorMessage {
+                    errorState(message)
+                } else if let question = exam.question {
+                    ExamCardView(exam: exam, question: question)
+                } else if exam.finished {
+                    SessionSummaryView(exam: exam) { dismiss() }
+                } else {
+                    ProgressView().tint(Theme.chemphys)
+                }
             }
         }
-        .navigationTitle("Exam")
+        .navigationTitle("Timed exam")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(Theme.panel, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
         .task { await exam.start() }
         .onDisappear { Task { await exam.endSession() } }
+    }
+
+    private var loadingState: some View {
+        VStack(spacing: 12) {
+            ProgressView().tint(Theme.chemphys)
+            Text("Loading exam")
+                .font(.mcatMono(13, relativeTo: .caption)).foregroundStyle(Theme.muted)
+        }
     }
 
     private func errorState(_ message: String) -> some View {
         VStack(spacing: 12) {
             Image(systemName: "exclamationmark.triangle")
-                .font(.largeTitle).foregroundStyle(.secondary)
-            Text("Couldn't start the exam").font(.headline)
+                .font(.title).foregroundStyle(Theme.warn)
+            Text("Couldn't start the exam")
+                .font(.mcatBody(17, relativeTo: .headline, semibold: true))
+                .foregroundStyle(Theme.text)
             Text(message)
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.mcatMono(12, relativeTo: .caption)).foregroundStyle(Theme.muted)
                 .multilineTextAlignment(.center)
         }
-        .padding()
+        .padding(24)
     }
 }
 
@@ -55,6 +70,12 @@ struct ExamView: View {
 struct ExamCardView: View {
     @ObservedObject var exam: ExamSessionStore
     let question: ExamSessionStore.Question
+
+    /// The section hue anchors the card in the shared colour language — CARS is
+    /// always the CARS hue, the sciences map from their topic.
+    private var hue: Color {
+        question.isCars ? Theme.cars : MCATSection.hue(for: question.topic)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -66,38 +87,46 @@ struct ExamCardView: View {
             }
             // Fresh timer per card so the clock restarts each question.
             .id(question.cardId)
-            .padding(.horizontal)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(Theme.panel)
+            .overlay(Rectangle().fill(Theme.hairline).frame(height: 1), alignment: .bottom)
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 16) {
                     if question.isCars, let passage = question.passage, !passage.isEmpty {
-                        PassageView(html: passage)
+                        PassageView(html: passage, hue: hue)
                     }
                     if !question.topic.isEmpty {
-                        Text(html: question.topic)
-                            .font(.caption).textCase(.uppercase)
-                            .foregroundStyle(.secondary)
+                        HStack(spacing: 6) {
+                            Circle().fill(hue).frame(width: 7, height: 7)
+                            Text(HTMLText.plain(from: question.topic).uppercased())
+                                .font(.mcatMono(11, relativeTo: .caption2, medium: true))
+                                .tracking(1)
+                                .foregroundStyle(Theme.muted)
+                        }
                     }
                     Text(html: question.prompt)
-                        .font(.headline)
+                        .font(.mcatBody(18, relativeTo: .title3, semibold: true))
+                        .foregroundStyle(Theme.text)
                         .fixedSize(horizontal: false, vertical: true)
 
                     ForEach(question.options) { option in
                         OptionButton(
                             option: option,
                             state: optionState(for: option),
-                            enabled: !exam.revealed
+                            enabled: !exam.revealed,
+                            hue: hue
                         ) {
                             Task { await exam.choose(option.letter) }
                         }
                     }
 
                     if exam.revealed {
-                        ExplanationView(exam: exam, question: question)
+                        ExplanationView(exam: exam, question: question, hue: hue)
                     }
                 }
-                .padding()
+                .padding(16)
             }
 
             SessionProgressBar(exam: exam)
@@ -112,17 +141,25 @@ struct ExamCardView: View {
     }
 }
 
-/// The CARS reading passage, shown above the question.
+/// The CARS reading passage, shown above the question. Genuinely long, so it
+/// lives inside the card's scroll view.
 private struct PassageView: View {
     let html: String
+    let hue: Color
     var body: some View {
-        Text(html: html)
-            .font(.subheadline)
-            .fixedSize(horizontal: false, vertical: true)
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.secondary.opacity(0.08))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+        VStack(alignment: .leading, spacing: 8) {
+            Eyebrow("Passage", accent: hue)
+            Text(html: html)
+                .font(.mcatBody(15, relativeTo: .subheadline))
+                .foregroundStyle(Theme.text)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.panel2)
+        .overlay(alignment: .leading) { Rectangle().fill(hue).frame(width: 3) }
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.hairline, lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
@@ -133,49 +170,61 @@ struct OptionButton: View {
     let option: ExamSessionStore.Option
     let state: State
     let enabled: Bool
+    var hue: Color = Theme.chemphys
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            HStack(alignment: .firstTextBaseline, spacing: 10) {
-                Text("\(option.letter).")
-                    .font(.body.bold())
-                    .frame(minWidth: 20, alignment: .leading)
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text(option.letter)
+                    .font(.mcatMono(15, relativeTo: .body, medium: true))
+                    .foregroundStyle(letterColor)
+                    .frame(minWidth: 18, alignment: .leading)
                 Text(html: option.text)
+                    .font(.mcatBody(15, relativeTo: .body))
+                    .foregroundStyle(Theme.text)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 if state == .correct {
-                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.ready)
                 } else if state == .wrong {
-                    Image(systemName: "xmark.circle.fill").foregroundStyle(.red)
+                    Image(systemName: "xmark.circle.fill").foregroundStyle(Theme.miss)
                 }
             }
-            .padding(.vertical, 12).padding(.horizontal, 14)
+            .padding(.vertical, 13).padding(.horizontal, 14)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(background)
             .overlay(
-                RoundedRectangle(cornerRadius: 10).stroke(border, lineWidth: 1)
+                RoundedRectangle(cornerRadius: 12).stroke(border, lineWidth: 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .disabled(!enabled)
     }
 
+    private var letterColor: Color {
+        switch state {
+        case .correct: return Theme.ready
+        case .wrong: return Theme.miss
+        case .neutral: return hue
+        }
+    }
+
     private var background: Color {
         switch state {
-        case .correct: return .green.opacity(0.15)
-        case .wrong: return .red.opacity(0.15)
-        case .neutral: return Color.secondary.opacity(0.06)
+        case .correct: return Theme.ready.opacity(0.16)
+        case .wrong: return Theme.miss.opacity(0.16)
+        case .neutral: return Theme.panel
         }
     }
 
     private var border: Color {
         switch state {
-        case .correct: return .green
-        case .wrong: return .red
-        case .neutral: return Color.secondary.opacity(0.3)
+        case .correct: return Theme.ready
+        case .wrong: return Theme.miss
+        case .neutral: return Theme.hairline
         }
     }
 }
@@ -185,36 +234,34 @@ struct OptionButton: View {
 private struct ExplanationView: View {
     @ObservedObject var exam: ExamSessionStore
     let question: ExamSessionStore.Question
+    let hue: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Divider()
+        VStack(alignment: .leading, spacing: 10) {
+            Rectangle().fill(Theme.hairline).frame(height: 1)
             Text(verdictText)
-                .font(.title3.bold())
+                .font(.mcatDisplay(22, relativeTo: .title3, bold: true))
                 .foregroundStyle(verdictColor)
             Text("Correct answer: \(question.correct)")
-                .font(.subheadline)
+                .font(.mcatMono(14, relativeTo: .subheadline, medium: true))
+                .foregroundStyle(Theme.text)
             if !question.explanation.isEmpty {
                 Text(html: question.explanation)
-                    .font(.subheadline)
+                    .font(.mcatBody(15, relativeTo: .subheadline))
+                    .foregroundStyle(Theme.text)
                     .fixedSize(horizontal: false, vertical: true)
             }
             // Transparency: show exactly how the auto-grade mapped, like desktop.
-            Text(exam.lastCorrect == true
-                ? "Auto-graded: Good"
-                : "Auto-graded: Again")
-                .font(.caption).italic()
-                .foregroundStyle(.secondary)
+            Text(exam.lastCorrect == true ? "Auto-graded: Good" : "Auto-graded: Again")
+                .font(.mcatMono(11, relativeTo: .caption2)).italic()
+                .foregroundStyle(Theme.muted)
 
             Button {
                 Task { await exam.advance() }
             } label: {
                 Text("Next")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(InstrumentButtonStyle(tint: hue))
             .padding(.top, 4)
         }
     }
@@ -225,7 +272,7 @@ private struct ExplanationView: View {
     }
 
     private var verdictColor: Color {
-        exam.lastCorrect == true ? .green : .red
+        exam.lastCorrect == true ? Theme.ready : Theme.miss
     }
 }
 
@@ -241,10 +288,12 @@ private struct SessionProgressBar: View {
                     + "\(Int((Double(exam.correctCount) / Double(exam.answeredCount) * 100).rounded()))%")
             }
         }
-        .font(.caption).foregroundStyle(.secondary)
-        .padding(.horizontal).padding(.vertical, 6)
+        .font(.mcatMono(12, relativeTo: .caption))
+        .foregroundStyle(Theme.muted)
+        .padding(.horizontal, 16).padding(.vertical, 8)
         .frame(maxWidth: .infinity)
-        .background(.thinMaterial)
+        .background(Theme.panel)
+        .overlay(Rectangle().fill(Theme.hairline).frame(height: 1), alignment: .top)
     }
 }
 
@@ -253,28 +302,43 @@ private struct SessionSummaryView: View {
     @ObservedObject var exam: ExamSessionStore
     let onDone: () -> Void
 
+    private var accuracy: Int {
+        guard exam.answeredCount > 0 else { return 0 }
+        return Int((Double(exam.correctCount) / Double(exam.answeredCount) * 100).rounded())
+    }
+
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 18) {
             Image(systemName: "checkmark.seal.fill")
-                .font(.system(size: 52)).foregroundStyle(.green)
-            Text("Exam session complete").font(.title2.bold())
+                .font(.system(size: 48)).foregroundStyle(Theme.ready)
+            Text("Session complete")
+                .font(.mcatDisplay(26, relativeTo: .title, bold: true))
+                .foregroundStyle(Theme.text)
             if exam.answeredCount > 0 {
-                Text("\(exam.correctCount) / \(exam.answeredCount) correct "
-                    + "(\(Int((Double(exam.correctCount) / Double(exam.answeredCount) * 100).rounded()))%)")
-                    .font(.headline).foregroundStyle(.secondary)
+                VStack(spacing: 4) {
+                    Text("\(exam.correctCount) / \(exam.answeredCount)")
+                        .font(.mcatMono(28, relativeTo: .title, medium: true))
+                        .foregroundStyle(Theme.text)
+                    Text("\(accuracy)% correct")
+                        .font(.mcatMono(14, relativeTo: .subheadline))
+                        .foregroundStyle(Theme.muted)
+                }
             } else {
                 Text("No exam cards were due.")
-                    .font(.subheadline).foregroundStyle(.secondary)
+                    .font(.mcatBody(14, relativeTo: .subheadline))
+                    .foregroundStyle(Theme.muted)
             }
             Text("Your answers were written to the collection and "
                 + "\(exam.answeredCount > 0 ? "synced" : "will sync") to AnkiWeb, so "
                 + "your scores update on the desktop too.")
-                .font(.caption).foregroundStyle(.secondary)
-                .multilineTextAlignment(.center).padding(.horizontal)
+                .font(.mcatBody(12, relativeTo: .caption))
+                .foregroundStyle(Theme.muted)
+                .multilineTextAlignment(.center)
             Button("Done", action: onDone)
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(InstrumentButtonStyle(tint: Theme.chemphys))
+                .padding(.horizontal, 40)
         }
-        .padding()
+        .padding(24)
     }
 }
 
