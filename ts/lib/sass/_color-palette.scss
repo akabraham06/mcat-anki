@@ -5,30 +5,36 @@
  * custom gray, rest from Tailwind CSS v3 palette
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
+/* The neutral ramps carry the app-wide "diagnostic instrument" identity: a
+ * blue-slate lab-readout tint on the dark ramp, and a matching faint-cool tint
+ * on the light ramp. Perceived lightness is kept close to the original neutral
+ * ramps so every generated color (canvas/fg/border/button/scrollbar/shadow) and
+ * the Qt QSS/QPalette derived from them keep their contrast in BOTH themes.
+ * These two ramps are the single central lever for the whole app's chrome. */
 $color-palette: (
     lightgray: (
-        0: #fcfcfc,
-        1: #fafafa,
-        2: #f5f5f5,
-        3: #eeeeee,
-        4: #e4e4e4,
-        5: #d6d6d6,
-        6: #c4c4c4,
-        7: #afafaf,
-        8: #999999,
-        9: #858585,
+        0: #fcfcfd,
+        1: #f8fafb,
+        2: #f1f4f7,
+        3: #e9edf1,
+        4: #dee4ea,
+        5: #d0d8e1,
+        6: #bfc9d4,
+        7: #a7b2be,
+        8: #909ba8,
+        9: #7c8794,
     ),
     darkgray: (
-        0: #737373,
-        1: #636363,
-        2: #545454,
-        3: #454545,
-        4: #363636,
-        5: #2c2c2c,
-        6: #252525,
-        7: #202020,
-        8: #141414,
-        9: #020202,
+        0: #6f7d8c,
+        1: #5f6c7b,
+        2: #515d6b,
+        3: #434e5c,
+        4: #16212e,
+        5: #0e1622,
+        6: #101a26,
+        7: #24323f,
+        8: #0a121b,
+        9: #04080d,
     ),
     red: (
         0: #fef2f2,
