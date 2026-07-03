@@ -310,482 +310,522 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 </script>
 
 <div class="mcat">
-    <!-- ===== Signature: the Calibration Gauge (472–528) ===== -->
-    <section class="gauge-panel" aria-label="Exam readiness gauge">
-        <div class="gauge-top">
-            <div class="gauge-id">
-                <span class="eyebrow">{readiness.exam} readiness</span>
-                <div class="readout">
-                    {#if gaugeReady}
-                        <span
-                            class="score"
-                            class:ready={onTarget}
-                            class:warn={!onTarget}
-                        >
-                            {Math.round(point)}
-                        </span>
-                        <span class="range">
-                            CI {Math.round(rd?.low ?? 0)}–{Math.round(rd?.high ?? 0)}
-                        </span>
-                    {:else}
-                        <span class="score muted">– – –</span>
-                        <span class="range">calibrating</span>
-                    {/if}
+    <!-- Primary answer ("am I ready + what next") sits in one viewport-fit
+         instrument cluster; analytical detail is demoted below the fold. -->
+    <div class="cluster">
+        <!-- ===== Signature: the Calibration Gauge (472–528) ===== -->
+        <section class="gauge-panel" aria-label="Exam readiness gauge">
+            <div class="gauge-top">
+                <div class="gauge-id">
+                    <span class="eyebrow">{readiness.exam} readiness</span>
+                    <div class="readout">
+                        {#if gaugeReady}
+                            <span
+                                class="score"
+                                class:ready={onTarget}
+                                class:warn={!onTarget}
+                            >
+                                {Math.round(point)}
+                            </span>
+                            <span class="range">
+                                CI {Math.round(rd?.low ?? 0)}–{Math.round(
+                                    rd?.high ?? 0,
+                                )}
+                            </span>
+                        {:else}
+                            <span class="score muted">– – –</span>
+                            <span class="range">calibrating</span>
+                        {/if}
+                    </div>
+                    <p class="unlock" class:live={gaugeReady}>{unlockMessage}</p>
                 </div>
-                <p class="unlock" class:live={gaugeReady}>{unlockMessage}</p>
-            </div>
 
-            <div class="gauge-side">
-                <button
-                    type="button"
-                    class="vital"
-                    class:on={aiOn}
-                    on:click={inDesktopShell && !aiOn ? openAiSettings : undefined}
-                    disabled={!inDesktopShell || aiOn}
-                    title={aiReason}
-                >
-                    <span class="dot"></span>
-                    <span class="vital-label">
-                        AI assistant: {aiOn ? "on" : "off"}{!aiOn && inDesktopShell
-                            ? " — turn on"
-                            : ""}
-                    </span>
-                </button>
-                <div class="target-control">
-                    <span class="tc-label">Target</span>
-                    {#if editingTarget}
-                        <!-- svelte-ignore a11y-autofocus -->
-                        <input
-                            class="tc-input"
-                            type="number"
-                            min="472"
-                            max="528"
-                            autofocus
-                            value={target}
-                            on:change={(e) =>
-                                commitTarget(Number(e.currentTarget.value))}
-                            on:blur={() => (editingTarget = false)}
-                        />
-                    {:else}
-                        <button
-                            type="button"
-                            class="tc-value"
-                            on:click={() => (editingTarget = true)}
-                        >
-                            {target}
-                        </button>
-                    {/if}
-                    <span class="tc-steppers">
-                        <button
-                            type="button"
-                            aria-label="Raise target score"
-                            on:click={() => nudgeTarget(1)}
-                        >
-                            +
-                        </button>
-                        <button
-                            type="button"
-                            aria-label="Lower target score"
-                            on:click={() => nudgeTarget(-1)}
-                        >
-                            −
-                        </button>
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <div class="gauge" class:abstain={!gaugeReady}>
-            <!-- ready zone: target → max -->
-            <div
-                class="ready-zone"
-                style="left:{targetPos}%;width:{Math.max(0, 100 - targetPos)}%"
-            ></div>
-            <!-- confidence interval band -->
-            {#if gaugeReady}
-                <div
-                    class="band"
-                    class:ready={onTarget}
-                    class:warn={!onTarget}
-                    style="left:{bandLeft}%;width:{Math.max(
-                        1.5,
-                        bandRight - bandLeft,
-                    )}%"
-                ></div>
-            {/if}
-            <!-- percentile reference ticks -->
-            {#each percentileTicks as tick (tick.score)}
-                <div
-                    class="ptick"
-                    style="left:{posOf(tick.score, scaleMin, scaleMax)}%"
-                >
-                    <span class="ptick-label">{tick.label}</span>
-                </div>
-            {/each}
-            <!-- target flag -->
-            <div class="target-flag" style="left:{targetPos}%" title="Target {target}">
-                <span class="flag-pole"></span>
-                <span class="flag">{target}</span>
-            </div>
-            <!-- needle -->
-            {#if gaugeReady}
-                <div
-                    class="needle"
-                    class:ready={onTarget}
-                    class:warn={!onTarget}
-                    style="left:{needlePos}%"
-                ></div>
-            {/if}
-        </div>
-        <div class="scale-ends">
-            <span>{Math.round(scaleMin)}</span>
-            <span class="scale-caption">MCAT scaled score</span>
-            <span>{Math.round(scaleMax)}</span>
-        </div>
-
-        <div class="gauge-meta">
-            <span>
-                Coverage <b>{pct(readiness.overallCoveragePercent)}</b>
-            </span>
-            <span class="sep"></span>
-            <span>
-                <b>{readiness.gradedReviews}</b>
-                 graded reviews
-            </span>
-        </div>
-    </section>
-
-    <!-- ===== Primary CTA: the next hour ===== -->
-    <section class="plan-panel">
-        <header class="panel-head">
-            <h2>Your next hour</h2>
-            <span class="src" class:ai={!usingFallback}>
-                {usingFallback ? "deterministic plan" : "AI · grounded in your data"}
-            </span>
-        </header>
-        {#if aiPlan?.summary}
-            <p class="plan-summary">{aiPlan.summary}</p>
-        {/if}
-        {#if planItems.length}
-            <ol class="plan">
-                {#each planItems as item, i (i)}
-                    <li>
-                        <span class="step-min">
-                            {item.minutes}
-                            <small>min</small>
-                        </span>
-                        <div class="step-body">
-                            <span class="step-action">{item.action}</span>
-                            {#if item.reason}
-                                <p class="step-reason">{item.reason}</p>
-                            {/if}
-                            {#if item.evidence.length}
-                                <details class="step-evidence">
-                                    <summary>Evidence</summary>
-                                    <ul>
-                                        {#each item.evidence as ev (ev)}
-                                            <li>{ev}</li>
-                                        {/each}
-                                    </ul>
-                                </details>
-                            {/if}
-                        </div>
-                    </li>
-                {/each}
-            </ol>
-        {:else}
-            <p class="plan-summary">
-                Answer a few graded questions and your prescriptive plan appears here.
-            </p>
-        {/if}
-
-        {#if inDesktopShell}
-            <div class="cta">
-                <button class="cta-primary" on:click={study}>
-                    {#if recommendation && recommendation.available}
-                        Study {recommendation.topicName} — {firstMin} min
-                    {:else}
-                        Study now — {firstMin} min
-                    {/if}
-                </button>
-                <button class="cta-secondary" on:click={openDecks}>Browse decks</button>
-            </div>
-        {/if}
-
-        {#if planEvidence.length}
-            <details class="evidence">
-                <summary>All data behind this plan</summary>
-                <ul>
-                    {#each planEvidence as ev (ev)}
-                        <li>{ev}</li>
-                    {/each}
-                </ul>
-            </details>
-        {/if}
-        {#if !aiOn}
-            <p class="ai-note">{aiDirection}</p>
-        {/if}
-    </section>
-
-    <!-- ===== Section vitals strip ===== -->
-    {#if sections.length}
-        <section class="vitals">
-            <header class="panel-head">
-                <h2>Section vitals</h2>
-                <span class="src">memory, per section (118–132)</span>
-            </header>
-            <div class="vital-strip">
-                {#each sections as s (s.sectionKey)}
+                <div class="gauge-side">
                     <button
                         type="button"
-                        class="mini"
-                        class:selected={selectedSection === s.sectionKey}
-                        style="--hue:{hueOf(s.sectionKey)}"
-                        on:click={() => focusSection(s.sectionKey)}
-                        title="Show {shortSection(
-                            s.sectionKey,
-                            s.sectionName,
-                        )} coverage"
+                        class="vital"
+                        class:on={aiOn}
+                        on:click={inDesktopShell && !aiOn ? openAiSettings : undefined}
+                        disabled={!inDesktopShell || aiOn}
+                        title={aiReason}
                     >
-                        <span class="mini-name">
-                            {shortSection(s.sectionKey, s.sectionName)}
+                        <span class="dot"></span>
+                        <span class="vital-label">
+                            AI assistant: {aiOn ? "on" : "off"}{!aiOn && inDesktopShell
+                                ? " — turn on"
+                                : ""}
                         </span>
-                        {#if s.available}
-                            <span class="mini-score">{Math.round(s.point)}</span>
-                            <div class="mini-gauge">
-                                <div
-                                    class="mini-band"
-                                    style="left:{sectionBand(s).left}%;width:{Math.max(
-                                        2,
-                                        sectionBand(s).right - sectionBand(s).left,
-                                    )}%"
-                                ></div>
-                                <div
-                                    class="mini-needle"
-                                    style="left:{sectionPos(s)}%"
-                                ></div>
-                            </div>
-                            <span class="mini-sub">mem {pct(s.memoryPercent)}</span>
-                        {:else}
-                            <span class="mini-score muted">—</span>
-                            <div class="mini-gauge empty"></div>
-                            <span class="mini-sub muted">no data yet</span>
-                        {/if}
                     </button>
+                    <div class="target-control">
+                        <span class="tc-label">Target</span>
+                        {#if editingTarget}
+                            <!-- svelte-ignore a11y-autofocus -->
+                            <input
+                                class="tc-input"
+                                type="number"
+                                min="472"
+                                max="528"
+                                autofocus
+                                value={target}
+                                on:change={(e) =>
+                                    commitTarget(Number(e.currentTarget.value))}
+                                on:blur={() => (editingTarget = false)}
+                            />
+                        {:else}
+                            <button
+                                type="button"
+                                class="tc-value"
+                                on:click={() => (editingTarget = true)}
+                            >
+                                {target}
+                            </button>
+                        {/if}
+                        <span class="tc-steppers">
+                            <button
+                                type="button"
+                                aria-label="Raise target score"
+                                on:click={() => nudgeTarget(1)}
+                            >
+                                +
+                            </button>
+                            <button
+                                type="button"
+                                aria-label="Lower target score"
+                                on:click={() => nudgeTarget(-1)}
+                            >
+                                −
+                            </button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gauge" class:abstain={!gaugeReady}>
+                <!-- ready zone: target → max -->
+                <div
+                    class="ready-zone"
+                    style="left:{targetPos}%;width:{Math.max(0, 100 - targetPos)}%"
+                ></div>
+                <!-- confidence interval band -->
+                {#if gaugeReady}
+                    <div
+                        class="band"
+                        class:ready={onTarget}
+                        class:warn={!onTarget}
+                        style="left:{bandLeft}%;width:{Math.max(
+                            1.5,
+                            bandRight - bandLeft,
+                        )}%"
+                    ></div>
+                {/if}
+                <!-- percentile reference ticks -->
+                {#each percentileTicks as tick (tick.score)}
+                    <div
+                        class="ptick"
+                        style="left:{posOf(tick.score, scaleMin, scaleMax)}%"
+                    >
+                        <span class="ptick-label">{tick.label}</span>
+                    </div>
                 {/each}
+                <!-- target flag -->
+                <div
+                    class="target-flag"
+                    style="left:{targetPos}%"
+                    title="Target {target}"
+                >
+                    <span class="flag-pole"></span>
+                    <span class="flag">{target}</span>
+                </div>
+                <!-- needle -->
+                {#if gaugeReady}
+                    <div
+                        class="needle"
+                        class:ready={onTarget}
+                        class:warn={!onTarget}
+                        style="left:{needlePos}%"
+                    ></div>
+                {/if}
+            </div>
+            <div class="scale-ends">
+                <span>{Math.round(scaleMin)}</span>
+                <span class="scale-caption">MCAT scaled score</span>
+                <span>{Math.round(scaleMax)}</span>
+            </div>
+
+            <div class="gauge-meta">
+                <span>
+                    Coverage <b>{pct(readiness.overallCoveragePercent)}</b>
+                </span>
+                <span class="sep"></span>
+                <span>
+                    <b>{readiness.gradedReviews}</b>
+                    graded reviews
+                </span>
             </div>
         </section>
-    {/if}
 
-    <!-- ===== Coverage map: decks reframed by MCAT taxonomy ===== -->
-    {#if coverageSections.length}
-        <section class="coverage-map">
+        <!-- ===== Primary CTA: the next hour ===== -->
+        <section class="plan-panel">
             <header class="panel-head">
-                <h2>Coverage map</h2>
-                {#if selectedSection}
-                    <button class="chip-clear" on:click={() => (selectedSection = "")}>
-                        Show all sections
-                    </button>
-                {:else}
-                    <span class="src">by section → topic</span>
-                {/if}
+                <h2>Your next hour</h2>
+                <span class="src" class:ai={!usingFallback}>
+                    {usingFallback
+                        ? "deterministic plan"
+                        : "AI · grounded in your data"}
+                </span>
             </header>
-            {#each visibleCoverage as sec (sec.key)}
-                <div class="cov-section" style="--hue:{hueOf(sec.key)}">
-                    <div class="cov-head">
-                        <span class="cov-name">
-                            {shortSection(sec.key, sec.name)}
-                        </span>
-                        <span class="cov-stat">{pct(sec.coverage)} topics covered</span>
-                    </div>
-                    <ul class="cov-topics">
-                        {#each sec.topics as t (t.key)}
-                            <li class:dim={!t.inDeck}>
-                                <span class="cov-topic">{t.name}</span>
-                                <div class="cov-bar">
-                                    <div
-                                        class="cov-fill"
-                                        style="width:{Math.max(
-                                            0,
-                                            Math.min(100, t.coverage),
-                                        )}%"
-                                    ></div>
-                                </div>
-                                <span class="cov-pct">{pct(t.coverage)}</span>
-                            </li>
+            {#if aiPlan?.summary}
+                <p class="plan-summary">{aiPlan.summary}</p>
+            {/if}
+            {#if planItems.length}
+                <ol class="plan">
+                    {#each planItems as item, i (i)}
+                        <li>
+                            <span class="step-min">
+                                {item.minutes}
+                                <small>min</small>
+                            </span>
+                            <div class="step-body">
+                                <span class="step-action">{item.action}</span>
+                                {#if item.reason}
+                                    <p class="step-reason">{item.reason}</p>
+                                {/if}
+                                {#if item.evidence.length}
+                                    <details class="step-evidence">
+                                        <summary>Evidence</summary>
+                                        <ul>
+                                            {#each item.evidence as ev (ev)}
+                                                <li>{ev}</li>
+                                            {/each}
+                                        </ul>
+                                    </details>
+                                {/if}
+                            </div>
+                        </li>
+                    {/each}
+                </ol>
+            {:else}
+                <p class="plan-summary">
+                    Answer a few graded questions and your prescriptive plan appears
+                    here.
+                </p>
+            {/if}
+
+            {#if inDesktopShell}
+                <div class="cta">
+                    <button class="cta-primary" on:click={study}>
+                        {#if recommendation && recommendation.available}
+                            Study {recommendation.topicName} — {firstMin} min
+                        {:else}
+                            Study now — {firstMin} min
+                        {/if}
+                    </button>
+                    <button class="cta-secondary" on:click={openDecks}>
+                        Browse decks
+                    </button>
+                </div>
+            {/if}
+
+            {#if planEvidence.length}
+                <details class="evidence">
+                    <summary>All data behind this plan</summary>
+                    <ul>
+                        {#each planEvidence as ev (ev)}
+                            <li>{ev}</li>
                         {/each}
                     </ul>
-                </div>
-            {/each}
-        </section>
-    {/if}
-
-    <!-- ===== Supporting readouts (quiet) ===== -->
-    {#if supportScores.length}
-        <section class="support">
-            {#each supportScores as est (est.label)}
-                <div class="readout-card" class:abstain={!est.available}>
-                    <span class="rc-label">{est.label}</span>
-                    {#if est.available}
-                        <span class="rc-score">{Math.round(est.point)}</span>
-                        <span class="rc-range">
-                            {Math.round(est.low)}–{Math.round(est.high)} ·
-                            <span class="conf conf-{est.confidence}">
-                                {est.confidence}
-                            </span>
-                        </span>
-                    {:else}
-                        <span class="rc-score muted">—</span>
-                        <span class="rc-range">{est.abstainReason}</span>
-                    {/if}
-                    {#if est.label === "Memory" && memoryDetail}
-                        <dl class="stats">
-                            <dt>Cards reviewed</dt>
-                            <dd>
-                                {memoryDetail.cardsReviewed} / {memoryDetail.cardsTotal}
-                            </dd>
-                            {#if memoryDetail.cardsReviewed > 0}
-                                <dt>Avg retention</dt>
-                                <dd>{pct(memoryDetail.averageRetentionPercent)}</dd>
-                            {/if}
-                            <dt>Mature / young</dt>
-                            <dd>
-                                {memoryDetail.matureCards} / {memoryDetail.youngCards}
-                            </dd>
-                            <dt>Breadth</dt>
-                            <dd>
-                                {memoryDetail.coveredTopics} / {memoryDetail.totalTopics}
-                                ({pct(memoryDetail.breadthPercent)})
-                            </dd>
-                        </dl>
-                    {:else if est.label === "Performance" && performanceDetail}
-                        <dl class="stats">
-                            <dt>Questions answered</dt>
-                            <dd>{performanceDetail.questionsAnswered}</dd>
-                            {#if performanceDetail.questionsAnswered > 0}
-                                <dt>Accuracy</dt>
-                                <dd>{pct(performanceDetail.accuracyPercent)}</dd>
-                                <dt>On-time rate</dt>
-                                <dd class:met={performanceDetail.onTimeRate >= 0.5}>
-                                    {pct(performanceDetail.onTimeRate * 100)}
-                                </dd>
-                                <dt>Avg answer time</dt>
-                                <dd class:slow={performanceDetail.overtimeRate > 0.5}>
-                                    {one(performanceDetail.averageResponseTimeSecs)}s
-                                </dd>
-                            {/if}
-                        </dl>
-                    {/if}
-                </div>
-            {/each}
-        </section>
-    {/if}
-
-    {#if transferGaps.length}
-        <section class="panel">
-            <header class="panel-head">
-                <h2>Transfer gaps</h2>
-                <span class="src">recall − application</span>
-            </header>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Topic</th>
-                        <th>Recall</th>
-                        <th>Application</th>
-                        <th>Gap</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {#each transferGaps as g (g.topicKey)}
-                        <tr>
-                            <td>{g.topicName}</td>
-                            <td>{pct(g.memoryRecall * 100)}</td>
-                            <td>{pct(g.performanceAccuracy * 100)}</td>
-                            <td class:pos={g.gap > 0.15}>{pct(g.gap * 100)}</td>
-                        </tr>
-                    {/each}
-                </tbody>
-            </table>
-        </section>
-    {/if}
-
-    {#if pacing.length}
-        <section class="panel">
-            <header class="panel-head">
-                <h2>Pacing</h2>
-                <span class="src">timed review</span>
-            </header>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Topic</th>
-                        <th>Target</th>
-                        <th>Actual avg</th>
-                        <th>Overtime</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {#each pacing as p (p.name)}
-                        <tr>
-                            <td>{p.name}</td>
-                            <td>{one(p.target)}s</td>
-                            <td class:slow={p.actual > p.target}>{one(p.actual)}s</td>
-                            <td class:slow={p.overtime > 50}>{pct(p.overtime)}</td>
-                        </tr>
-                    {/each}
-                </tbody>
-            </table>
-        </section>
-    {/if}
-
-    <section class="panel session">
-        <header class="panel-head"><h2>Timed interleaved session</h2></header>
-        <label class="toggle">
-            <input type="checkbox" bind:checked={interleave} />
-            Interleave topics (off = blocked practice)
-        </label>
-        <div class="session-actions">
-            <button on:click={buildSession} disabled={building}>Build session</button>
-            {#if inDesktopShell}
-                <button
-                    class="start"
-                    on:click={startSession}
-                    disabled={building || !session || session.cardIds.length === 0}
-                    title="Open these cards in Anki's reviewer via a filtered deck"
-                >
-                    Start session in Anki
-                </button>
+                </details>
             {/if}
-        </div>
-        {#if session}
-            <p class="log">
-                <strong>{session.cardIds.length}</strong>
-                cards
-                <span class="dot">•</span>
-                target ~{Math.round(sessionTargetSecs / 60)} min
-                <span class="dot">•</span>
-                <span class="mode" class:interleaved={session.interleaved}>
-                    {session.interleaved ? "interleaved" : "blocked"}
-                </span>
-            </p>
-            <ol class="order">
-                {#each sessionItems as item, i (i)}
-                    <li>
-                        <span class="idx">{i + 1}</span>
-                        <span
-                            class="chip"
-                            style="--chip:{hueOf(item.sectionKey)}"
-                            title={item.sectionName || item.sectionKey}
+            {#if !aiOn}
+                <p class="ai-note">{aiDirection}</p>
+            {/if}
+        </section>
+
+        <!-- ===== Section vitals strip ===== -->
+        {#if sections.length}
+            <section class="vitals">
+                <header class="panel-head">
+                    <h2>Section vitals</h2>
+                    <span class="src">memory, per section (118–132)</span>
+                </header>
+                <div class="vital-strip">
+                    {#each sections as s (s.sectionKey)}
+                        <button
+                            type="button"
+                            class="mini"
+                            class:selected={selectedSection === s.sectionKey}
+                            style="--hue:{hueOf(s.sectionKey)}"
+                            on:click={() => focusSection(s.sectionKey)}
+                            title="Show {shortSection(
+                                s.sectionKey,
+                                s.sectionName,
+                            )} coverage"
                         >
-                            {shortSection(item.sectionKey, item.sectionName)}
-                        </span>
-                        <span class="topic">{item.topicName}</span>
-                    </li>
-                {/each}
-            </ol>
+                            <span class="mini-name">
+                                {shortSection(s.sectionKey, s.sectionName)}
+                            </span>
+                            {#if s.available}
+                                <span class="mini-score">{Math.round(s.point)}</span>
+                                <div class="mini-gauge">
+                                    <div
+                                        class="mini-band"
+                                        style="left:{sectionBand(s)
+                                            .left}%;width:{Math.max(
+                                            2,
+                                            sectionBand(s).right - sectionBand(s).left,
+                                        )}%"
+                                    ></div>
+                                    <div
+                                        class="mini-needle"
+                                        style="left:{sectionPos(s)}%"
+                                    ></div>
+                                </div>
+                                <span class="mini-sub">mem {pct(s.memoryPercent)}</span>
+                            {:else}
+                                <span class="mini-score muted">—</span>
+                                <div class="mini-gauge empty"></div>
+                                <span class="mini-sub muted">no data yet</span>
+                            {/if}
+                        </button>
+                    {/each}
+                </div>
+            </section>
         {/if}
-    </section>
+
+        <!-- ===== Coverage map: decks reframed by MCAT taxonomy ===== -->
+        {#if coverageSections.length}
+            <section class="coverage-map">
+                <header class="panel-head">
+                    <h2>Coverage map</h2>
+                    {#if selectedSection}
+                        <button
+                            class="chip-clear"
+                            on:click={() => (selectedSection = "")}
+                        >
+                            Show all sections
+                        </button>
+                    {:else}
+                        <span class="src">by section → topic</span>
+                    {/if}
+                </header>
+                {#each visibleCoverage as sec (sec.key)}
+                    <div class="cov-section" style="--hue:{hueOf(sec.key)}">
+                        <div class="cov-head">
+                            <span class="cov-name">
+                                {shortSection(sec.key, sec.name)}
+                            </span>
+                            <span class="cov-stat">
+                                {pct(sec.coverage)} topics covered
+                            </span>
+                        </div>
+                        <ul class="cov-topics">
+                            {#each sec.topics as t (t.key)}
+                                <li class:dim={!t.inDeck}>
+                                    <span class="cov-topic">{t.name}</span>
+                                    <div class="cov-bar">
+                                        <div
+                                            class="cov-fill"
+                                            style="width:{Math.max(
+                                                0,
+                                                Math.min(100, t.coverage),
+                                            )}%"
+                                        ></div>
+                                    </div>
+                                    <span class="cov-pct">{pct(t.coverage)}</span>
+                                </li>
+                            {/each}
+                        </ul>
+                    </div>
+                {/each}
+            </section>
+        {/if}
+
+        <!-- ===== Supporting readouts (quiet) ===== -->
+        {#if supportScores.length}
+            <section class="support">
+                {#each supportScores as est (est.label)}
+                    <div class="readout-card" class:abstain={!est.available}>
+                        <div class="rc-id">
+                            <span class="rc-label">{est.label}</span>
+                            {#if est.available}
+                                <span class="rc-score">{Math.round(est.point)}</span>
+                                <span class="rc-range">
+                                    {Math.round(est.low)}–{Math.round(est.high)} ·
+                                    <span class="conf conf-{est.confidence}">
+                                        {est.confidence}
+                                    </span>
+                                </span>
+                            {:else}
+                                <span class="rc-score muted">—</span>
+                                <span class="rc-range">{est.abstainReason}</span>
+                            {/if}
+                        </div>
+                        {#if est.label === "Memory" && memoryDetail}
+                            <dl class="stats">
+                                <dt>Cards reviewed</dt>
+                                <dd>
+                                    {memoryDetail.cardsReviewed} / {memoryDetail.cardsTotal}
+                                </dd>
+                                {#if memoryDetail.cardsReviewed > 0}
+                                    <dt>Avg retention</dt>
+                                    <dd>{pct(memoryDetail.averageRetentionPercent)}</dd>
+                                {/if}
+                                <dt>Mature / young</dt>
+                                <dd>
+                                    {memoryDetail.matureCards} / {memoryDetail.youngCards}
+                                </dd>
+                                <dt>Breadth</dt>
+                                <dd>
+                                    {memoryDetail.coveredTopics} / {memoryDetail.totalTopics}
+                                    ({pct(memoryDetail.breadthPercent)})
+                                </dd>
+                            </dl>
+                        {:else if est.label === "Performance" && performanceDetail}
+                            <dl class="stats">
+                                <dt>Questions answered</dt>
+                                <dd>{performanceDetail.questionsAnswered}</dd>
+                                {#if performanceDetail.questionsAnswered > 0}
+                                    <dt>Accuracy</dt>
+                                    <dd>{pct(performanceDetail.accuracyPercent)}</dd>
+                                    <dt>On-time rate</dt>
+                                    <dd class:met={performanceDetail.onTimeRate >= 0.5}>
+                                        {pct(performanceDetail.onTimeRate * 100)}
+                                    </dd>
+                                    <dt>Avg answer time</dt>
+                                    <dd
+                                        class:slow={performanceDetail.overtimeRate >
+                                            0.5}
+                                    >
+                                        {one(
+                                            performanceDetail.averageResponseTimeSecs,
+                                        )}s
+                                    </dd>
+                                {/if}
+                            </dl>
+                        {/if}
+                    </div>
+                {/each}
+            </section>
+        {/if}
+    </div>
+    <!-- tail cell of the cluster; below-the-fold analysis follows -->
+
+    <details class="detail-region">
+        <summary class="detail-toggle">
+            <span>Full analysis</span>
+            <span class="detail-hint">transfer gaps · pacing · session builder</span>
+        </summary>
+
+        {#if transferGaps.length}
+            <section class="panel">
+                <header class="panel-head">
+                    <h2>Transfer gaps</h2>
+                    <span class="src">recall − application</span>
+                </header>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Topic</th>
+                            <th>Recall</th>
+                            <th>Application</th>
+                            <th>Gap</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {#each transferGaps as g (g.topicKey)}
+                            <tr>
+                                <td>{g.topicName}</td>
+                                <td>{pct(g.memoryRecall * 100)}</td>
+                                <td>{pct(g.performanceAccuracy * 100)}</td>
+                                <td class:pos={g.gap > 0.15}>{pct(g.gap * 100)}</td>
+                            </tr>
+                        {/each}
+                    </tbody>
+                </table>
+            </section>
+        {/if}
+
+        {#if pacing.length}
+            <section class="panel">
+                <header class="panel-head">
+                    <h2>Pacing</h2>
+                    <span class="src">timed review</span>
+                </header>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Topic</th>
+                            <th>Target</th>
+                            <th>Actual avg</th>
+                            <th>Overtime</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {#each pacing as p (p.name)}
+                            <tr>
+                                <td>{p.name}</td>
+                                <td>{one(p.target)}s</td>
+                                <td class:slow={p.actual > p.target}>
+                                    {one(p.actual)}s
+                                </td>
+                                <td class:slow={p.overtime > 50}>{pct(p.overtime)}</td>
+                            </tr>
+                        {/each}
+                    </tbody>
+                </table>
+            </section>
+        {/if}
+
+        <section class="panel session">
+            <header class="panel-head"><h2>Timed interleaved session</h2></header>
+            <label class="toggle">
+                <input type="checkbox" bind:checked={interleave} />
+                Interleave topics (off = blocked practice)
+            </label>
+            <div class="session-actions">
+                <button on:click={buildSession} disabled={building}>
+                    Build session
+                </button>
+                {#if inDesktopShell}
+                    <button
+                        class="start"
+                        on:click={startSession}
+                        disabled={building || !session || session.cardIds.length === 0}
+                        title="Open these cards in Anki's reviewer via a filtered deck"
+                    >
+                        Start session in Anki
+                    </button>
+                {/if}
+            </div>
+            {#if session}
+                <p class="log">
+                    <strong>{session.cardIds.length}</strong>
+                    cards
+                    <span class="dot">•</span>
+                    target ~{Math.round(sessionTargetSecs / 60)} min
+                    <span class="dot">•</span>
+                    <span class="mode" class:interleaved={session.interleaved}>
+                        {session.interleaved ? "interleaved" : "blocked"}
+                    </span>
+                </p>
+                <ol class="order">
+                    {#each sessionItems as item, i (i)}
+                        <li>
+                            <span class="idx">{i + 1}</span>
+                            <span
+                                class="chip"
+                                style="--chip:{hueOf(item.sectionKey)}"
+                                title={item.sectionName || item.sectionKey}
+                            >
+                                {shortSection(item.sectionKey, item.sectionName)}
+                            </span>
+                            <span class="topic">{item.topicName}</span>
+                        </li>
+                    {/each}
+                </ol>
+            {/if}
+        </section>
+    </details>
 
     {#if xp}
         <footer class="xp">
@@ -802,9 +842,9 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 <style lang="scss">
     .mcat {
-        max-width: 60em;
+        max-width: min(84rem, 100%);
         margin: 0 auto;
-        padding: 1.5rem 1.25rem 3rem;
+        padding: clamp(0.9rem, 2.2vh, 1.5rem) clamp(1rem, 2.4vw, 1.75rem) 2.5rem;
         color: var(--mc-text);
         background: var(--mc-ink);
         font-family: var(--mc-font-body);
@@ -812,12 +852,39 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         line-height: 1.5;
     }
 
+    /* --- Primary cluster: the whole "am I ready + what next" answer laid out
+       to fit one desktop viewport. Named areas so DOM order is free and the
+       hero gauge stays the anchor. --- */
+    .cluster {
+        display: grid;
+        gap: clamp(0.7rem, 1.4vw, 1.1rem);
+        grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+        grid-template-areas:
+            "gauge plan"
+            "vitals plan"
+            "support support"
+            "coverage coverage";
+        align-items: start;
+    }
+    .cluster > .gauge-panel {
+        grid-area: gauge;
+    }
+    .cluster > .plan-panel {
+        grid-area: plan;
+        height: 100%;
+    }
+    .cluster > .vitals {
+        grid-area: vitals;
+    }
+    .cluster > .support {
+        grid-area: support;
+    }
+    .cluster > .coverage-map {
+        grid-area: coverage;
+    }
+
     /* --- Shared panel chrome (kept quiet) --- */
-    .panel,
-    .plan-panel,
-    .vitals,
-    .coverage-map,
-    .support {
+    .panel {
         margin-top: 1.15rem;
     }
     .panel-head {
@@ -849,7 +916,7 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     .gauge-panel {
         border: 1px solid var(--mc-hairline);
         border-radius: 14px;
-        padding: 1.5rem 1.5rem 1.25rem;
+        padding: clamp(1rem, 2vh, 1.5rem) clamp(1.1rem, 1.6vw, 1.5rem);
         background: radial-gradient(
             120% 140% at 15% 0%,
             var(--mc-panel-2),
@@ -879,8 +946,9 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     .score {
         font-family: var(--mc-font-display);
         font-weight: 700;
-        font-size: 4.25rem;
-        line-height: 0.95;
+        /* Fluid so the hero stays large yet never dominates a short viewport. */
+        font-size: clamp(2.6rem, 1.4rem + 3.4vw, 3.9rem);
+        line-height: 0.92;
         letter-spacing: 0.01em;
         font-variant-numeric: tabular-nums;
         font-feature-settings: "tnum" 1;
@@ -1016,9 +1084,9 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
     .gauge {
         position: relative;
-        height: 46px;
+        height: 44px;
         /* Room above for the target flag, below for percentile labels. */
-        margin: 2.6rem 0 1.9rem;
+        margin: clamp(1.9rem, 3.4vh, 2.6rem) 0 clamp(1.4rem, 2.6vh, 1.9rem);
         border-radius: 6px;
         background: linear-gradient(
             to bottom,
@@ -1175,8 +1243,8 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         display: flex;
         align-items: center;
         gap: 0.85rem;
-        margin-top: 1rem;
-        padding-top: 0.8rem;
+        margin-top: 0.75rem;
+        padding-top: 0.7rem;
         border-top: 1px solid var(--mc-hairline);
         font-family: var(--mc-font-mono);
         font-size: 0.78rem;
@@ -1194,14 +1262,17 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
     /* ===================== Plan (primary CTA) ===================== */
     .plan-panel {
+        display: flex;
+        flex-direction: column;
         border: 1px solid var(--mc-hairline);
         border-radius: 12px;
-        padding: 1.15rem 1.25rem;
+        padding: clamp(0.9rem, 1.6vh, 1.15rem) 1.25rem;
         background: var(--mc-panel);
     }
     .plan-summary {
-        margin: 0 0 0.75rem;
+        margin: 0 0 0.6rem;
         color: var(--mc-muted);
+        font-size: 0.9rem;
     }
     .plan {
         list-style: none;
@@ -1209,11 +1280,16 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         padding: 0;
         display: flex;
         flex-direction: column;
+        /* Bound to the hero column's height; extra steps scroll rather than
+           pushing the primary CTA below the fold. */
+        min-height: 0;
+        flex: 1 1 auto;
+        overflow-y: auto;
     }
     .plan > li {
         display: flex;
-        gap: 0.9rem;
-        padding: 0.7rem 0;
+        gap: 0.85rem;
+        padding: 0.55rem 0;
         border-top: 1px solid var(--mc-hairline);
     }
     .plan > li:first-child {
@@ -1271,7 +1347,9 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         display: flex;
         flex-wrap: wrap;
         gap: 0.6rem;
-        margin-top: 1rem;
+        /* Anchor the primary action to the foot of the tall plan panel. */
+        margin-top: auto;
+        padding-top: 0.9rem;
     }
     .cta button {
         padding: 0.65rem 1.3rem;
@@ -1309,30 +1387,47 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         text-transform: uppercase;
         letter-spacing: 0.08em;
     }
+    /* Deterministic fallback reads as a deliberate mode, not a failure: a quiet
+       mono status line with a status dot and an inline settings affordance. */
     .ai-note {
-        margin: 0.75rem 0 0;
-        font-size: 0.82rem;
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin: 0.7rem 0 0;
+        padding-top: 0.6rem;
+        border-top: 1px solid var(--mc-hairline);
+        font-family: var(--mc-font-mono);
+        font-size: 0.72rem;
+        letter-spacing: 0.02em;
         color: var(--mc-muted);
-        font-style: italic;
+    }
+    .ai-note::before {
+        content: "";
+        flex: none;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--mc-warn);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--mc-warn) 22%, transparent);
     }
 
     /* ===================== Section vitals ===================== */
     .vital-strip {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-        gap: 0.7rem;
+        grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+        gap: 0.6rem;
     }
     .mini {
         text-align: left;
         border: 1px solid var(--mc-hairline);
         border-top: 3px solid var(--hue);
         border-radius: 10px;
-        padding: 0.7rem 0.8rem;
+        padding: 0.55rem 0.7rem;
         background: var(--mc-panel);
         cursor: pointer;
         display: flex;
         flex-direction: column;
-        gap: 0.3rem;
+        gap: 0.2rem;
     }
     .mini:hover,
     .mini.selected {
@@ -1349,7 +1444,7 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     .mini-score {
         font-family: var(--mc-font-display);
         font-weight: 700;
-        font-size: 1.8rem;
+        font-size: 1.55rem;
         line-height: 1;
         font-variant-numeric: tabular-nums;
         color: var(--hue);
@@ -1468,19 +1563,31 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     }
 
     /* ===================== Support readouts ===================== */
+    /* Memory + Performance sit side-by-side in one full-width row; each card is
+       horizontal (identity | compact stats) so the trio of scores stays above
+       the fold instead of stacking. */
     .support {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-        gap: 0.8rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: clamp(0.6rem, 1vw, 0.9rem);
     }
     .readout-card {
+        display: grid;
+        grid-template-columns: minmax(6.5rem, auto) 1fr;
+        align-items: center;
+        gap: 1rem;
         border: 1px solid var(--mc-hairline);
         border-radius: 10px;
-        padding: 0.9rem 1rem;
+        padding: 0.7rem 0.9rem;
         background: var(--mc-panel);
     }
     .readout-card.abstain {
         opacity: 0.85;
+    }
+    .rc-id {
+        display: flex;
+        flex-direction: column;
+        gap: 0.05rem;
     }
     .rc-label {
         font-family: var(--mc-font-mono);
@@ -1493,8 +1600,8 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     .rc-score {
         font-family: var(--mc-font-display);
         font-weight: 700;
-        font-size: 2.2rem;
-        line-height: 1.1;
+        font-size: 2rem;
+        line-height: 1.05;
         font-variant-numeric: tabular-nums;
     }
     .rc-score.muted {
@@ -1503,7 +1610,7 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     .rc-range {
         display: block;
         font-family: var(--mc-font-mono);
-        font-size: 0.74rem;
+        font-size: 0.72rem;
         color: var(--mc-muted);
     }
     .conf {
@@ -1522,14 +1629,17 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     .stats {
         display: grid;
         grid-template-columns: auto 1fr;
-        gap: 0.12rem 0.6rem;
-        margin: 0.7rem 0 0;
-        padding-top: 0.6rem;
-        border-top: 1px solid var(--mc-hairline);
-        font-size: 0.82rem;
+        gap: 0.08rem 0.6rem;
+        margin: 0;
+        padding-left: 0.9rem;
+        border-left: 1px solid var(--mc-hairline);
+        font-size: 0.78rem;
+        align-self: stretch;
+        align-content: center;
     }
     .stats dt {
         color: var(--mc-muted);
+        white-space: nowrap;
     }
     .stats dd {
         margin: 0;
@@ -1700,6 +1810,49 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         font-size: 0.8em;
     }
 
+    /* ===================== Demoted detail region ===================== */
+    /* Secondary analysis (transfer gaps, pacing, session builder) is collapsed
+       by default so the primary answer owns the first viewport. */
+    .detail-region {
+        margin-top: clamp(0.9rem, 1.8vh, 1.4rem);
+        border-top: 1px solid var(--mc-hairline);
+    }
+    .detail-toggle {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.7rem 0.1rem;
+        cursor: pointer;
+        list-style: none;
+        font-family: var(--mc-font-mono);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--mc-text);
+    }
+    .detail-toggle::-webkit-details-marker {
+        display: none;
+    }
+    .detail-toggle::before {
+        content: "▸";
+        margin-right: 0.5rem;
+        color: var(--mc-muted);
+        transition: transform 120ms ease;
+        display: inline-block;
+    }
+    .detail-region[open] .detail-toggle::before {
+        transform: rotate(90deg);
+    }
+    .detail-hint {
+        color: var(--mc-muted);
+        letter-spacing: 0.04em;
+        text-transform: none;
+    }
+    .detail-region .panel:first-of-type {
+        margin-top: 0.4rem;
+    }
+
     /* Visible keyboard focus everywhere. */
     button:focus-visible,
     input:focus-visible,
@@ -1708,12 +1861,48 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         outline-offset: 2px;
     }
 
-    @media (max-width: 640px) {
-        .score {
-            font-size: 3.1rem;
+    /* Below ~880px the two columns can't sit side-by-side legibly: stack the
+       cluster into a single sensible column (graceful degradation). */
+    @media (max-width: 880px) {
+        .cluster {
+            grid-template-columns: 1fr;
+            grid-template-areas:
+                "gauge"
+                "plan"
+                "vitals"
+                "support"
+                "coverage";
         }
+        .cluster > .plan-panel {
+            height: auto;
+        }
+        .plan {
+            overflow-y: visible;
+        }
+        .support {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .detail-toggle::before {
+            transition: none;
+        }
+    }
+
+    @media (max-width: 640px) {
         .gauge-side {
             align-items: flex-start;
+        }
+        .readout-card {
+            grid-template-columns: 1fr;
+        }
+        .stats {
+            border-left: none;
+            padding-left: 0;
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--mc-hairline);
         }
         .cov-topics li {
             grid-template-columns: minmax(5rem, 1fr) 1fr 2.4rem;
