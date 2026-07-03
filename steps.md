@@ -463,3 +463,102 @@ Studio → AI Settings…** and set base URL / model / key (or export
 
 `just check` green. Rust AI unit tests + Python `test_mcat_ai.py` pass;
 `just mcat-ai-eval` reports checker 99.0% vs. baseline 73.0%.
+
+## Phase 2 UI redesign — instrument-panel identity
+
+Phase 2 UI reshapes the MCAT surfaces into a "diagnostic instrument panel"
+and then extends that identity across the whole app through Anki's central
+theme layer, without breaking normal Anki or user card content.
+
+### Token system
+
+- Palette (dark "lab readout"): `--ink #0E1622`, `--panel #16212E`,
+  `--hairline #24323F`, `--text #EAF1F6`, `--muted #93A4B3`; semantic
+  `--warn #E8A13A`, `--ready #3FB37F`. Light mode uses cool off-white
+  counterparts derived from the same ramps.
+- MCAT section hues (single source of truth, mirrored in the reviewer):
+  Chem/Phys `#4E8CFF`, CARS `#C77DFF`, Bio/Biochem `#34C7A0`,
+  Psych/Soc `#FF9F45`.
+- Type: Space Grotesk (display/scores, tabular figures), IBM Plex Sans
+  (body/UI), IBM Plex Mono (labels/times/data). All self-hosted as woff2.
+
+### MCAT surfaces (items 1–7)
+
+- Calibration Gauge hero on the 472–528 scale with percentile ticks
+  (50th/80th/97th), translucent confidence band, precise needle, and a
+  user-settable target flag persisted in `localStorage`; settle animation
+  is `prefers-reduced-motion`-aware.
+- Section-vitals strip (four section-hue mini gauges, 118–132), "your next
+  hour" plan as the primary CTA, AI status as a vital-sign pill with a
+  one-click enable (`mcat:ai-settings` → AI Card Studio), coverage map,
+  and an actionable copy pass.
+- Reviewer becomes an exam cockpit **only for MCAT exam cards**: the
+  countdown renders as a thin section-hued calibration bar and the AI miss
+  explanation is a diagnostic readout. Normal decks are visually unchanged.
+- Files: `ts/routes/mcat/{MCATDashboard.svelte,mcat-tokens.scss,fonts/}`,
+  `qt/aqt/{reviewer.py,mcat.py}`,
+  `qt/aqt/data/web/{js/reviewer-bottom.ts,css/reviewer-bottom.scss}`.
+
+### App-wide theming (central layer)
+
+The whole app is retinted from **one** source rather than per-surface CSS:
+
+- `ts/lib/sass/_color-palette.scss` — retinted the neutral `lightgray`
+  (light mode) and `darkgray` (dark mode) ramps to cool/blue-slate while
+  preserving per-step perceived lightness. This is the single source that
+  the build pipeline fans out to (a) web CSS variables via
+  `_root-vars.scss`, and (b) Qt via `extract_sass_vars.py` →
+  `qt/_aqt/colors.py` → `theme.py` (QSS + QPalette). So window background,
+  buttons, inputs, menus, tabs, and scrollbars in the native Qt chrome all
+  move with the palette, and every mediasrv-served page inherits it too.
+- Fonts self-hosted app-wide (no runtime CDN): 6 woff2 files vendored in
+  `qt/aqt/data/web/fonts/`, copied by a new `build_fonts` action in
+  `build/configure/src/aqt.rs` and served at `/_anki/fonts/` by mediasrv.
+  `ts/lib/sass/_fonts.scss` declares the `@font-face` rules + `--font-sans`
+  / `--font-mono` / `--font-display`; `ts/routes/base.scss` routes the
+  global SvelteKit stack; `qt/aqt/webview.py` injects the same `@font-face`
+  + body/mono families into every Qt webview (toolbar, deck browser,
+  overview, editor, browser). Card/note content keeps its own reviewer CSS
+  and is untouched.
+
+### Light + dark correctness
+
+All colors flow through theme variables; there are no single-mode
+hardcoded values in the central layer. Both ramps were retinted in tandem
+with matched luminance, so contrast/legibility hold in both modes
+(verified below). Focus outlines, semantic colors, and section hues are
+unchanged, preserving accessibility and keyboard-focus visibility.
+
+### Verified
+
+`just check` green (build + lint + type + Qt tests). Cross-screen
+screenshots (Playwright against the running app, both `#night` and light):
+MCAT dashboard (instrument panel intact), congrats (non-MCAT SvelteKit
+surface adopting Space Grotesk/IBM Plex on the blue-slate canvas), and
+the fallback graphs/deck-options pages showing the correct canvas + font.
+The `cursor-ide-browser` MCP was unreliable in this environment, so
+Playwright (the repo's e2e browser) was used instead. Qt-native chrome
+can't be hit over HTTP (it's rendered in-process, not served as a route),
+but it derives from the same regenerated `colors.py`/`webview.py` that the
+green build produced.
+
+### Merge risk
+
+Higher than the MCAT-only work: `_color-palette.scss` is a central
+upstream file, so future Anki updates that touch the palette ramps will
+conflict here. The change is contained to two neutral ramps (no semantic
+or structural edits), so conflicts should be mechanical. The font
+injection in `webview.py` and the `build_fonts` action are additive and
+low-risk. Aesthetic risk taken: retinting the *global* neutrals (not just
+MCAT) so the product reads as one instrument; justified because the brief
+explicitly asked for app-wide cohesion, and luminance was preserved to
+keep normal Anki legible.
+
+### Commits (Phase 2 UI)
+
+- `444a80b1c` MCAT design tokens + self-hosted instrument fonts
+- `fc8e6ce73` dashboard as a diagnostic instrument panel
+- `c4d04a826` reviewer exam cockpit for MCAT cards
+- `b9cd7f796` prettier/dprint formatting for MCAT surfaces
+- `71e7915ae` retint central palette to blue-slate instrument identity
+- `c43837402` self-host IBM Plex + Space Grotesk app-wide
