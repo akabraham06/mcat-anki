@@ -1,0 +1,277 @@
+12.3
+
+Rate Laws
+
+Learning Objectives
+By the end of this section, you will be able to:
+Explain the form and function of a rate law
+
+Use rate laws to calculate reaction rates
+
+Use rate and concentration data to identify reaction orders and derive rate laws
+
+As described in the previous module, the rate of a reaction is often affected by the concentrations of reactants. Rate laws (sometimes called differential rate laws) or rate equations are mathematical expressions that describe the relationship between the rate of a chemical reaction and the concentration of its reactants. As an example, consider the reaction described by the chemical equation
+
+where a and b are stoichiometric coefficients. The rate law for this reaction is written as:
+
+in which [A] and [B] represent the molar concentrations of reactants, and k is the rate constant, which is specific for a particular reaction at a particular temperature. The exponents m and n are the reaction orders and are typically positive integers, though they can be fractions, negative, or zero. The rate constant k and the reaction orders m and n must be determined experimentally by observing how the rate of a reaction changes as the concentrations of the reactants are changed. The rate constant k is independent of the reactant concentrations, but it does vary with temperature.
+
+The reaction orders in a rate law describe the mathematical dependence of the rate on reactant concentrations. Referring to the generic rate law above, the reaction is m order with respect to A and n order with respect to B. For example, if m = 1 and n = 2, the reaction is first order in A and second order in B. The overall reaction order is simply the sum of orders for each reactant. For the example rate law here, the reaction is third order overall (1 + 2 = 3). A few specific examples are shown below to further illustrate this concept.
+
+The rate law:
+
+describes a reaction that is first order in hydrogen peroxide and first order overall. The rate law:
+
+describes a reaction that is second order in C4H6 and second order overall. The rate law:
+
+describes a reaction that is first order in H+, first order in OH−, and second order overall.
+
+Example
+12.3
+
+Writing Rate Laws from Reaction Orders
+
+An experiment shows that the reaction of nitrogen dioxide with carbon monoxide:
+
+is second order in NO2 and zero order in CO at 100 °C. What is the rate law for the reaction?
+
+Solution
+
+The reaction will have the form:
+
+The reaction is second order in NO2; thus m = 2. The reaction is zero order in CO; thus n = 0. The rate law is:
+
+Remember that a number raised to the zero power is equal to 1, thus [CO]0 = 1, which is why the CO concentration term may be omitted from the rate law: the rate of reaction is solely dependent on the concentration of NO2. A later chapter section on reaction mechanisms will explain how a reactant’s concentration can have no effect on a reaction rate despite being involved in the reaction.
+
+Check Your Learning
+
+The rate law for the reaction:
+
+has been determined to be rate = k[NO]2[H2]. What are the orders with respect to each reactant, and what is the overall order of the reaction?
+
+Answer:
+
+order in NO = 2; order in H2 = 1; overall order = 3
+
+Check Your Learning
+
+In a transesterification reaction, a triglyceride reacts with an alcohol to form an ester and glycerol. Many students learn about the reaction between methanol (CH3OH) and ethyl acetate (CH3CH2OCOCH3) as a sample reaction before studying the chemical reactions that produce biodiesel:
+
+The rate law for the reaction between methanol and ethyl acetate is, under certain conditions, determined to be:
+
+What is the order of reaction with respect to methanol and ethyl acetate, and what is the overall order of reaction?
+
+Answer:
+
+order in CH3OH = 1; order in CH3CH2OCOCH3 = 0; overall order = 1
+
+A common experimental approach to the determination of rate laws is the method of initial rates. This method involves measuring reaction rates for multiple experimental trials carried out using different initial reactant concentrations. Comparing the measured rates for these trials permits determination of the reaction orders and, subsequently, the rate constant, which together are used to formulate a rate law. This approach is illustrated in the next two example exercises.
+
+Example
+12.4
+
+Determining a Rate Law from Initial Rates
+
+Ozone in the upper atmosphere is depleted when it reacts with nitrogen oxides. The rates of the reactions of nitrogen oxides with ozone are important factors in deciding how significant these reactions are in the formation of the ozone hole over Antarctica (Figure 12.8). One such reaction is the combination of nitric oxide, NO, with ozone, O3:
+
+Figure
+12.8
+
+A contour map showing stratospheric ozone concentration and the “ozone hole” that occurs over Antarctica during its spring months. (credit: modification of work by NASA)
+
+This reaction has been studied in the laboratory, and the following rate data were determined at 25 °C.
+
+Trial
+[NO] (mol/L)
+[O3] (mol/L)
+
+1
+1.00 10−6
+3.00 10−6
+6.60 10−5
+
+2
+1.00 10−6
+6.00 10−6
+1.32 10−4
+
+3
+1.00 10−6
+9.00 10−6
+1.98 10−4
+
+4
+2.00 10−6
+9.00 10−6
+3.96 10−4
+
+5
+3.00 10−6
+9.00 10−6
+5.94 10−4
+
+Determine the rate law and the rate constant for the reaction at 25 °C.
+
+Solution
+
+The rate law will have the form:
+
+Determine the values of m, n, and k from the experimental data using the following three-part process:
+
+Step 1.
+Determine the value of m from the data in which [NO] varies and [O3] is constant. In the last three experiments, [NO] varies while [O3] remains constant. When [NO] doubles from trial 3 to 4, the rate doubles, and when [NO] triples from trial 3 to 5, the rate also triples. Thus, the rate is also directly proportional to [NO], and m in the rate law is equal to 1.
+
+Step 2.
+Determine the value of n from data in which [O3] varies and [NO] is constant. In the first three experiments, [NO] is constant and [O3] varies. The reaction rate changes in direct proportion to the change in [O3]. When [O3] doubles from trial 1 to 2, the rate doubles; when [O3] triples from trial 1 to 3, the rate increases also triples. Thus, the rate is directly proportional to [O3], and n is equal to 1.The rate law is thus:
+
+Step 3.
+Determine the value of k from one set of concentrations and the corresponding rate. The data from trial 1 are used below:
+
+Check Your Learning
+
+Acetaldehyde decomposes when heated to yield methane and carbon monoxide according to the equation:
+
+Determine the rate law and the rate constant for the reaction from the following experimental data:
+
+Trial
+[CH3CHO] (mol/L)
+
+1
+1.75 10−3
+2.06 10−11
+
+2
+3.50 10−3
+8.24 10−11
+
+3
+7.00 10−3
+3.30 10−10
+
+Answer:
+
+with k = 6.73 10−6 L/mol/s
+
+Example
+12.5
+
+Determining Rate Laws from Initial Rates
+
+Using the initial rates method and the experimental data, determine the rate law and the value of the rate constant for this reaction:
+
+Trial
+[NO] (mol/L)
+[Cl2] (mol/L)
+
+1
+0.10
+0.10
+0.00300
+
+2
+0.10
+0.15
+0.00450
+
+3
+0.15
+0.10
+0.00675
+
+Solution
+
+The rate law for this reaction will have the form:
+
+As in Example 12.4, approach this problem in a stepwise fashion, determining the values of m and n from the experimental data and then using these values to determine the value of k. In this example, however, an explicit algebraic approach (vs. the implicit approach of the previous example) will be used to determine the values of m and n:
+
+Step 1.
+Determine the value of m from the data in which [NO] varies and [Cl2] is constant. Write the ratios with the subscripts x and y to indicate data from two different trials:
+
+Using the third trial and the first trial, in which [Cl2] does not vary, gives:
+
+Canceling equivalent terms in the numerator and denominator leaves:
+
+which simplifies to:
+
+Use logarithms to determine the value of the exponent m:
+
+Confirm the result
+
+Step 2.
+Determine the value of n from data in which [Cl2] varies and [NO] is constant.
+
+Cancelation gives:
+
+which simplifies to:
+
+Thus n must be 1, and the form of the rate law is:
+
+Step 3.
+Determine the numerical value of the rate constant k with appropriate units. The units for the rate of a reaction are mol/L/s. The units for k are whatever is needed so that substituting into the rate law expression affords the appropriate units for the rate. In this example, the concentration units are mol3/L3. The units for k should be mol−2 L2/s so that the rate is in terms of mol/L/s.
+
+To determine the value of k once the rate law expression has been solved, simply plug in values from the first experimental trial and solve for k:
+
+Check Your Learning
+
+Use the provided initial rate data to derive the rate law for the reaction whose equation is:
+
+Trial
+[OCl−] (mol/L)
+[I−] (mol/L)
+Initial Rate (mol/L/s)
+
+1
+0.0040
+0.0020
+0.00184
+
+2
+0.0020
+0.0040
+0.00092
+
+3
+0.0020
+0.0020
+0.00046
+
+Determine the rate law expression and the value of the rate constant k with appropriate units for this reaction.
+
+Answer:
+
+2.00 = 2.00y
+
+y = 1
+
+Substituting the concentration data from trial 1 and solving for k yields:
+
+Reaction Order and Rate Constant Units
+
+In some of our examples, the reaction orders in the rate law happen to be the same as the coefficients in the chemical equation for the reaction. This is merely a coincidence and very often not the case.
+
+Rate laws may exhibit fractional orders for some reactants, and negative reaction orders are sometimes observed when an increase in the concentration of one reactant causes a decrease in reaction rate. A few examples illustrating these points are provided:
+
+It is important to note that rate laws are determined by experiment only and are not reliably predicted by reaction stoichiometry.
+
+The units for a rate constant will vary as appropriate to accommodate the overall order of the reaction. The unit of the rate constant for the second-order reaction described in Example 12.4 was determined to be For the third-order reaction described in Example 12.5, the unit for k was derived to be Dimensional analysis requires the rate constant unit for a reaction whose overall order is x to be Table 12.1 summarizes the rate constant units for common reaction orders.
+Rate Constant Units for Common Reaction Orders
+
+Overall Reaction Order (x)
+Rate Constant Unit (Lx−1 mol1−x s−1)
+
+0 (zero)
+mol L−1 s−1
+
+1 (first)
+s−1
+
+2 (second)
+L mol−1 s−1
+
+3 (third)
+L2 mol−2 s−1
+
+Table
+12.1
+
+Note that the units in this table were derived using specific units for concentration (mol/L) and time (s), though any valid units for these two properties may be used.

@@ -1,0 +1,143 @@
+20.1
+
+Demography and Population
+
+Learning Objectives
+By the end of this section, you should be able to:
+
+Explain demographic measurements like fertility and mortality rates
+
+Describe a variety of demographic theories, such as Malthusian, cornucopian, zero population growth, and demographic transition theories
+
+Evaluate current population trends and patterns
+
+Differentiate between an internally displaced person, an asylum-seeker, and a refugee
+
+Figure
+20.3
+
+At nearly 8 billion, Earth’s population is always on the move, but the methods vary. As you see here, bicycles, motorcycles, and scooters are more common in Vietnam than they are in many U.S. cities. And in some countries, masks were common well before COVID-19. (Credit: Esin Üstün/flickr)
+
+Between 2011 and 2012, we reached a population milestone of 7 billion humans on the earth’s surface. The rapidity with which this happened demonstrated an exponential increase from the time it took to grow from 5 billion to 6 billion people. In short, the planet is filling up. We'll have 8 billion people in this decade. While the population is increasing overall, there are certain countries and regions where growth is slowing. Relocation and migration also change the makeup and quantity of people in an area. In order to properly understand these dynamics and make decisions regarding them, we turn to demography, or the study of populations. Three critical aspects of demography are fertility, mortality, and migration.
+
+The fertility rate of a society is a measure noting the number of children born. The fertility number is generally lower than the fecundity number, which measures the potential number of children that could be born to women of childbearing age. Sociologists measure fertility using the crude birthrate (the number of live births per 1,000 people per year). Just as fertility measures childbearing, the mortality rate is a measure of the number of people who die. The crude death rate is a number derived from the number of deaths per 1,000 people per year. When analyzed together, fertility and mortality rates help researchers understand the overall growth occurring in a population.
+
+Another key element in studying populations is the movement of people into and out of an area. Migration may take the form of immigration, which describes movement into an area to take up permanent residence, or emigration, which refers to movement out of an area to another place of permanent residence. Migration might be voluntary (as when college students study abroad), involuntary (as when Syrians evacuated war-torn areas), or forced (as when many Native American tribes were removed from the lands they’d lived in for generations).
+
+Big Picture
+
+Mass Migration Crises
+
+Figure
+20.4
+
+This March 2021 image of dozens of children in plastic-lined holding areas was one of a group of photos that sparked public outcry in the early days of the Biden administration, years after similar scenes and situations in the 2014 and 2018 border crises. (Credit: Defense Visual Information Distribution Service)
+
+At least once during each of the last three Presidential administrations, the United States has faced a crisis at its southern border. While images of children in crowded holding areas, covered in piles of shiny plastic emergency blankets, were often associated with the Trump Presidency, Presidents Obama and Biden saw children in the same conditions. The holding facilities, described as cages by some and often referred to as “perreras” (dog kennels) or “hieleras” (ice boxes) by the migrating people, are meant to be temporary stopovers while people await hearings or related refugee processes. But during a number of occasions, the number of people crossing the border was so large – including, at times, tens of thousands of children – that the system became overwhelmed. The conditions are deplorable. The outcomes are uncertain. But the people cross the border anyway.
+
+How did we get here? Bipartisan legislation passed in 2008 guarantees unaccompanied minors a hearing with an immigration judge where they may request asylum based on a “credible” fear of persecution or torture (U.S. Congress 2008). In some cases, these children are looking for relatives and can be placed with family while awaiting a hearing on their immigration status; in other cases, they become involved with the foster system or are placed in of the 170 housing facilities run by nonprofit or for-profit groups. Finally, for people who turn 18 while still in the process, they may be transferred to detention centers, sometimes on their birthday (Montoya-Galvez 2021). Many people in America were either accepting or unaware of these policies and situations until crises occurred in 2014 and 2018-19. At those points of incredible influxes of migrant children, border control, refugee services, and advocacy organizations were overwhelmed by the surge. Both the Obama and Trump administrations pushed for changes in laws or guidelines for enforcement (Gomez 2014 and Kanno-Youngs 2020).
+
+The Obama administration sought to make the decision process faster. In 2014, over 50,000 unaccompanied minors were taken into custody, creating the backlog discussed above. The Trump administration sought to discourage immigration through policies such as separating parents and children who arrived together. The policy was decried by members of Trump's own party, as well as many other organizations, and was eventually dealt a series of legal blows before the President reversed it. Later investigations determined that hundreds, if not thousands, of children remained separated from their parents for extended periods of time (Spagat 2019).
+
+While the situations at the border are extremely threatening to children's health and safety, people and policymakers in the United States are divided on how to address the situation. In many cases, these children are fleeing various kinds of violence and extreme poverty. The U.S. government has repeatedly indicated that the best way to avoid these crises is to address those conditions in the migrants' home countries. But even with financial aid for those nations and pressure on their governments to crack down on illegal activity, it is unlikely that the situation will change quickly or consistently. The Biden administration may not be the last to face a surge of immigrant children at its border.
+
+A functional perspective theorist might focus on the dysfunctions caused by the sudden influx of underage asylum seekers, while a conflict perspective theorist might look at the way social stratification influences how the members of a developed country are treating the lower-status migrants from less-developed countries in Latin America. An interactionist theorist might see significance in the attitude of those protesting the presence of migrant children. Which theoretical perspective makes the most sense to you?
+
+Population Growth
+
+Changing fertility, mortality, and migration rates make up the total population composition, a snapshot of the demographic profile of a population. This number can be measured for societies, nations, world regions, or other groups. The population composition includes the sex ratio, the number of men for every hundred women, as well as the population pyramid, a picture of population distribution by sex and age (Figure 20.5).
+
+Figure
+20.5
+
+This population pyramid shows the breakdown of the 2019 U.S. population according to age and sex. (Credit: Populationpyramid.net)
+
+Country
+Population (in millions)
+Fertility Rate (number of children per adult women)
+Mortality Rate (per 1,000 births)
+Sex Ratio Male to Female
+
+Afghanistan
+38.4
+4.4
+48
+1.05
+
+Finland
+5.52
+1.4
+2.0
+1.04
+
+United States of America
+328.3
+1.7
+5.7
+0.97
+
+Table
+20.1
+
+Varying Fertility and Mortality Rated by Country
+
+As the table illustrates, countries vary greatly in fertility rates and mortality rates—the components that make up a population composition. This data is from 2018, and changes occur continually. For example, in 2014, the number of children per adult woman in Afghanistan was 5.4 – generally an average of one more child per family. And the U.S. was slightly higher at 2.0 (World Bank 2019)
+
+Comparing the three countries in Table 20.1 reveals that there are more men than women in Afghanistan and Finland, whereas the reverse is true in the United States. Afghanistan also has significantly higher fertility and mortality rates than either of the other two countries. In all three cases, the fertility rates have dropped in recent years, but Afghanistan's drop (from 5.4 children per woman to 4.4) will likely be the most impactful (World Bank 2019). Do these statistics surprise you? How do you think the population makeup affects the political climate and economics of the different countries?
+
+Demographic Theories
+
+Sociologists have long looked at population issues as central to understanding human interactions. Below we will look at four theories about population that inform sociological thought: Malthusian, zero population growth, cornucopian, and demographic transition theories.
+
+Malthusian Theory
+
+Thomas Malthus (1766–1834) was an English clergyman who made dire predictions about earth’s ability to sustain its growing population. According to Malthusian theory, three factors would control human population that exceeded the earth’s carrying capacity, or how many people can live in a given area considering the amount of available resources. Malthus identified these factors as war, famine, and disease (Malthus 1798). He termed them “positive checks” because they increase mortality rates, thus keeping the population in check. They are countered by “preventive checks,” which also control the population but by reducing fertility rates; preventive checks include birth control and celibacy. Thinking practically, Malthus saw that people could produce only so much food in a given year, yet the population was increasing at an exponential rate. Eventually, he thought people would run out of food and begin to starve. They would go to war over increasingly scarce resources and reduce the population to a manageable level, and then the cycle would begin anew.
+
+Of course, this has not exactly happened. The human population has continued to grow long past Malthus’s predictions. So what happened? Why didn’t we die off? There are three reasons sociologists believe we are continuing to expand the population of our planet. First, technological increases in food production have increased both the amount and quality of calories we can produce per person. Second, human ingenuity has developed new medicine to curtail death from disease. Finally, the development and widespread use of contraception and other forms of family planning have decreased the speed at which our population increases. But what about the future? Some still believe Malthus was correct and that ample resources to support the earth’s population will soon run out.
+
+Zero Population Growth
+
+A neo-Malthusian researcher named Paul Ehrlich brought Malthus’s predictions into the twentieth century. However, according to Ehrlich, it is the environment, not specifically the food supply, that will play a crucial role in the continued health of the planet’s population (Ehrlich 1968). Ehrlich's ideas suggest that the human population is moving rapidly toward complete environmental collapse, as privileged people use up or pollute a number of environmental resources such as water and air. He advocated for a goal of zero population growth (ZPG), in which the number of people entering a population through birth or immigration is equal to the number of people leaving it via death or emigration. While support for this concept is mixed, it is still considered a possible solution to global overpopulation.
+
+Cornucopian Theory
+
+Of course, some theories are less focused on the pessimistic hypothesis that the world’s population will meet a detrimental challenge to sustaining itself. Cornucopian theory scoffs at the idea of humans wiping themselves out; it asserts that human ingenuity can resolve any environmental or social issues that develop. As an example, it points to the issue of food supply. If we need more food, the theory contends, agricultural scientists will figure out how to grow it, as they have already been doing for centuries. After all, in this perspective, human ingenuity has been up to the task for thousands of years and there is no reason for that pattern not to continue (Simon 1981).
+
+Demographic Transition Theory
+
+Whether you believe that we are headed for environmental disaster and the end of human existence as we know it, or you think people will always adapt to changing circumstances, we can see clear patterns in population growth. Societies develop along a predictable continuum as they evolve from unindustrialized to postindustrial. Demographic transition theory (Caldwell and Caldwell 2006) suggests that future population growth will develop along a predictable four-stage model.
+
+In Stage 1, birth, death, and infant mortality rates are all high, while life expectancy is short. An example of this stage is the 1800s in the United States. As countries begin to industrialize, they enter Stage 2, where birth rates are higher while infant mortality and the death rates drop. Life expectancy also increases. Afghanistan is currently in this stage. Stage 3 occurs once a society is thoroughly industrialized; birth rates decline, while life expectancy continues to increase. Death rates continue to decrease. Mexico’s population is at this stage. In the final phase, Stage 4, we see the postindustrial era of a society. Birth and death rates are low, people are healthier and live longer, and society enters a phase of population stability. Overall population may even decline. For example, Sweden is considered to be in Stage 4.
+
+The United Nations Population Fund (2008) categorizes nations as high fertility, intermediate fertility, or low fertility. The United Nations (UN) anticipates the population growth will triple between 2011 and 2100 in high-fertility countries, which are currently concentrated in sub-Saharan Africa. For countries with intermediate fertility rates (the United States, India, and Mexico all fall into this category), growth is expected to be about 26 percent. And low-fertility countries like China, Australia, and most of Europe will actually see population declines of approximately 20 percent. The graphs below illustrate this trend.
+
+Changes in U.S. Immigration Patterns and Attitudes
+
+Figure
+20.6
+
+Projected Population in Africa
+
+This graph shows the population growth of countries located on the African continent, many of which have high fertility rates. (Credit: USAID)
+
+Figure
+20.7
+
+Projected Population in the United States
+
+The United States has an intermediate fertility rate, and therefore, a comparatively moderate projected population growth. (Credit: USAID)
+
+Figure
+20.8
+
+Projected Population in Europe
+
+This chart shows the projected population growth of Europe for the remainder of this century. (Credit: USAID)
+
+Worldwide patterns of migration have changed, though the United States remains the most popular destination. From 1990 to 2013, the number of migrants living in the United States increased from one in six to one in five (The Pew Research Center 2013). Overall, the United States is home to about 45 million foreign-born people, while only about 3 million U.S. citizens lived abroad. Of foreign-born citizens emigrating to the United States, 55 percent originated in Latin America and the Caribbean. However, over the past few years, more people from Asian countries have entered than from Latin American ones (Budiman 2020).
+
+While there are more foreign-born people residing in the United States legally, as of 2017 about 10.5 million resided here without legal status (Budiman 2020). Most immigrants in the U.S. live in either Texas, Florida, or California.
+
+Even before policy changes and COVID-19 affected refugee admittance, a relatively small number of people formally entered the country as refugees. In 2016, about 85,000 refugees were admitted to the U.S. (of over one million total immigrants), with the largest portion arriving from the Democratic Republic of Congo; in 2020, the number of refugees was reduced to 18,000.
+
+Most citizens agree that our national immigration policies need adjustment. More than two-thirds (69 percent) of those in a recent national survey believed unauthorized immigrants should have a path to citizenship provided they meet other requirements, such as paying taxes and passing a background check. Even more people (72 percent) supported passing a DREAM Act, which would allow people who immigrated as children to earn citizenship. In both parts of the survey, majorities of both Republicans and Democrats as well as independents supported the pathway to citizenship (Vox and Data for Progress 2021).

@@ -1,0 +1,155 @@
+14.2
+
+pH and pOH
+
+Learning Objectives
+By the end of this section, you will be able to:
+
+Explain the characterization of aqueous solutions as acidic, basic, or neutral
+
+Express hydronium and hydroxide ion concentrations on the pH and pOH scales
+
+Perform calculations relating pH and pOH
+
+As discussed earlier, hydronium and hydroxide ions are present both in pure water and in all aqueous solutions, and their concentrations are inversely proportional as determined by the ion product of water (Kw). The concentrations of these ions in a solution are often critical determinants of the solution’s properties and the chemical behaviors of its other solutes, and specific vocabulary has been developed to describe these concentrations in relative terms. A solution is neutral if it contains equal concentrations of hydronium and hydroxide ions; acidic if it contains a greater concentration of hydronium ions than hydroxide ions; and basic if it contains a lesser concentration of hydronium ions than hydroxide ions.
+
+A common means of expressing quantities that may span many orders of magnitude is to use a logarithmic scale. One such scale that is very popular for chemical concentrations and equilibrium constants is based on the p-function, defined as shown where “X” is the quantity of interest and “log” is the base-10 logarithm:
+
+The pH of a solution is therefore defined as shown here, where [H3O+] is the molar concentration of hydronium ion in the solution:
+
+Rearranging this equation to isolate the hydronium ion molarity yields the equivalent expression:
+
+Likewise, the hydroxide ion molarity may be expressed as a p-function, or pOH:
+
+or
+
+Finally, the relation between these two ion concentration expressed as p-functions is easily derived from the Kw expression:
+
+At 25 °C, the value of Kw is 1.0 10−14, and so:
+
+As was shown in Example 14.1, the hydronium ion molarity in pure water (or any neutral solution) is 1.0 10−7 M at 25 °C. The pH and pOH of a neutral solution at this temperature are therefore:
+
+And so, at this temperature, acidic solutions are those with hydronium ion molarities greater than 1.0 10−7 M and hydroxide ion molarities less than 1.0 10−7 M (corresponding to pH values less than 7.00 and pOH values greater than 7.00). Basic solutions are those with hydronium ion molarities less than 1.0 10−7 M and hydroxide ion molarities greater than 1.0 10−7 M (corresponding to pH values greater than 7.00 and pOH values less than 7.00).
+
+Since the autoionization constant Kw is temperature dependent, these correlations between pH values and the acidic/neutral/basic adjectives will be different at temperatures other than 25 °C. For example, the “Check Your Learning” exercise accompanying Example 14.1 showed the hydronium molarity of pure water at 80 °C is 4.9 10−7 M, which corresponds to pH and pOH values of:
+
+At this temperature, then, neutral solutions exhibit pH = pOH = 6.31, acidic solutions exhibit pH less than 6.31 and pOH greater than 6.31, whereas basic solutions exhibit pH greater than 6.31 and pOH less than 6.31. This distinction can be important when studying certain processes that occur at other temperatures, such as enzyme reactions in warm-blooded organisms at a temperature around 36–40 °C. Unless otherwise noted, references to pH values are presumed to be those at 25 °C (Table 14.1).
+
+Summary of Relations for Acidic, Basic and Neutral Solutions
+
+Classification
+Relative Ion Concentrations
+pH at 25 °C
+
+acidic
+[H3O+] > [OH−]
+pH < 7
+
+neutral
+[H3O+] = [OH−]
+pH = 7
+
+basic
+[H3O+] < [OH−]
+pH > 7
+
+Table
+14.1
+
+Figure 14.2 shows the relationships between [H3O+], [OH−], pH, and pOH for solutions classified as acidic, basic, and neutral.
+
+Figure
+14.2
+
+The pH and pOH scales represent concentrations of H3O+ and OH−, respectively. The pH and pOH values of some common substances at 25 °C are shown in this chart.
+
+Example
+14.4
+
+Calculation of pH from [H3O+]
+
+What is the pH of stomach acid, a solution of HCl with a hydronium ion concentration of 1.2 10−3 M?
+Solution
+
+(The use of logarithms is explained in Appendix B. When taking the log of a value, keep as many decimal places in the result as there are significant figures in the value.)
+
+Check Your Learning
+
+Water exposed to air contains carbonic acid, H2CO3, due to the reaction between carbon dioxide and water:
+
+Air-saturated water has a hydronium ion concentration caused by the dissolved CO2 of 2.0 10−6 M, about 20-times larger than that of pure water. Calculate the pH of the solution at 25 °C.
+
+Answer:
+
+5.70
+
+Example
+14.5
+
+Calculation of Hydronium Ion Concentration from pH
+
+Calculate the hydronium ion concentration of blood, the pH of which is 7.3.
+Solution
+
+(On a calculator take the antilog, or the “inverse” log, of −7.3, or calculate 10−7.3.)
+
+Check Your Learning
+
+Calculate the hydronium ion concentration of a solution with a pH of −1.07.
+
+Answer:
+
+12 M
+
+How Sciences Interconnect
+
+Environmental Science
+
+Normal rainwater has a pH between 5 and 6 due to the presence of dissolved CO2 which forms carbonic acid:
+
+Acid rain is rainwater that has a pH of less than 5, due to a variety of nonmetal oxides, including CO2, SO2, SO3, NO, and NO2 being dissolved in the water and reacting with it to form not only carbonic acid, but sulfuric acid and nitric acid. The formation and subsequent ionization of sulfuric acid are shown here:
+
+Carbon dioxide is naturally present in the atmosphere because most organisms produce it as a waste product of metabolism. Carbon dioxide is also formed when fires release carbon stored in vegetation or fossil fuels. Sulfur trioxide in the atmosphere is naturally produced by volcanic activity, but it also originates from burning fossil fuels, which have traces of sulfur, and from the process of “roasting” ores of metal sulfides in metal-refining processes. Oxides of nitrogen are formed in internal combustion engines where the high temperatures make it possible for the nitrogen and oxygen in air to chemically combine.
+
+Acid rain is a particular problem in industrial areas where the products of combustion and smelting are released into the air without being stripped of sulfur and nitrogen oxides. In North America and Europe until the 1980s, it was responsible for the destruction of forests and freshwater lakes, when the acidity of the rain actually killed trees, damaged soil, and made lakes uninhabitable for all but the most acid-tolerant species. Acid rain also corrodes statuary and building facades that are made of marble and limestone (Figure 14.3). Regulations limiting the amount of sulfur and nitrogen oxides that can be released into the atmosphere by industry and automobiles have reduced the severity of acid damage to both natural and manmade environments in North America and Europe. It is now a growing problem in industrial areas of China and India.
+
+For further information on acid rain, visit this website hosted by the US Environmental Protection Agency.
+
+Figure
+14.3
+
+(a) Acid rain makes trees more susceptible to drought and insect infestation, and depletes nutrients in the soil. (b) It also is corrodes statues that are carved from marble or limestone. (credit a: modification of work by Chris M Morris; credit b: modification of work by “Eden, Janine and Jim”/Flickr)
+
+Example
+14.6
+
+Calculation of pOH
+
+What are the pOH and the pH of a 0.0125-M solution of potassium hydroxide, KOH?
+Solution
+
+Potassium hydroxide is a highly soluble ionic compound and completely dissociates when dissolved in dilute solution, yielding [OH−] = 0.0125 M:
+
+The pH can be found from the pOH:
+
+Check Your Learning
+
+The hydronium ion concentration of vinegar is approximately 4 10−3 M. What are the corresponding values of pOH and pH?
+
+Answer:
+
+pOH = 11.6, pH = 2.4
+
+The acidity of a solution is typically assessed experimentally by measurement of its pH. The pOH of a solution is not usually measured, as it is easily calculated from an experimentally determined pH value. The pH of a solution can be directly measured using a pH meter (Figure 14.4).
+
+Figure
+14.4
+
+(a) A research-grade pH meter used in a laboratory can have a resolution of 0.001 pH units, an accuracy of ± 0.002 pH units, and may cost in excess of $1000. (b) A portable pH meter has lower resolution (0.01 pH units), lower accuracy (± 0.2 pH units), and a far lower price tag. (credit b: modification of work by Jacopo Werther)
+
+The pH of a solution may also be visually estimated using colored indicators (Figure 14.5). The acid-base equilibria that enable use of these indicator dyes for pH measurements are described in a later section of this chapter.
+
+Figure
+14.5
+
+(a) A solution containing a dye mixture, called universal indicator, takes on different colors depending upon its pH. (b) Convenient test strips, called pH paper, contain embedded indicator dyes that yield pH-dependent color changes on contact with aqueous solutions.(credit: modification of work by Sahar Atwa)
