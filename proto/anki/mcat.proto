@@ -30,6 +30,13 @@ service McatService {
   // Per-topic target answer times (and exam metadata) for timed review.
   rpc GetTopicTargets(ExamReadinessRequest) returns (TopicTargetList);
 
+  // "Beat-your-ghost" gamification: the pace of the user's previous BEST timed
+  // exam session, so the reviewer can race the user against their past self.
+  // Pure engagement layer — this NEVER feeds the readiness/memory/performance
+  // scores (PRD Risk 5). Returns available=false on the first run (no prior
+  // session to race) or when the ghost feature is disabled in config.
+  rpc GetGhostPace(GhostRequest) returns (GhostPace);
+
   // --- Phase 2: AI features (all gated; degrade to deterministic behaviour)
   // ---
 
@@ -275,6 +282,65 @@ message TopicTarget {
 message TopicTargetList {
   repeated TopicTarget targets = 1;
   string tag_prefix = 2;
+}
+
+// ---------------------------------------------------------------------------
+// "Beat-your-ghost" gamification.
+//
+// A ghost is the pace profile of the user's previous BEST timed exam session
+// (their personal best), derived deterministically from the review log. During
+// a timed session the reviewer races the user against this ghost on cumulative
+// time and running accuracy. This is a transparent engagement layer only: the
+// ghost/session numbers are NEVER an input to the readiness/memory/performance
+// scores.
+// ---------------------------------------------------------------------------
+
+message GhostRequest {
+  // Tag namespace identifying MCAT topics. Empty defaults to "mcat".
+  string tag_prefix = 1;
+  // Optional search limiting the scope (e.g. a specific deck/tag). Empty
+  // considers every exam-style review in the collection.
+  string search = 2;
+  // Cap the number of per-question pace points returned (0 = no cap).
+  uint32 max_questions = 3;
+}
+
+// One question's position in the ghost's pace: the running totals after the
+// ghost answered this question.
+message GhostQuestion {
+  // 1-based position of this question within the session.
+  uint32 index = 1;
+  // Cumulative time (ms) the ghost had spent through this question.
+  int64 cumulative_time_ms = 2;
+  // Cumulative correct answers the ghost had through this question.
+  uint32 cumulative_correct = 3;
+  // Whether the ghost answered this specific question correctly.
+  bool correct = 4;
+}
+
+message GhostPace {
+  // False on the first run (no prior session) or when disabled — the reviewer
+  // then behaves exactly like a normal timed session with nothing to race.
+  bool available = 1;
+  // False only when the user has turned the ghost feature off in config.
+  bool enabled = 2;
+  // Machine-readable explanation when unavailable (first-run vs disabled),
+  // suitable for logging.
+  string reason = 3;
+  // Human label for the ghost, e.g. "Your best: 82% · 11:20 · Jun 30".
+  string label = 4;
+  // Number of questions in the ghost session.
+  uint32 question_count = 5;
+  // Ghost accuracy (0..1).
+  double accuracy = 6;
+  // Ghost total answer time (ms) across the session.
+  int64 total_time_ms = 7;
+  // Unix seconds when the ghost session started.
+  int64 recorded_at = 8;
+  // How many prior qualifying sessions were considered when picking the best.
+  uint32 sessions_considered = 9;
+  // The per-question pace profile (ordered).
+  repeated GhostQuestion questions = 10;
 }
 
 message TopicMasteryRequest {

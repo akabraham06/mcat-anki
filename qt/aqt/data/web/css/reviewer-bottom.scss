@@ -119,6 +119,31 @@ button {
     transition: width 1s linear;
 }
 
+/* Beat-your-ghost: a quiet secondary layer over the countdown. The ghost tick
+   marks where the depleting timer meets the ghost's pace for this question, and
+   the readout gives the running "vs best" comparison. Deliberately understated
+   so it never fights the primary countdown. */
+.mcat-ghost-tick {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 2px;
+    margin-left: -1px;
+    border-radius: 2px;
+    background: color(fg-subtle);
+    opacity: 0.85;
+    pointer-events: none;
+}
+
+.mcat-ghost-readout {
+    font-family: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    opacity: 0.7;
+    white-space: nowrap;
+}
+
 /* Last 20% of the budget: shift the readout to the warn tone (not a red
    alarm) and pulse gently. */
 .mcat-timer.low .mcat-timer-time {

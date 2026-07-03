@@ -15,6 +15,11 @@ let countdown = false;
 let timedOut = false;
 // Section hue for the MCAT exam calibration bar (empty for normal cards).
 let barColor = "";
+// Beat-your-ghost: a secondary marker on the countdown bar (0..1 from the left,
+// -1 = hidden) plus a compact "vs best" readout. Only ever set for MCAT exam
+// cards, so normal reviews render exactly as before.
+let ghostFrac = -1;
+let ghostReadout = "";
 
 function fmt(secs: number): string {
     const m = Math.floor(secs / 60);
@@ -36,11 +41,20 @@ function updateTime(): void {
         // runs down; the last 20% reads as "low" (warn), not a jarring alarm.
         const low = frac <= 0.2;
         const fill = barColor || "#4e8cff";
+        const ghostTick = ghostFrac >= 0
+            ? `<span class="mcat-ghost-tick" style="left:${Math.max(0, Math.min(1, ghostFrac)) * 100}%"></span>`
+            : "";
+        const ghostReadoutHtml = ghostReadout
+            ? `<span class="mcat-ghost-readout">${ghostReadout}</span>`
+            : "";
         timeNode.innerHTML = `<span class="mcat-timer${low ? " low" : ""}">`
             + `<span class="mcat-timer-time">${fmt(remaining)}</span>`
             + `<span class="mcat-timer-track">`
             + `<span class="mcat-timer-fill" style="width:${frac * 100}%;background:${fill}"></span>`
-            + `</span></span>`;
+            + ghostTick
+            + `</span>`
+            + ghostReadoutHtml
+            + `</span>`;
         if (remaining <= 0 && !timedOut) {
             timedOut = true;
             timerStopped = true;
@@ -76,6 +90,10 @@ function showQuestion(
     countdown = countdown_;
     barColor = barColor_;
     timedOut = false;
+    // Clear any previous ghost overlay; the reviewer re-sets it right after for
+    // MCAT exam cards.
+    ghostFrac = -1;
+    ghostReadout = "";
     updateTime();
 
     if (intervalId !== undefined) {
@@ -94,6 +112,19 @@ function showQuestion(
 // explanation and pressing Next is not rushed by the timeout.
 function mcatFreeze(): void {
     timerStopped = true;
+}
+
+// Beat-your-ghost: position the secondary ghost pace marker on the countdown
+// bar (fraction 0..1 from the left; a negative value hides it).
+function mcatGhostMarker(frac: number): void {
+    ghostFrac = frac;
+    updateTime();
+}
+
+// Beat-your-ghost: set the compact "vs best" readout shown beside the timer.
+function mcatGhostReadout(text: string): void {
+    ghostReadout = text;
+    updateTime();
 }
 
 function showAnswer(txt: string, stopTimer = false): void {

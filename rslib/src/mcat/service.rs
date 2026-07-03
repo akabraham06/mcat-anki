@@ -41,6 +41,13 @@ impl crate::services::McatService for Collection {
         self.mcat_topic_targets(input)
     }
 
+    fn get_ghost_pace(
+        &mut self,
+        input: anki_proto::mcat::GhostRequest,
+    ) -> error::Result<anki_proto::mcat::GhostPace> {
+        self.mcat_ghost_pace(input)
+    }
+
     // --- Phase 2: AI features ---
 
     fn get_ai_status(

@@ -772,6 +772,7 @@ exposed_backend_list = [
     "get_study_recommendation",
     "build_interleaved_session",
     "get_topic_targets",
+    "get_ghost_pace",
     # McatService — Phase 2 AI features
     "get_ai_status",
     "get_ai_config",
@@ -860,6 +861,7 @@ def _check_dynamic_request_permissions():
         "/_anki/getStudyRecommendation",
         "/_anki/buildInterleavedSession",
         "/_anki/getTopicTargets",
+        "/_anki/getGhostPace",
         # Read-only AI RPCs used by the dashboard status pill / AI study plan
         # and the reviewer's "Explain this miss" button. These never mutate the
         # collection; generation/acceptance run through the Qt AI Card Studio.

@@ -174,6 +174,14 @@ class Reviewer:
         self._mcat_pending_ease: Literal[1, 3] | None = None
         self._mcat_timed_out = False
         self._mcat_targets: dict[str, float] | None = None
+        # Beat-your-ghost: the personal-best pace being raced this session, and
+        # the running tally of the in-progress session. Only ever populated for
+        # MCAT exam cards, so normal reviews are untouched.
+        self._mcat_ghost: Any = None
+        self._mcat_session_active = False
+        self._mcat_session_index = 0
+        self._mcat_session_correct = 0
+        self._mcat_session_time_ms = 0
         gui_hooks.av_player_did_end_playing.append(self._on_av_player_did_end_playing)
 
     def show(self) -> None:
@@ -259,6 +267,8 @@ class Reviewer:
         self._card_info.set_card(self.card)
 
         if not self.card:
+            # An MCAT ghost session (if any) ends when the queue empties.
+            self._mcat_session_end()
             self.mw.moveToState("overview")
             return
 
@@ -913,6 +923,15 @@ timerStopped = false;
                 json.dumps(bar_color),
             )
         )
+        # Beat-your-ghost: an exam card continues (or starts) the timed session
+        # and draws the live ghost comparison; any other card ends it. Non-MCAT
+        # reviews never touch this path.
+        if self._is_mcat_exam_card():
+            self._mcat_session_maybe_start()
+            self._mcat_push_ghost_marker(maxTime)
+            self._mcat_update_ghost_readout()
+        else:
+            self._mcat_session_end()
 
     # MCAT exam mode
     ##########################################################################
@@ -983,6 +1002,9 @@ timerStopped = false;
             return
         ease = self._mcat_pending_ease
         self._mcat_pending_ease = None
+        # Record the outcome for the ghost race BEFORE answering (the card and
+        # its timer are still current here).
+        self._mcat_session_record(ease)
         # Allow _answerCard to proceed (it requires the "answer" state).
         self.state = "answer"
         self._answerCard(ease)
@@ -1002,6 +1024,154 @@ timerStopped = false;
         # the user can see it.
         self.web.eval("if (window.mcatReveal) { mcatReveal(); }")
         self.mw.progress.single_shot(1500, self._mcat_advance)
+
+    # Beat-your-ghost timed-session mode
+    ##########################################################################
+    #
+    # In a timed MCAT exam session the user races a "ghost" — the pace of their
+    # previous BEST session (best accuracy, then fastest), derived
+    # deterministically in the Rust engine from the review log. As they answer,
+    # the bottom bar shows whether they are ahead/behind on cumulative time and
+    # running accuracy; at the end it reports win/lose and celebrates a new
+    # personal best. This is a pure engagement layer gated entirely on exam
+    # cards, is user-disableable, and NEVER feeds the readiness score.
+
+    def _mcat_session_maybe_start(self) -> None:
+        """Begin a ghost session (once) and fetch the personal-best ghost."""
+        if self._mcat_session_active:
+            return
+        self._mcat_session_active = True
+        self._mcat_session_index = 0
+        self._mcat_session_correct = 0
+        self._mcat_session_time_ms = 0
+        self._mcat_ghost = None
+        try:
+            ghost = self.mw.col.mcat_ghost_pace()
+            if ghost.enabled and ghost.available:
+                self._mcat_ghost = ghost
+            print(
+                "MCAT ghost: session start "
+                f"(available={ghost.available}, reason={ghost.reason or 'ok'})"
+            )
+        except Exception as exc:
+            self._mcat_ghost = None
+            print(f"MCAT ghost: pace fetch failed ({exc})")
+
+    def _mcat_session_record(self, ease: int) -> None:
+        """Fold the just-answered exam question into the running session."""
+        if not self._mcat_session_active:
+            return
+        try:
+            self._mcat_session_time_ms += int(self.card.time_taken())
+        except Exception:
+            pass
+        self._mcat_session_index += 1
+        if ease >= 3:
+            self._mcat_session_correct += 1
+
+    def _mcat_push_ghost_marker(self, max_time_secs: float) -> None:
+        """Draw the secondary ghost tick on the countdown bar for the upcoming
+        question, marking where the depleting timer meets the ghost's pace."""
+        frac = -1.0
+        ghost = self._mcat_ghost
+        if self._mcat_session_active and ghost is not None and max_time_secs > 0:
+            idx = self._mcat_session_index  # 0-based index of the upcoming Q
+            questions = ghost.questions
+            if idx < len(questions):
+                prev = questions[idx - 1].cumulative_time_ms if idx > 0 else 0
+                ghost_q_ms = questions[idx].cumulative_time_ms - prev
+                used_frac = min(1.0, (ghost_q_ms / 1000.0) / max_time_secs)
+                frac = 1.0 - used_frac
+        self.bottom.web.eval(
+            f"if(window.mcatGhostMarker){{mcatGhostMarker({frac});}}"
+        )
+
+    def _mcat_update_ghost_readout(self) -> None:
+        """Refresh the compact "vs best" readout beside the timer."""
+        ghost = self._mcat_ghost
+        if not self._mcat_session_active or ghost is None:
+            return
+        answered = self._mcat_session_index
+        if answered == 0:
+            html = ghost.label
+        else:
+            questions = ghost.questions
+            idx = min(answered, len(questions)) - 1
+            if idx < 0:
+                return
+            g = questions[idx]
+            # Positive => user spent less time => ahead of the ghost.
+            time_delta_ms = g.cumulative_time_ms - self._mcat_session_time_ms
+            secs = int(round(abs(time_delta_ms) / 1000))
+            if time_delta_ms > 1000:
+                time_txt = tr.mcat_ghost_seconds_ahead(seconds=secs)
+            elif time_delta_ms < -1000:
+                time_txt = tr.mcat_ghost_seconds_behind(seconds=secs)
+            else:
+                time_txt = tr.mcat_ghost_pace_even()
+            correct_delta = self._mcat_session_correct - g.cumulative_correct
+            if correct_delta > 0:
+                corr_txt = tr.mcat_ghost_correct_ahead(count=correct_delta)
+            elif correct_delta < 0:
+                corr_txt = tr.mcat_ghost_correct_behind(count=abs(correct_delta))
+            else:
+                corr_txt = tr.mcat_ghost_accuracy_even()
+            html = f"{tr.mcat_ghost_vs_best()}: {time_txt} · {corr_txt}"
+        self.bottom.web.eval(
+            f"if(window.mcatGhostReadout){{mcatGhostReadout({json.dumps(html)});}}"
+        )
+
+    def _mcat_session_end(self) -> None:
+        """Close the ghost session and report the result vs the ghost."""
+        if not self._mcat_session_active:
+            return
+        self._mcat_session_active = False
+        ghost = self._mcat_ghost
+        self._mcat_ghost = None
+        answered = self._mcat_session_index
+        # Clear the ghost overlay from the bottom bar.
+        try:
+            self.bottom.web.eval(
+                "if(window.mcatGhostMarker){mcatGhostMarker(-1);}"
+                "if(window.mcatGhostReadout){mcatGhostReadout('');}"
+            )
+        except Exception:
+            pass
+        if answered == 0:
+            return
+        user_acc = self._mcat_session_correct / answered
+        user_time = self._mcat_session_time_ms
+        summary = f"{round(user_acc * 100)}% · {self._mcat_fmt_mmss(user_time)}"
+        if ghost is None:
+            # First run: nothing to race, so just record the baseline.
+            print(
+                f"MCAT ghost: baseline set ({summary}, {answered} questions)"
+            )
+            tooltip(f"{tr.mcat_ghost_baseline_set()}  {summary}", parent=self.mw)
+            return
+        won = (user_acc > ghost.accuracy + 1e-9) or (
+            abs(user_acc - ghost.accuracy) <= 1e-9 and user_time < ghost.total_time_ms
+        )
+        tied = (
+            abs(user_acc - ghost.accuracy) <= 1e-9 and user_time == ghost.total_time_ms
+        )
+        if won:
+            headline = f"{tr.mcat_ghost_new_personal_best()} {tr.mcat_ghost_you_won()}"
+        elif tied:
+            headline = tr.mcat_ghost_tie()
+        else:
+            headline = tr.mcat_ghost_ghost_won()
+        print(
+            f"MCAT ghost: session end (you {summary} vs ghost "
+            f"{round(ghost.accuracy * 100)}% · {self._mcat_fmt_mmss(ghost.total_time_ms)}, "
+            f"won={won})"
+        )
+        tooltip(f"{headline}  {summary} · {ghost.label}", parent=self.mw, period=4000)
+
+    @staticmethod
+    def _mcat_fmt_mmss(total_ms: int) -> str:
+        total_secs = max(0, int(total_ms)) // 1000
+        return f"{total_secs // 60}:{total_secs % 60:02d}"
 
     # MCAT AI explanations for missed questions (9.5)
     #

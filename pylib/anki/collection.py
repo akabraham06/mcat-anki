@@ -1079,6 +1079,20 @@ class Collection(DeprecatedNamesMixin):
             default_target_seconds=default_target_seconds,
         )
 
+    def mcat_ghost_pace(
+        self, tag_prefix: str = "", search: str = "", max_questions: int = 0
+    ) -> mcat_pb2.GhostPace:
+        """"Beat-your-ghost" gamification: the pace profile of the user's
+        previous BEST timed exam session, so the timed reviewer can race the
+        user against their past self. Returns available=False on the first run
+        (nothing to race) or when the ghost feature is disabled. Pure engagement
+        layer — never an input to the readiness score."""
+        return self._backend.get_ghost_pace(
+            tag_prefix=tag_prefix,
+            search=search,
+            max_questions=max_questions,
+        )
+
     # MCAT Anki Mastery — Phase 2 AI features
     ##########################################################################
     #

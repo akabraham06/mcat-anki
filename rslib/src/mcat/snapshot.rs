@@ -27,7 +27,7 @@ pub(crate) const PERF_NOTETYPES: &[&str] = &["MCATPerf", "MCATExam", "MCATCarsPa
 /// Tags that explicitly mark a note's reviews as performance evidence,
 /// independent of its notetype. `mcat::exam` is applied to every generated exam
 /// card; `mcat::perf` is retained for older decks.
-const PERF_TAGS: &[&str] = &["mcat::exam", "mcat::perf"];
+pub(crate) const PERF_TAGS: &[&str] = &["mcat::exam", "mcat::perf"];
 
 const DAY_SECS: i64 = 86_400;
 

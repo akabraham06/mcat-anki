@@ -13,6 +13,7 @@
 //! histories quickly and run unchanged on mobile through the FFI bridge.
 
 mod ai;
+mod gamification;
 mod interleaving;
 mod recommender;
 mod scores;
