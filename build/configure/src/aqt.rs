@@ -110,6 +110,7 @@ fn build_generated_sources(build: &mut Build) -> Result<()> {
 fn build_data_folder(build: &mut Build) -> Result<()> {
     build_css(build)?;
     build_imgs(build)?;
+    build_fonts(build)?;
     build_js(build)?;
     build_pages(build)?;
     build_icons(build)?;
@@ -166,6 +167,19 @@ fn build_imgs(build: &mut Build) -> Result<()> {
         CopyFiles {
             inputs: inputs![glob!["qt/aqt/data/web/imgs/*"]],
             output_folder: "qt/_aqt/data/web/imgs",
+        },
+    )
+}
+
+fn build_fonts(build: &mut Build) -> Result<()> {
+    // Self-hosted app-wide UI fonts (IBM Plex Sans/Mono, Space Grotesk), served
+    // at /_anki/fonts/*.woff2 so both SvelteKit pages and Qt-hosted web chrome
+    // load them offline (no runtime CDN).
+    build.add_action(
+        "qt:aqt:data:web:fonts",
+        CopyFiles {
+            inputs: inputs![glob!["qt/aqt/data/web/fonts/*"]],
+            output_folder: "qt/_aqt/data/web/fonts",
         },
     )
 }

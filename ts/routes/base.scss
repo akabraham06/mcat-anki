@@ -1,3 +1,4 @@
+@use "$lib/sass/fonts";
 @import "$lib/sass/base";
 
 // override Bootstrap transition duration
@@ -23,6 +24,27 @@ textarea {
 
 input {
     color: var(--fg);
+}
+
+// Route the global font stack to the self-hosted instrument typefaces so every
+// SvelteKit surface shares one identity. Card/note content is rendered in the
+// reviewer webview with its own CSS, so it is unaffected.
+:root {
+    --bs-font-sans-serif: var(--font-sans);
+    --bs-font-monospace: var(--font-mono);
+}
+body {
+    font-family: var(--font-sans);
+}
+h1 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+}
+code,
+kbd,
+pre,
+samp {
+    font-family: var(--font-mono);
 }
 
 // Setting 100% height causes the sticky element to hide as you scroll down on Safari.
