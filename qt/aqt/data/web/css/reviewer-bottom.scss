@@ -82,3 +82,64 @@ button {
         border-top-color: color(border-subtle);
     }
 }
+
+/* MCAT exam cockpit: the per-question countdown as a thin section-coloured
+   calibration bar. Only rendered for MCAT exam cards (countdown mode), so
+   normal decks are visually unchanged. Hues mirror ts/routes/mcat/mcat-tokens
+   (the single source of truth for the section colour language). */
+.mcat-timer {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    vertical-align: middle;
+}
+
+.mcat-timer-time {
+    font-family: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    min-width: 3.2em;
+    text-align: right;
+}
+
+.mcat-timer-track {
+    position: relative;
+    width: 96px;
+    height: 4px;
+    border-radius: 3px;
+    background: color(border);
+    overflow: hidden;
+}
+
+.mcat-timer-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: 3px;
+    transition: width 1s linear;
+}
+
+/* Last 20% of the budget: shift the readout to the warn tone (not a red
+   alarm) and pulse gently. */
+.mcat-timer.low .mcat-timer-time {
+    color: #e8a13a;
+}
+.mcat-timer.low .mcat-timer-fill {
+    background: #e8a13a !important;
+    animation: mcat-timer-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes mcat-timer-pulse {
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mcat-timer-fill {
+        transition: none;
+    }
+    .mcat-timer.low .mcat-timer-fill {
+        animation: none;
+    }
+}

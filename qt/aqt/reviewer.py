@@ -903,9 +903,10 @@ timerStopped = false;
         else:
             maxTime = 0
             countdown = False
+        bar_color = self._mcat_section_color() if self._is_mcat_exam_card() else ""
         self.bottom.web.eval(
-            "showQuestion(%s,%d,%s);"
-            % (json.dumps(middle), maxTime, json.dumps(countdown))
+            "showQuestion(%s,%d,%s,%s);"
+            % (json.dumps(middle), maxTime, json.dumps(countdown), json.dumps(bar_color))
         )
 
     # MCAT exam mode
@@ -947,6 +948,27 @@ timerStopped = false;
         except Exception:
             pass
         return default
+
+    # Section colour language, mirroring ts/routes/mcat/mcat-tokens.scss so the
+    # exam cockpit's calibration bar matches the dashboard's section hues.
+    _MCAT_SECTION_HUES = {
+        "chemphys": "#4e8cff",
+        "cars": "#c77dff",
+        "biobiochem": "#34c7a0",
+        "psychsoc": "#ff9f45",
+    }
+
+    def _mcat_section_color(self) -> str:
+        """Hue for the current card's MCAT section, or a neutral blue fallback."""
+        try:
+            for tag in self.card.note().tags:
+                if tag.startswith("mcat::") and tag.count("::") >= 1:
+                    section = tag.split("::")[1]
+                    if section in self._MCAT_SECTION_HUES:
+                        return self._MCAT_SECTION_HUES[section]
+        except Exception:
+            pass
+        return "#4e8cff"
 
     def _mcat_advance(self) -> None:
         """Answer the current exam card with the pending auto-grade and move on."""
@@ -1000,10 +1022,15 @@ timerStopped = false;
                 return
         except Exception:
             return
+        # Styled as a quiet diagnostic control (mono label, pill outline) that
+        # reads correctly on both light and dark cards. Behaviour is unchanged.
         button = (
             "<button onclick=\"pycmd('mcat_explain')\" "
-            'style="padding:6px 14px;border-radius:6px;cursor:pointer;'
-            'font-size:13px">Explain this (AI)</button>'
+            'style="font:500 12px/1 ui-monospace,monospace;'
+            "letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;"
+            "border:1px solid rgba(128,128,128,.45);border-radius:999px;"
+            'background:transparent;color:inherit;opacity:.85;cursor:pointer">'
+            "Explain this miss (AI)</button>"
         )
         self.web.eval(
             "(function(){var qa=document.getElementById('qa');"
@@ -1043,19 +1070,35 @@ timerStopped = false;
         )
 
     def _show_mcat_explanation(self, res: Any) -> None:
+        # Render the explanation as a diagnostic readout: each finding is a
+        # labelled row (uppercase mono label + value), so it scans like an
+        # instrument report rather than a wall of prose.
         def row(label: str, value: str) -> str:
             if not value:
                 return ""
-            return f"<p><b>{label}:</b> {value}</p>"
+            return (
+                '<tr><td style="color:#4e8cff;font-family:monospace;'
+                "font-size:11px;letter-spacing:.06em;text-transform:uppercase;"
+                'padding:6px 14px 6px 0;vertical-align:top;white-space:nowrap">'
+                f"{label}</td>"
+                f'<td style="padding:6px 0;line-height:1.5">{value}</td></tr>'
+            )
 
-        html = "".join(
+        rows = "".join(
             [
-                row("Why the answer is correct", res.why_correct),
-                row("Why your choice was wrong", res.why_chosen_wrong),
+                row("Why correct", res.why_correct),
+                row("Your miss", res.why_chosen_wrong),
                 row("Source", res.source_citation),
                 row("Related topic", res.related_topic),
-                row("Suggested review", res.suggested_review_action),
+                row("Next review", res.suggested_review_action),
             ]
+        )
+        html = (
+            '<table cellspacing="0" cellpadding="0" '
+            'style="border-collapse:collapse;width:100%">'
+            f"{rows}</table>"
+            if rows
+            else ""
         )
         dlg = QDialog(self.mw)
         dlg.setWindowTitle("AI explanation")

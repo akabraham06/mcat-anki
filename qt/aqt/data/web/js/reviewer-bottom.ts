@@ -9,10 +9,12 @@ let time: number; // set in python code
 let timerStopped = false;
 
 let maxTime = 0;
-// MCAT exam cards render a per-question countdown (maxTime - elapsed) with
-// green -> amber -> red thresholds; normal cards keep the classic count-up.
+// MCAT exam cards render a per-question countdown (maxTime - elapsed) as a thin
+// section-coloured calibration bar; normal cards keep the classic count-up.
 let countdown = false;
 let timedOut = false;
+// Section hue for the MCAT exam calibration bar (empty for normal cards).
+let barColor = "";
 
 function fmt(secs: number): string {
     const m = Math.floor(secs / 60);
@@ -29,16 +31,17 @@ function updateTime(): void {
 
     if (countdown) {
         const remaining = Math.max(0, maxTime - time);
-        const frac = remaining / maxTime;
-        let color: string;
-        if (frac > 0.5) {
-            color = "#2e9e44"; // green
-        } else if (frac > 0.2) {
-            color = "#e0a100"; // amber
-        } else {
-            color = "red";
-        }
-        timeNode.innerHTML = `<font color="${color}">${fmt(remaining)}</font>`;
+        const frac = Math.max(0, Math.min(1, remaining / maxTime));
+        // A thin calibration bar in the section hue that depletes as the budget
+        // runs down; the last 20% reads as "low" (warn), not a jarring alarm.
+        const low = frac <= 0.2;
+        const fill = barColor || "#4e8cff";
+        timeNode.innerHTML =
+            `<span class="mcat-timer${low ? " low" : ""}">`
+            + `<span class="mcat-timer-time">${fmt(remaining)}</span>`
+            + `<span class="mcat-timer-track">`
+            + `<span class="mcat-timer-fill" style="width:${frac * 100}%;background:${fill}"></span>`
+            + `</span></span>`;
         if (remaining <= 0 && !timedOut) {
             timedOut = true;
             timerStopped = true;
@@ -62,11 +65,17 @@ function updateTime(): void {
 
 let intervalId: number | undefined;
 
-function showQuestion(txt: string, maxTime_: number, countdown_ = false): void {
+function showQuestion(
+    txt: string,
+    maxTime_: number,
+    countdown_ = false,
+    barColor_ = "",
+): void {
     showAnswer(txt);
     time = 0;
     maxTime = maxTime_;
     countdown = countdown_;
+    barColor = barColor_;
     timedOut = false;
     updateTime();
 
