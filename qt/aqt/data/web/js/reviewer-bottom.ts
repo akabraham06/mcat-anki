@@ -36,8 +36,7 @@ function updateTime(): void {
         // runs down; the last 20% reads as "low" (warn), not a jarring alarm.
         const low = frac <= 0.2;
         const fill = barColor || "#4e8cff";
-        timeNode.innerHTML =
-            `<span class="mcat-timer${low ? " low" : ""}">`
+        timeNode.innerHTML = `<span class="mcat-timer${low ? " low" : ""}">`
             + `<span class="mcat-timer-time">${fmt(remaining)}</span>`
             + `<span class="mcat-timer-track">`
             + `<span class="mcat-timer-fill" style="width:${frac * 100}%;background:${fill}"></span>`

@@ -906,7 +906,12 @@ timerStopped = false;
         bar_color = self._mcat_section_color() if self._is_mcat_exam_card() else ""
         self.bottom.web.eval(
             "showQuestion(%s,%d,%s,%s);"
-            % (json.dumps(middle), maxTime, json.dumps(countdown), json.dumps(bar_color))
+            % (
+                json.dumps(middle),
+                maxTime,
+                json.dumps(countdown),
+                json.dumps(bar_color),
+            )
         )
 
     # MCAT exam mode

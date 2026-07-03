@@ -213,9 +213,7 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         }
         for (const sec of bySection.values()) {
             const covered = sec.topics.filter((t) => t.coverage > 0).length;
-            sec.coverage = sec.topics.length
-                ? (covered / sec.topics.length) * 100
-                : 0;
+            sec.coverage = sec.topics.length ? (covered / sec.topics.length) * 100 : 0;
         }
         return [...bySection.values()];
     })();
@@ -288,7 +286,8 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     });
 
     $: recommendation = readiness.recommendation;
-    $: firstMin = planItems[0]?.minutes ?? Math.max(15, Math.round(sessionTargetSecs / 60));
+    $: firstMin =
+        planItems[0]?.minutes ?? Math.max(15, Math.round(sessionTargetSecs / 60));
     $: xp = readiness.xp;
     $: transferGaps = readiness.transferGaps ?? [];
     $: memoryDetail = readiness.memoryDetail;
@@ -318,7 +317,11 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                 <span class="eyebrow">{readiness.exam} readiness</span>
                 <div class="readout">
                     {#if gaugeReady}
-                        <span class="score" class:ready={onTarget} class:warn={!onTarget}>
+                        <span
+                            class="score"
+                            class:ready={onTarget}
+                            class:warn={!onTarget}
+                        >
                             {Math.round(point)}
                         </span>
                         <span class="range">
@@ -376,13 +379,17 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                         <button
                             type="button"
                             aria-label="Raise target score"
-                            on:click={() => nudgeTarget(1)}>+</button
+                            on:click={() => nudgeTarget(1)}
                         >
+                            +
+                        </button>
                         <button
                             type="button"
                             aria-label="Lower target score"
-                            on:click={() => nudgeTarget(-1)}>−</button
+                            on:click={() => nudgeTarget(-1)}
                         >
+                            −
+                        </button>
                     </span>
                 </div>
             </div>
@@ -400,7 +407,10 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                     class="band"
                     class:ready={onTarget}
                     class:warn={!onTarget}
-                    style="left:{bandLeft}%;width:{Math.max(1.5, bandRight - bandLeft)}%"
+                    style="left:{bandLeft}%;width:{Math.max(
+                        1.5,
+                        bandRight - bandLeft,
+                    )}%"
                 ></div>
             {/if}
             <!-- percentile reference ticks -->
@@ -434,9 +444,14 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         </div>
 
         <div class="gauge-meta">
-            <span>Coverage <b>{pct(readiness.overallCoveragePercent)}</b></span>
+            <span>
+                Coverage <b>{pct(readiness.overallCoveragePercent)}</b>
+            </span>
             <span class="sep"></span>
-            <span><b>{readiness.gradedReviews}</b> graded reviews</span>
+            <span>
+                <b>{readiness.gradedReviews}</b>
+                 graded reviews
+            </span>
         </div>
     </section>
 
@@ -455,7 +470,10 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
             <ol class="plan">
                 {#each planItems as item, i (i)}
                     <li>
-                        <span class="step-min">{item.minutes}<small>min</small></span>
+                        <span class="step-min">
+                            {item.minutes}
+                            <small>min</small>
+                        </span>
                         <div class="step-body">
                             <span class="step-action">{item.action}</span>
                             {#if item.reason}
@@ -524,7 +542,10 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                         class:selected={selectedSection === s.sectionKey}
                         style="--hue:{hueOf(s.sectionKey)}"
                         on:click={() => focusSection(s.sectionKey)}
-                        title="Show {shortSection(s.sectionKey, s.sectionName)} coverage"
+                        title="Show {shortSection(
+                            s.sectionKey,
+                            s.sectionName,
+                        )} coverage"
                     >
                         <span class="mini-name">
                             {shortSection(s.sectionKey, s.sectionName)}
@@ -584,7 +605,10 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                                 <div class="cov-bar">
                                     <div
                                         class="cov-fill"
-                                        style="width:{Math.max(0, Math.min(100, t.coverage))}%"
+                                        style="width:{Math.max(
+                                            0,
+                                            Math.min(100, t.coverage),
+                                        )}%"
                                     ></div>
                                 </div>
                                 <span class="cov-pct">{pct(t.coverage)}</span>
@@ -606,9 +630,9 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                         <span class="rc-score">{Math.round(est.point)}</span>
                         <span class="rc-range">
                             {Math.round(est.low)}–{Math.round(est.high)} ·
-                            <span class="conf conf-{est.confidence}"
-                                >{est.confidence}</span
-                            >
+                            <span class="conf conf-{est.confidence}">
+                                {est.confidence}
+                            </span>
                         </span>
                     {:else}
                         <span class="rc-score muted">—</span>
@@ -659,11 +683,18 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
     {#if transferGaps.length}
         <section class="panel">
-            <header class="panel-head"><h2>Transfer gaps</h2>
-                <span class="src">recall − application</span></header>
+            <header class="panel-head">
+                <h2>Transfer gaps</h2>
+                <span class="src">recall − application</span>
+            </header>
             <table>
                 <thead>
-                    <tr><th>Topic</th><th>Recall</th><th>Application</th><th>Gap</th></tr>
+                    <tr>
+                        <th>Topic</th>
+                        <th>Recall</th>
+                        <th>Application</th>
+                        <th>Gap</th>
+                    </tr>
                 </thead>
                 <tbody>
                     {#each transferGaps as g (g.topicKey)}
@@ -681,11 +712,18 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
     {#if pacing.length}
         <section class="panel">
-            <header class="panel-head"><h2>Pacing</h2>
-                <span class="src">timed review</span></header>
+            <header class="panel-head">
+                <h2>Pacing</h2>
+                <span class="src">timed review</span>
+            </header>
             <table>
                 <thead>
-                    <tr><th>Topic</th><th>Target</th><th>Actual avg</th><th>Overtime</th></tr>
+                    <tr>
+                        <th>Topic</th>
+                        <th>Target</th>
+                        <th>Actual avg</th>
+                        <th>Overtime</th>
+                    </tr>
                 </thead>
                 <tbody>
                     {#each pacing as p (p.name)}
@@ -722,7 +760,8 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         </div>
         {#if session}
             <p class="log">
-                <strong>{session.cardIds.length}</strong> cards
+                <strong>{session.cardIds.length}</strong>
+                cards
                 <span class="dot">•</span>
                 target ~{Math.round(sessionTargetSecs / 60)} min
                 <span class="dot">•</span>
@@ -811,12 +850,11 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         border: 1px solid var(--mc-hairline);
         border-radius: 14px;
         padding: 1.5rem 1.5rem 1.25rem;
-        background:
-            radial-gradient(
-                120% 140% at 15% 0%,
-                var(--mc-panel-2),
-                var(--mc-panel) 60%
-            );
+        background: radial-gradient(
+            120% 140% at 15% 0%,
+            var(--mc-panel-2),
+            var(--mc-panel) 60%
+        );
     }
     .gauge-top {
         display: flex;
