@@ -205,3 +205,44 @@ There are three ways to supply credentials:
    important **spend-cap / abuse-protection** notes.
 
 > Never commit an API key. OpenAI auto-revokes keys pushed to public repos.
+
+### The five AI features
+
+All live in `rslib/src/mcat/ai/`:
+
+1. **Card-quality gate (9.4)** — decides whether a generated card is good enough
+   for a student (catches vague/trivial/circular/unsupported/duplicate).
+2. **Source-grounded generation (9.3)** — recall → exam → stretch difficulty
+   tiers, each grounded in and citing a named source.
+3. **Missed-question explanations (9.5)** — why the right answer is right and
+   your choice was wrong, cited to the source (display-only).
+4. **Study planner (9.6)** — measured review data → a few concrete, timed steps.
+5. **Performance-question generation (9.8)** — novel application questions that
+   transfer, instead of re-showing a memorized stem.
+
+Two guarantees: **every AI output traces to a named source**, and **AI never
+feeds the MCAT score** (scoring stays deterministic and works with AI off).
+
+### Evaluation (before any card reaches a student)
+
+A deterministic, offline eval gates generated cards at a **0.70 cutoff set
+before testing**. On a held-out set of 50 labelled cards (20 good, 30 bad):
+
+| Method                 | Accuracy | Wrong-answer rate |
+| ---------------------- | -------- | ----------------- |
+| **AI quality gate**    | **100%** | **0%**            |
+| Keyword search         | 86%      | 24%               |
+| Vector search (TF-IDF) | 84%      | 23%               |
+
+All 5/5 features beat their no-AI baseline. Run it:
+
+```bash
+just mcat-ai-eval                  # offline: AI-on vs AI-off + held-out gate vs keyword/vector
+just mcat-ai-verify-scoring-off    # offline: app still scores with AI OFF (+ give-up rule)
+just mcat-ai-verify-live           # live: zero-config proxy + real checker + source-grounded gen
+bash mcat/ai_eval/walkthrough.sh   # all of the above, narrated per requirement
+```
+
+Details: [`mcat/ai_eval/report.md`](./mcat/ai_eval/report.md) ·
+what/why/skipped note: [`mcat/ai_eval/AI_NOTES.md`](./mcat/ai_eval/AI_NOTES.md) ·
+demo script: [`mcat/ai_eval/RECORDING_SCRIPT.md`](./mcat/ai_eval/RECORDING_SCRIPT.md).

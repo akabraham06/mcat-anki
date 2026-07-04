@@ -180,6 +180,52 @@ Desktop: sign in → **Sync** (uploads your MCAT decks). Phone: sign in with the
 - **Timed pacing** — per-topic target seconds with overtime tracking.
 - **Local XP / streaks** — offline gamification.
 
+---
+
+## AI features & evaluation
+
+Five AI features (in `rslib/src/mcat/ai/`) assist **authoring and coaching**. Each one must beat the exact no-AI path it would otherwise fall back to, or it doesn't ship:
+
+| PRD | Feature                             | Beats (no-AI baseline)                                                                                                    |
+| --- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| 9.4 | **Card-quality gate**               | naive length/keyword rule — catches vague / trivial / circular / unsupported / duplicate cards before a student sees them |
+| 9.3 | **Source-grounded generation**      | flat template extractor — produces recall → exam → stretch difficulty tiers, grounded in a named source                   |
+| 9.5 | **Missed-question explanations**    | one generic static hint — explains why the right answer is right and your choice was wrong, cited to the source           |
+| 9.6 | **Study planner**                   | deterministic recommender — turns measured review data into a few concrete, timed, cited steps                            |
+| 9.8 | **Performance-question generation** | verbatim card reuse — writes novel application questions that transfer                                                    |
+
+Two guarantees run through all of them:
+
+- **Every AI output traces back to a named source.** Generation requires a registered source; each accepted card carries a visible `Source: …` citation **and** a machine-readable `ai-source::<id>` tag.
+- **AI never feeds the score.** Readiness / Memory / Performance stay fully deterministic (`rslib/src/mcat/scores.rs`); with AI off the app still scores.
+
+**Zero user setup:** the app ships pointed at a built-in hosted proxy (real key held server-side), so AI works with **no API key typed in**. It degrades gracefully to the baselines above if AI is off or unavailable.
+
+### Evaluation (runs before any card reaches a student)
+
+A deterministic, offline evaluation (`just mcat-ai-eval`, mock provider — no network/key) checks each feature against its baseline and gates generated cards at a **cutoff of 0.70 set before testing**. On a **held-out set of 50 labelled cards** (20 good, 30 deliberately bad):
+
+| Method                 | Accuracy | Wrong-answer rate (bad cards shown) |
+| ---------------------- | -------- | ----------------------------------- |
+| **AI quality gate**    | **100%** | **0%**                              |
+| Keyword search         | 86%      | 24%                                 |
+| Vector search (TF-IDF) | 84%      | 23%                                 |
+
+All **5/5** features beat their no-AI baseline by a pre-registered margin. Full write-up: [`mcat/ai_eval/report.md`](./mcat/ai_eval/report.md).
+
+### Reproduce / demo
+
+```bash
+just mcat-ai-eval                  # offline: AI-on vs AI-off + held-out gate vs keyword/vector
+just mcat-ai-verify-scoring-off    # offline: app still scores with AI OFF (+ give-up rule)
+just mcat-ai-verify-live           # live: zero-config proxy + real checker + source-grounded gen
+bash mcat/ai_eval/walkthrough.sh   # all of the above, narrated per requirement
+```
+
+- **What/why/skipped note:** [`mcat/ai_eval/AI_NOTES.md`](./mcat/ai_eval/AI_NOTES.md)
+- **Recording script (for a demo video):** [`mcat/ai_eval/RECORDING_SCRIPT.md`](./mcat/ai_eval/RECORDING_SCRIPT.md)
+- **Supplying credentials / hosting the proxy:** see [`README-MCAT.md`](./README-MCAT.md#ai-features-optional) and [`mcat/proxy/README.md`](./mcat/proxy/README.md)
+
 ## Testing
 
 ```bash
