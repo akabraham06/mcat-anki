@@ -299,12 +299,11 @@ impl Collection {
 
 #[cfg(test)]
 mod test {
+    use super::*;
     use crate::collection::Collection;
     use crate::notetype::Notetype;
     use crate::revlog::RevlogEntry;
     use crate::revlog::RevlogReviewKind;
-
-    use super::*;
 
     fn ghost_req() -> pb::GhostRequest {
         pb::GhostRequest {
@@ -325,7 +324,10 @@ mod test {
     fn add_perf_card(col: &mut Collection, nt: &Notetype, front: &str) -> CardId {
         let mut note = nt.new_note();
         note.set_field(0, front).unwrap();
-        note.tags = vec!["mcat::exam".to_string(), "mcat::biobiochem::metabolism".to_string()];
+        note.tags = vec![
+            "mcat::exam".to_string(),
+            "mcat::biobiochem::metabolism".to_string(),
+        ];
         col.add_note(&mut note, DeckId(1)).unwrap();
         col.storage.all_cards_of_note(note.id).unwrap()[0].id
     }
@@ -522,7 +524,10 @@ mod test {
         }
 
         let answers = col.mcat_exam_answers("").unwrap();
-        assert!(answers.is_empty(), "knowledge reviews must not count as exam answers");
+        assert!(
+            answers.is_empty(),
+            "knowledge reviews must not count as exam answers"
+        );
         let ghost = col.mcat_ghost_pace(ghost_req()).unwrap();
         assert!(!ghost.available);
         assert_eq!(ghost.reason, "no_prior_session");

@@ -2,91 +2,99 @@
  * License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html */
 
 /*
- * MCAT "diagnostic instrument panel" design tokens.
+ * MCAT design tokens — a light, professional "clinical readout" surface.
  *
  * Single source of truth for the MCAT surfaces: the dashboard consumes these
  * directly, and the reviewer cockpit (qt/aqt/data/web/css/reviewer-bottom.scss)
  * mirrors the same section hues under a gated `.mcat-exam` scope.
  *
+ * The LIGHT variant is the primary, refined surface: near-white paper panels,
+ * soft neutral hairlines, high-contrast dark ink. A coherent dark variant is
+ * kept for `.night-mode`.
+ *
  * Fonts are SELF-HOSTED (woff2, latin subset) so Anki stays offline-first —
  * there is no runtime CDN/Google Fonts fetch. Vendored from the OFL-licensed
- * Space Grotesk / IBM Plex families in ./fonts.
+ * Geist (UI text) and Geist Mono (data/numeric) families in ./fonts.
  */
 
 @font-face {
-    font-family: "MCAT Space Grotesk";
-    font-style: normal;
-    font-weight: 500;
-    font-display: swap;
-    src: url("./fonts/space-grotesk-500.woff2") format("woff2");
-}
-@font-face {
-    font-family: "MCAT Space Grotesk";
-    font-style: normal;
-    font-weight: 700;
-    font-display: swap;
-    src: url("./fonts/space-grotesk-700.woff2") format("woff2");
-}
-@font-face {
-    font-family: "MCAT Plex Sans";
+    font-family: "MCAT Sans";
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url("./fonts/ibm-plex-sans-400.woff2") format("woff2");
+    src: url("./fonts/geist-sans-400.woff2") format("woff2");
 }
 @font-face {
-    font-family: "MCAT Plex Sans";
+    font-family: "MCAT Sans";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url("./fonts/geist-sans-500.woff2") format("woff2");
+}
+@font-face {
+    font-family: "MCAT Sans";
     font-style: normal;
     font-weight: 600;
     font-display: swap;
-    src: url("./fonts/ibm-plex-sans-600.woff2") format("woff2");
+    src: url("./fonts/geist-sans-600.woff2") format("woff2");
 }
 @font-face {
-    font-family: "MCAT Plex Mono";
+    font-family: "MCAT Sans";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("./fonts/geist-sans-700.woff2") format("woff2");
+}
+@font-face {
+    font-family: "MCAT Mono";
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url("./fonts/ibm-plex-mono-400.woff2") format("woff2");
+    src: url("./fonts/geist-mono-400.woff2") format("woff2");
 }
 @font-face {
-    font-family: "MCAT Plex Mono";
+    font-family: "MCAT Mono";
     font-style: normal;
     font-weight: 500;
     font-display: swap;
-    src: url("./fonts/ibm-plex-mono-500.woff2") format("woff2");
+    src: url("./fonts/geist-mono-500.woff2") format("woff2");
 }
 
 :root {
-    /* --- Type roles ("research instrument" pairing, tabular figures) --- */
-    --mc-font-display: "MCAT Space Grotesk", "Segoe UI", system-ui, sans-serif;
-    --mc-font-body: "MCAT Plex Sans", system-ui, -apple-system, sans-serif;
-    --mc-font-mono: "MCAT Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+    /* --- Type roles: Geist for UI text (weight-differentiated), Geist Mono
+       for tabular figures / data readouts. --- */
+    --mc-font-display:
+        "MCAT Sans", -apple-system, "Segoe UI", roboto, sans-serif;
+    --mc-font-body: "MCAT Sans", -apple-system, "Segoe UI", roboto, sans-serif;
+    --mc-font-mono: "MCAT Mono", ui-monospace, "SFMono-Regular", monospace;
 
     /* --- Four MCAT section hues: a consistent colour LANGUAGE everywhere.
        Identical in both themes so a section reads the same colour on the
-       dashboard, section vitals, timer bar and coverage map. --- */
-    --mc-chemphys: #4e8cff;
-    --mc-cars: #c77dff;
-    --mc-biobiochem: #34c7a0;
-    --mc-psychsoc: #ff9f45;
+       dashboard, section vitals, timer bar and coverage map. Tuned to a
+       muted, professional register — saturated enough to stay distinguishable,
+       calm enough to read as a considered UI rather than neon. --- */
+    --mc-chemphys: #2f6fdb; /* blue */
+    --mc-cars: #8a63d2; /* violet */
+    --mc-biobiochem: #1f9d76; /* teal-green */
+    --mc-psychsoc: #d97a2b; /* amber */
 
     /* --- Readiness is semantic, not decorative --- */
-    --mc-warn: #e8a13a; /* below target */
-    --mc-ready: #3fb37f; /* at / above target */
+    --mc-warn: #c07d1e; /* below target */
+    --mc-ready: #1f9d76; /* at / above target */
 
-    /* --- Surface tokens: LIGHT variant (derived from the lab-readout hues so
-       the panel still reads like an instrument in Anki's light theme). --- */
-    --mc-ink: #eef3f7;
-    --mc-panel: #ffffff;
-    --mc-panel-2: #f4f8fb;
-    --mc-hairline: #d6e0e8;
-    --mc-text: #0e1622;
-    --mc-muted: #51616f;
-    --mc-needle: #16212e;
+    /* --- Surface tokens: LIGHT variant is the primary professional surface:
+       clean paper panels, soft neutral hairlines, high-contrast dark ink. --- */
+    --mc-ink: #f6f7f9; /* page/background wash */
+    --mc-panel: #ffffff; /* raised paper panels */
+    --mc-panel-2: #f1f3f6; /* recessed / inset fill */
+    --mc-hairline: #e2e6ec; /* soft neutral dividers */
+    --mc-text: #1a2230; /* high-contrast dark ink */
+    --mc-muted: #667283; /* secondary text */
+    --mc-needle: #232c3a; /* instrument marker */
 }
 
-/* --- Surface tokens: DARK variant = the agreed blue-slate "lab readout".
-   Anki toggles `.night-mode` on the root; the desktop app runs dark. --- */
+/* --- Surface tokens: DARK variant = a coherent deep-slate readout.
+   Anki toggles `.night-mode` on the root. --- */
 :root.night-mode {
     --mc-ink: #0e1622;
     --mc-panel: #16212e;
@@ -95,4 +103,12 @@
     --mc-text: #eaf1f6;
     --mc-muted: #93a4b3;
     --mc-needle: #eaf1f6;
+
+    /* Lift the section hues slightly for legibility on dark panels. */
+    --mc-chemphys: #5b9bff;
+    --mc-cars: #b58bff;
+    --mc-biobiochem: #33c79c;
+    --mc-psychsoc: #f0a24e;
+    --mc-warn: #e2a53f;
+    --mc-ready: #33c79c;
 }

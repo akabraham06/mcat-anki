@@ -2,61 +2,63 @@
  * License: GNU AGPL, version 3 or later, http://www.gnu.org/licenses/agpl.html */
 
 /*
- * App-wide self-hosted UI typefaces (the "research instrument" pairing):
- * IBM Plex Sans (body/UI), IBM Plex Mono (data/numeric), Space Grotesk (large
- * display headings). Served from the bundled data dir at /_anki/fonts, so there
- * is no runtime CDN/Google Fonts fetch (Anki is offline-first). The Qt-hosted
- * web chrome mirrors these @font-face rules in aqt/webview.py's standard_css.
+ * App-wide self-hosted UI typefaces: Geist Sans for all UI text (body +
+ * display, differentiated by weight) and Geist Mono for data/numeric readouts.
+ * Geist is a modern, professional, screen-optimised type system; the sans +
+ * mono pairing gives the app one cohesive contemporary identity. Served from
+ * the bundled data dir at /_anki/fonts, so there is no runtime CDN/Google
+ * Fonts fetch (Anki is offline-first). The Qt-hosted web chrome mirrors these
+ * @font-face rules in aqt/webview.py's standard_css.
  *
  * Card/note content keeps its own font-family, so these only affect app chrome.
  */
 
 @font-face {
-    font-family: "IBM Plex Sans";
+    font-family: "Geist";
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url("/_anki/fonts/ibm-plex-sans-400.woff2") format("woff2");
+    src: url("/_anki/fonts/geist-sans-400.woff2") format("woff2");
 }
 @font-face {
-    font-family: "IBM Plex Sans";
+    font-family: "Geist";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url("/_anki/fonts/geist-sans-500.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Geist";
     font-style: normal;
     font-weight: 600;
     font-display: swap;
-    src: url("/_anki/fonts/ibm-plex-sans-600.woff2") format("woff2");
+    src: url("/_anki/fonts/geist-sans-600.woff2") format("woff2");
 }
 @font-face {
-    font-family: "IBM Plex Mono";
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url("/_anki/fonts/ibm-plex-mono-400.woff2") format("woff2");
-}
-@font-face {
-    font-family: "IBM Plex Mono";
-    font-style: normal;
-    font-weight: 500;
-    font-display: swap;
-    src: url("/_anki/fonts/ibm-plex-mono-500.woff2") format("woff2");
-}
-@font-face {
-    font-family: "Space Grotesk";
-    font-style: normal;
-    font-weight: 500;
-    font-display: swap;
-    src: url("/_anki/fonts/space-grotesk-500.woff2") format("woff2");
-}
-@font-face {
-    font-family: "Space Grotesk";
+    font-family: "Geist";
     font-style: normal;
     font-weight: 700;
     font-display: swap;
-    src: url("/_anki/fonts/space-grotesk-700.woff2") format("woff2");
+    src: url("/_anki/fonts/geist-sans-700.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Geist Mono";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("/_anki/fonts/geist-mono-400.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Geist Mono";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url("/_anki/fonts/geist-mono-500.woff2") format("woff2");
 }
 
 :root {
     --font-sans:
-        "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", roboto, sans-serif;
-    --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
-    --font-display: "Space Grotesk", "IBM Plex Sans", system-ui, sans-serif;
+        "Geist", system-ui, -apple-system, "Segoe UI", roboto, sans-serif;
+    --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", monospace;
+    --font-display: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
 }

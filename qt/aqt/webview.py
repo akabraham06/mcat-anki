@@ -621,24 +621,26 @@ div[contenteditable="true"]:focus {{
         zoom = self.app_zoom_factor()
 
         # Self-hosted app-wide UI fonts (served at /_anki/fonts, mirrors
-        # ts/lib/sass/_fonts.scss). Prepending "IBM Plex Sans" to the platform
-        # family gives every Qt-hosted web surface (toolbar, deck browser,
-        # overview, reviewer chrome, editor) one identity while keeping the OS
-        # font as a fallback for non-latin glyphs. Card/note content sets its
+        # ts/lib/sass/_fonts.scss). Prepending "Geist" to the platform family
+        # gives every Qt-hosted web surface (toolbar, deck browser, overview,
+        # reviewer chrome, editor) one clean, modern identity while keeping the
+        # OS font as a fallback for non-latin glyphs. Card/note content sets its
         # own font-family, so it is unaffected.
         webfonts = """
-@font-face { font-family: "IBM Plex Sans"; font-weight: 400; font-display: swap; src: url("/_anki/fonts/ibm-plex-sans-400.woff2") format("woff2"); }
-@font-face { font-family: "IBM Plex Sans"; font-weight: 600; font-display: swap; src: url("/_anki/fonts/ibm-plex-sans-600.woff2") format("woff2"); }
-@font-face { font-family: "IBM Plex Mono"; font-weight: 400; font-display: swap; src: url("/_anki/fonts/ibm-plex-mono-400.woff2") format("woff2"); }
-@font-face { font-family: "IBM Plex Mono"; font-weight: 500; font-display: swap; src: url("/_anki/fonts/ibm-plex-mono-500.woff2") format("woff2"); }
+@font-face { font-family: "Geist"; font-weight: 400; font-display: swap; src: url("/_anki/fonts/geist-sans-400.woff2") format("woff2"); }
+@font-face { font-family: "Geist"; font-weight: 500; font-display: swap; src: url("/_anki/fonts/geist-sans-500.woff2") format("woff2"); }
+@font-face { font-family: "Geist"; font-weight: 600; font-display: swap; src: url("/_anki/fonts/geist-sans-600.woff2") format("woff2"); }
+@font-face { font-family: "Geist"; font-weight: 700; font-display: swap; src: url("/_anki/fonts/geist-sans-700.woff2") format("woff2"); }
+@font-face { font-family: "Geist Mono"; font-weight: 400; font-display: swap; src: url("/_anki/fonts/geist-mono-400.woff2") format("woff2"); }
+@font-face { font-family: "Geist Mono"; font-weight: 500; font-display: swap; src: url("/_anki/fonts/geist-mono-500.woff2") format("woff2"); }
 """
 
         return f"""
 {webfonts}
 body {{ zoom: {zoom}; background-color: var(--canvas); }}
 html {{ {font} }}
-html, body {{ font-family: "IBM Plex Sans", "{family}", sans-serif; }}
-code, kbd, pre, samp {{ font-family: "IBM Plex Mono", ui-monospace, monospace; }}
+html, body {{ font-family: "Geist", "{family}", sans-serif; }}
+code, kbd, pre, samp {{ font-family: "Geist Mono", ui-monospace, monospace; }}
 {button_style}
 :root {{ --canvas: {colors.CANVAS["light"]} }}
 :root[class*=night-mode] {{ --canvas: {colors.CANVAS["dark"]} }}

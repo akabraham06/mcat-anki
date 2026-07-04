@@ -172,8 +172,8 @@ fn build_imgs(build: &mut Build) -> Result<()> {
 }
 
 fn build_fonts(build: &mut Build) -> Result<()> {
-    // Self-hosted app-wide UI fonts (IBM Plex Sans/Mono, Space Grotesk), served
-    // at /_anki/fonts/*.woff2 so both SvelteKit pages and Qt-hosted web chrome
+    // Self-hosted app-wide UI fonts (Geist, Geist Mono), served at
+    // /_anki/fonts/*.woff2 so both SvelteKit pages and Qt-hosted web chrome
     // load them offline (no runtime CDN).
     build.add_action(
         "qt:aqt:data:web:fonts",
