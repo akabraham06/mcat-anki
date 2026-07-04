@@ -36,6 +36,7 @@ final class ReviewStore: ObservableObject {
     @Published var revealed = false
     @Published var buttons: [Button] = []
     @Published var loading = false
+    @Published var submitting = false
     @Published var finished = false
     @Published var errorMessage: String?
     @Published private(set) var answeredCount = 0
@@ -118,7 +119,10 @@ final class ReviewStore: ObservableObject {
 
     /// Record the chosen rating as a real review, then advance.
     func answer(_ rating: Anki_Scheduler_CardAnswer.Rating) async {
-        guard let backend, let card else { return }
+        guard let backend, let card, !submitting else { return }
+        submitting = true
+        defer { submitting = false }
+        revealed = false
         let elapsedMs = UInt32(
             min(Double(UInt32.max),
                 max(0, Date().timeIntervalSince(cardShownAt) * 1000))
@@ -135,7 +139,11 @@ final class ReviewStore: ObservableObject {
             answeredCount += 1
             await loadNextCard()
         } catch {
-            errorMessage = "Failed to record answer: \(error)"
+            if "\(error)".contains("card was modified") {
+                await loadNextCard()
+            } else {
+                errorMessage = "Failed to record answer: \(error)"
+            }
         }
     }
 
@@ -288,6 +296,7 @@ struct ReviewView: View {
                     Text("Show answer")
                 }
                 .buttonStyle(InstrumentButtonStyle(tint: Theme.chemphys))
+                .disabled(review.submitting)
                 .padding(16)
             }
         }
@@ -319,6 +328,7 @@ struct ReviewView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 .buttonStyle(.plain)
+                .disabled(review.submitting)
             }
         }
         .padding(.horizontal, 12)

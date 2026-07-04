@@ -42,6 +42,7 @@ final class ExamSessionStore: ObservableObject {
 
     @Published var question: Question?
     @Published var loading = false
+    @Published var submitting = false
     @Published var finished = false
     @Published var errorMessage: String?
 
@@ -148,7 +149,9 @@ final class ExamSessionStore: ObservableObject {
     }
 
     private func reveal(chosen letter: String?, timedOut: Bool) async {
-        guard let q = question, !revealed else { return }
+        guard let q = question, !revealed, !submitting else { return }
+        submitting = true
+        defer { submitting = false }
         revealed = true
         self.timedOut = timedOut
         selectedLetter = letter
@@ -176,7 +179,9 @@ final class ExamSessionStore: ObservableObject {
         do {
             try await background { try backend.answerCard(answer) }
         } catch {
-            errorMessage = "Failed to record answer: \(error)"
+            if !"\(error)".contains("card was modified") {
+                errorMessage = "Failed to record answer: \(error)"
+            }
         }
     }
 
