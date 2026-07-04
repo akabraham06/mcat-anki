@@ -4,42 +4,45 @@
 import SwiftUI
 import CoreText
 
-/// The MCAT "diagnostic instrument" design identity, ported from the desktop
-/// tokens (ts/routes/mcat/mcat-tokens.scss) so the companion reads as the same
-/// lab-readout instrument. Three things carry the identity:
+/// The MCAT "clinical readout" design identity, ported from the desktop tokens
+/// (ts/routes/mcat/mcat-tokens.scss) so the companion reads as the same
+/// instrument. Three things carry the identity:
 ///
-///   1. A blue-slate surface system that flips between light and dark.
+///   1. A surface system whose PRIMARY look is a light, professional readout
+///      (clean paper panels, soft neutral hairlines, high-contrast slate ink),
+///      flipping to a coherent deep-slate variant under dark mode.
 ///   2. Four section hues used as a consistent colour LANGUAGE (a section reads
 ///      the same colour on the gauge, the timer bar and the deck list).
-///   3. A two-family type system — Source Serif 4 (a refined transitional
-///      serif) for the scores and all body/UI copy, IBM Plex Mono for every
-///      number, interval and clock. This matches the desktop, which standardised
-///      on Source Serif 4 (numerics stay on IBM Plex Mono).
+///   3. A two-family type system — Geist (a modern grotesque) for the scores
+///      and all body/UI copy, Geist Mono for every number, interval and clock.
+///      This matches the desktop, which standardised on Geist (numerics stay on
+///      Geist Mono).
 ///
 /// Colours are declared as dynamic (light/dark) `Color`s so every screen adapts
 /// to `colorScheme` automatically without threading the environment through.
+/// Values are the EXACT desktop tokens so mobile and desktop read identically.
 enum Theme {
-    // MARK: Surfaces (flip with the system appearance)
+    // MARK: Surfaces (light is primary; flips with the system appearance)
 
-    static let ink = Color(light: 0xEEF3F7, dark: 0x0E1622)
+    static let ink = Color(light: 0xF6F7F9, dark: 0x0E1622)
     static let panel = Color(light: 0xFFFFFF, dark: 0x16212E)
-    static let panel2 = Color(light: 0xF4F8FB, dark: 0x1B2836)
-    static let hairline = Color(light: 0xD6E0E8, dark: 0x24323F)
-    static let text = Color(light: 0x0E1622, dark: 0xEAF1F6)
-    static let muted = Color(light: 0x51616F, dark: 0x93A4B3)
-    static let needle = Color(light: 0x16212E, dark: 0xEAF1F6)
+    static let panel2 = Color(light: 0xF1F3F6, dark: 0x1B2836)
+    static let hairline = Color(light: 0xE2E6EC, dark: 0x24323F)
+    static let text = Color(light: 0x1A2230, dark: 0xEAF1F6)
+    static let muted = Color(light: 0x667283, dark: 0x93A4B3)
+    static let needle = Color(light: 0x232C3A, dark: 0xEAF1F6)
 
-    // MARK: Section hues (identical in both themes — a shared colour language)
+    // MARK: Section hues (lifted slightly in dark for legibility on dark panels)
 
-    static let chemphys = Color(hex: 0x4E8CFF)
-    static let cars = Color(hex: 0xC77DFF)
-    static let biobiochem = Color(hex: 0x34C7A0)
-    static let psychsoc = Color(hex: 0xFF9F45)
+    static let chemphys = Color(light: 0x2F6FDB, dark: 0x5B9BFF)
+    static let cars = Color(light: 0x8A63D2, dark: 0xB58BFF)
+    static let biobiochem = Color(light: 0x1F9D76, dark: 0x33C79C)
+    static let psychsoc = Color(light: 0xD97A2B, dark: 0xF0A24E)
 
     // MARK: Readiness is semantic, never decorative
 
-    static let warn = Color(hex: 0xE8A13A) // below target
-    static let ready = Color(hex: 0x3FB37F) // at / above target
+    static let warn = Color(light: 0xC07D1E, dark: 0xE2A53F) // below target
+    static let ready = Color(light: 0x1F9D76, dark: 0x33C79C) // at / above target
     static let miss = Color(hex: 0xE5484D) // wrong answer / out of time
 }
 
@@ -99,28 +102,28 @@ enum MCATSection: CaseIterable {
 // MARK: - Type roles
 
 extension Font {
-    /// Source Serif 4 — the big display scores, set in its heavier weights.
+    /// Geist — the big display scores, set in its heavier weights.
     /// `relativeTo` keeps it responsive to Dynamic Type; bundled fonts fall back
     /// to the system face automatically if registration ever fails.
     static func mcatDisplay(
         _ size: CGFloat, relativeTo style: TextStyle = .largeTitle, bold: Bool = false
     ) -> Font {
-        .custom(bold ? "SourceSerif4-Bold" : "SourceSerif4-SemiBold", size: size, relativeTo: style)
+        .custom(bold ? "Geist-Bold" : "Geist-SemiBold", size: size, relativeTo: style)
     }
 
-    /// Source Serif 4 — body and UI copy.
+    /// Geist — body and UI copy.
     static func mcatBody(
         _ size: CGFloat, relativeTo style: TextStyle = .body, semibold: Bool = false
     ) -> Font {
-        .custom(semibold ? "SourceSerif4-SemiBold" : "SourceSerif4-Regular", size: size, relativeTo: style)
+        .custom(semibold ? "Geist-SemiBold" : "Geist-Regular", size: size, relativeTo: style)
     }
 
-    /// IBM Plex Mono — every number, interval, ratio and clock. Inherently
+    /// Geist Mono — every number, interval, ratio and clock. Inherently
     /// tabular, so columns of figures line up.
     static func mcatMono(
         _ size: CGFloat, relativeTo style: TextStyle = .body, medium: Bool = false
     ) -> Font {
-        .custom(medium ? "IBMPlexMono-Medium" : "IBMPlexMono-Regular", size: size, relativeTo: style)
+        .custom(medium ? "GeistMono-Medium" : "GeistMono-Regular", size: size, relativeTo: style)
     }
 }
 
@@ -130,8 +133,8 @@ extension Font {
 /// is missing.
 enum MCATFonts {
     private static let files = [
-        "source-serif-400", "source-serif-600", "source-serif-700",
-        "ibm-plex-mono-400", "ibm-plex-mono-500",
+        "Geist-Regular", "Geist-Medium", "Geist-SemiBold", "Geist-Bold",
+        "GeistMono-Regular", "GeistMono-Medium",
     ]
 
     static func register() {

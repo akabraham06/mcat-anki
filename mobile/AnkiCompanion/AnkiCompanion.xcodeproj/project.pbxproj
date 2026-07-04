@@ -9,20 +9,22 @@
 /* Begin PBXBuildFile section */
 		014833193444A21A7FC33311 /* frontend.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D3C43439D29E9397E87EA85 /* frontend.pb.swift */; };
 		04119B7F4FCD00CF72C40EC5 /* ReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_59086D08-84A1-4F20-98A3-56D214CBBC46" /* ReviewView.swift */; };
-		07C709DF337B6C8DD11CD4DC /* source-serif-400.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 52EC61A9A465BD74C2560EA2 /* source-serif-400.ttf */; };
+		FADE0000000000000000B001 /* Geist-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FACE0000000000000000F001 /* Geist-Regular.ttf */; };
+		FADE0000000000000000B002 /* Geist-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FACE0000000000000000F002 /* Geist-Medium.ttf */; };
+		FADE0000000000000000B003 /* Geist-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FACE0000000000000000F003 /* Geist-SemiBold.ttf */; };
+		FADE0000000000000000B004 /* Geist-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FACE0000000000000000F004 /* Geist-Bold.ttf */; };
+		FADE0000000000000000B005 /* GeistMono-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FACE0000000000000000F005 /* GeistMono-Regular.ttf */; };
+		FADE0000000000000000B006 /* GeistMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FACE0000000000000000F006 /* GeistMono-Medium.ttf */; };
 		0E211DFD4F80731D59EBA53C /* github.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12F637A7E60104239FDDAF28 /* github.pb.swift */; };
 		146703D95187B7AD69254E9B /* card_rendering.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79170CEF44BCDA12479C5496 /* card_rendering.pb.swift */; };
-		1629E3FE86459BEB3C7146F0 /* source-serif-700.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 261A22B0B67633FAA2D88A1F /* source-serif-700.ttf */; };
 		20400A2B38BAF821C6BDB9A9 /* search.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A293A1C0BC9F8DAD533B514B /* search.pb.swift */; };
 		22D2123B2BBE2B5705349369 /* deck_config.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CF6ECC67B25400DBF7C6A8 /* deck_config.pb.swift */; };
 		288E0725FFFDC62864E00BDA /* import_export.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01F0E66B7751222EF9035DC1 /* import_export.pb.swift */; };
 		2CDE755A1382B565795CE342 /* stats.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7B8E3006A3D18B0D5AAD3D7 /* stats.pb.swift */; };
-		2D368B1CEED836958F86B3CD /* ibm-plex-mono-500.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DA96CB89AE73BA5FBD3F96E3 /* ibm-plex-mono-500.ttf */; };
 		2E603C339254AE886D17D844 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_675375BD-B1F6-41FE-9C5A-EF6D8B41B823" /* ContentView.swift */; };
 		3E71C92BE1F9705EF0557FCD /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_04CB6C38-C242-4D8F-8C0B-19EB2FBEA7F9" /* Theme.swift */; };
 		4C6464E497C595EC5037D125 /* ExamCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_A3CC3295-3410-4D3B-8F99-4802796C580E" /* ExamCardView.swift */; };
 		502AEE75BF969B8E8DDB48DF /* image_occlusion.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCDAAE01334AEE33DEB5E25 /* image_occlusion.pb.swift */; };
-		55D4276EAA5CEB19FA9CF177 /* ibm-plex-mono-400.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D1740F970003C609311CF8FD /* ibm-plex-mono-400.ttf */; };
 		5F82678EAC13825FAE6C03B8 /* tags.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C453195C1E278CA2E74A6E6 /* tags.pb.swift */; };
 		6B871CFC28EFA61543BE0342 /* i18n.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F520B40509CCA60740D5BCA /* i18n.pb.swift */; };
 		7813464BC64F59AF71869EE8 /* ankiweb.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65362C88313217ECE0827DDD /* ankiweb.pb.swift */; };
@@ -39,7 +41,6 @@
 		BAF9F716E53E542C21016CD3 /* scheduler.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D7D1730B355FF90AEAA0212 /* scheduler.pb.swift */; };
 		BC7352CAA731221DF220140D /* config.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E879762D191B89E4128969 /* config.pb.swift */; };
 		BDA6CC71DBD30144C12D39D2 /* ExamSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_2DE8F816-22D4-4989-A616-E74DB6890F06" /* ExamSessionStore.swift */; };
-		BE809EEF89594A7E047FD03E /* source-serif-600.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0A7D240814B8AECD8F705F13 /* source-serif-600.ttf */; };
 		C54447841FA4685F27D7730A /* ankihub.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7CB90D67A93AB44B302C911 /* ankihub.pb.swift */; };
 		C7DAAC88954E11095E998B0C /* AnkiBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_5974BDE7-0FB5-4F30-B218-136758F9E097" /* AnkiBackend.swift */; };
 		DA0A54906D59234CB626CC4B /* AnkiCompanionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_2B481234-D6D4-4470-A1EB-CD453D0A0C9A" /* AnkiCompanionApp.swift */; };
@@ -55,17 +56,20 @@
 
 /* Begin PBXFileReference section */
 		01F0E66B7751222EF9035DC1 /* import_export.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = import_export.pb.swift; sourceTree = "<group>"; };
-		0A7D240814B8AECD8F705F13 /* source-serif-600.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "source-serif-600.ttf"; sourceTree = "<group>"; };
+		FACE0000000000000000F001 /* Geist-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Geist-Regular.ttf"; sourceTree = "<group>"; };
+		FACE0000000000000000F002 /* Geist-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Geist-Medium.ttf"; sourceTree = "<group>"; };
+		FACE0000000000000000F003 /* Geist-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Geist-SemiBold.ttf"; sourceTree = "<group>"; };
+		FACE0000000000000000F004 /* Geist-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Geist-Bold.ttf"; sourceTree = "<group>"; };
+		FACE0000000000000000F005 /* GeistMono-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "GeistMono-Regular.ttf"; sourceTree = "<group>"; };
+		FACE0000000000000000F006 /* GeistMono-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "GeistMono-Medium.ttf"; sourceTree = "<group>"; };
 		0D7D1730B355FF90AEAA0212 /* scheduler.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = scheduler.pb.swift; sourceTree = "<group>"; };
 		12F637A7E60104239FDDAF28 /* github.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = github.pb.swift; sourceTree = "<group>"; };
 		15FFE0AA7343F12CB65760E0 /* generic.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = generic.pb.swift; sourceTree = "<group>"; };
-		261A22B0B67633FAA2D88A1F /* source-serif-700.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "source-serif-700.ttf"; sourceTree = "<group>"; };
 		2B44ABB3BB0DEB268BF05E15 /* mcat.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mcat.pb.swift; sourceTree = "<group>"; };
 		2D3C43439D29E9397E87EA85 /* frontend.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = frontend.pb.swift; sourceTree = "<group>"; };
 		301E3F78781F35FD789C615F /* sync.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = sync.pb.swift; sourceTree = "<group>"; };
 		31C24EA2E14F82746B2AD807 /* media.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = media.pb.swift; sourceTree = "<group>"; };
 		413FA60EFA1CEF5FFFE9B6ED /* collection.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = collection.pb.swift; sourceTree = "<group>"; };
-		52EC61A9A465BD74C2560EA2 /* source-serif-400.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "source-serif-400.ttf"; sourceTree = "<group>"; };
 		53BC6D5D79E99154A756B9F9 /* backend.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = backend.pb.swift; sourceTree = "<group>"; };
 		5F94F10B06CA6E9BFAD66298 /* links.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = links.pb.swift; sourceTree = "<group>"; };
 		615348AC9C21B09FCCF7D223 /* notes.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = notes.pb.swift; sourceTree = "<group>"; };
@@ -83,9 +87,7 @@
 		A7B8E3006A3D18B0D5AAD3D7 /* stats.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stats.pb.swift; sourceTree = "<group>"; };
 		B7CB90D67A93AB44B302C911 /* ankihub.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ankihub.pb.swift; sourceTree = "<group>"; };
 		C8CF6ECC67B25400DBF7C6A8 /* deck_config.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = deck_config.pb.swift; sourceTree = "<group>"; };
-		D1740F970003C609311CF8FD /* ibm-plex-mono-400.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ibm-plex-mono-400.ttf"; sourceTree = "<group>"; };
 		D8B97D857A606EE2F60F415B /* cards.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cards.pb.swift; sourceTree = "<group>"; };
-		DA96CB89AE73BA5FBD3F96E3 /* ibm-plex-mono-500.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ibm-plex-mono-500.ttf"; sourceTree = "<group>"; };
 		ED00F84B09744B0F8F9CCEF2 /* notetypes.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = notetypes.pb.swift; sourceTree = "<group>"; };
 		"TEMP_04CB6C38-C242-4D8F-8C0B-19EB2FBEA7F9" /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		"TEMP_2B481234-D6D4-4470-A1EB-CD453D0A0C9A" /* AnkiCompanionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnkiCompanionApp.swift; sourceTree = "<group>"; };
@@ -183,11 +185,12 @@
 		E8ED16B3257B549C86BA2DF9 /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
-				D1740F970003C609311CF8FD /* ibm-plex-mono-400.ttf */,
-				DA96CB89AE73BA5FBD3F96E3 /* ibm-plex-mono-500.ttf */,
-				52EC61A9A465BD74C2560EA2 /* source-serif-400.ttf */,
-				0A7D240814B8AECD8F705F13 /* source-serif-600.ttf */,
-				261A22B0B67633FAA2D88A1F /* source-serif-700.ttf */,
+				FACE0000000000000000F001 /* Geist-Regular.ttf */,
+				FACE0000000000000000F002 /* Geist-Medium.ttf */,
+				FACE0000000000000000F003 /* Geist-SemiBold.ttf */,
+				FACE0000000000000000F004 /* Geist-Bold.ttf */,
+				FACE0000000000000000F005 /* GeistMono-Regular.ttf */,
+				FACE0000000000000000F006 /* GeistMono-Medium.ttf */,
 			);
 			path = Fonts;
 			sourceTree = "<group>";
@@ -274,11 +277,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				55D4276EAA5CEB19FA9CF177 /* ibm-plex-mono-400.ttf in Resources */,
-				2D368B1CEED836958F86B3CD /* ibm-plex-mono-500.ttf in Resources */,
-				07C709DF337B6C8DD11CD4DC /* source-serif-400.ttf in Resources */,
-				BE809EEF89594A7E047FD03E /* source-serif-600.ttf in Resources */,
-				1629E3FE86459BEB3C7146F0 /* source-serif-700.ttf in Resources */,
+				FADE0000000000000000B001 /* Geist-Regular.ttf in Resources */,
+				FADE0000000000000000B002 /* Geist-Medium.ttf in Resources */,
+				FADE0000000000000000B003 /* Geist-SemiBold.ttf in Resources */,
+				FADE0000000000000000B004 /* Geist-Bold.ttf in Resources */,
+				FADE0000000000000000B005 /* GeistMono-Regular.ttf in Resources */,
+				FADE0000000000000000B006 /* GeistMono-Medium.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
