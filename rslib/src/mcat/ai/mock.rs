@@ -81,29 +81,93 @@ fn split_sentences(text: &str) -> Vec<String> {
         .collect()
 }
 
+fn subject_of(sentence: &str) -> String {
+    sentence
+        .split_whitespace()
+        .take(4)
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+/// Build one deterministic card at the given tier, grounded in the source
+/// sentence(s). Tiers use distinct framing (and stretch combines two sentences)
+/// so cards stay well below the duplicate threshold across tiers of the same
+/// source, while every answer remains source-supported.
+fn card_at_tier(sentences: &[String], idx: usize, tier: &str, topic: &str) -> Value {
+    let n = sentences.len();
+    let primary = &sentences[idx % n];
+    let subject = subject_of(primary);
+    let (question, answer) = match tier {
+        "recall" => (
+            format!("According to the source, what is the key fact about {subject}?"),
+            primary.clone(),
+        ),
+        "stretch" => {
+            // Integrate two different source sentences for a multi-concept card.
+            let secondary = &sentences[(idx + n / 2 + 1) % n];
+            let subject2 = subject_of(secondary);
+            (
+                format!(
+                    "Integrating the source, how does {subject} relate to {subject2}, \
+                     and what edge case follows?"
+                ),
+                format!("{primary}. Moreover, {secondary}"),
+            )
+        }
+        // "mcat" — exam-level application.
+        _ => (
+            format!("Apply the source: in a scenario involving {subject}, what follows?"),
+            format!("{primary}, which determines the outcome in that scenario"),
+        ),
+    };
+    json!({
+        "question": question,
+        "answer": answer,
+        "topic_tag": topic,
+        "difficulty": tier,
+    })
+}
+
 fn generate_cards(payload: &Value) -> Value {
     let excerpt = str_field(payload, "excerpt");
     let topic = str_field(payload, "topic_hint");
     let count = payload.get("count").and_then(|v| v.as_u64()).unwrap_or(3) as usize;
+    // A requested tier writes the whole batch at that band; empty => a mix.
+    let requested = str_field(payload, "difficulty");
     let sentences = split_sentences(&excerpt);
+    let tiers = super::generate::DIFFICULTY_TIERS;
+
     let mut cards = Vec::new();
-    for (i, sentence) in sentences.iter().take(count).enumerate() {
-        let words: Vec<&str> = sentence.split_whitespace().collect();
-        let subject = words.iter().take(4).cloned().collect::<Vec<_>>().join(" ");
-        let difficulty = ["easy", "medium", "hard"][i % 3];
-        cards.push(json!({
-            "question": format!("According to the source, what is true regarding {subject}?"),
-            "answer": sentence,
-            "topic_tag": topic,
-            "difficulty": difficulty,
-        }));
+    if !sentences.is_empty() {
+        for i in 0..count {
+            let tier = if requested.trim().is_empty() {
+                tiers[i % tiers.len()]
+            } else {
+                // Normalise so legacy easy/medium/hard still map to a tier.
+                match super::generate::normalize_difficulty(&requested).as_str() {
+                    "recall" => "recall",
+                    "stretch" => "stretch",
+                    _ => "mcat",
+                }
+            };
+            // Offset the sentence window by tier so the tiers of one source do
+            // not collide on the same sentence.
+            let tier_offset = tiers.iter().position(|t| *t == tier).unwrap_or(0);
+            let idx = i * tiers.len() + tier_offset;
+            cards.push(card_at_tier(&sentences, idx, tier, &topic));
+        }
     }
     if cards.is_empty() {
+        let tier = if requested.trim().is_empty() {
+            "mcat".to_string()
+        } else {
+            super::generate::normalize_difficulty(&requested)
+        };
         cards.push(json!({
             "question": "According to the source, what is the key idea?",
             "answer": excerpt.chars().take(160).collect::<String>(),
             "topic_tag": topic,
-            "difficulty": "medium",
+            "difficulty": tier,
         }));
     }
     json!({ "cards": cards })

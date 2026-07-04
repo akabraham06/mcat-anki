@@ -1160,14 +1160,21 @@ class Collection(DeprecatedNamesMixin):
         count: int = 5,
         topic_hint: str = "",
         tag_prefix: str = "",
+        difficulty: str = "",
     ) -> mcat_pb2.GeneratedCardList:
         """9.3: generate a review queue of source-grounded, checked candidates
-        (never auto-added to the deck)."""
+        (never auto-added to the deck).
+
+        ``difficulty`` requests a whole batch at one tier ("recall", "mcat" or
+        "stretch"); empty asks the model for a mixed batch. When set, the tier is
+        authoritative for tagging every returned card and steers the prompt, so
+        callers can hit an explicit difficulty distribution across a topic."""
         return self._backend.generate_cards(
             source_id=source_id,
             count=count,
             topic_hint=topic_hint,
             tag_prefix=tag_prefix,
+            difficulty=difficulty,
         )
 
     def mcat_check_card(

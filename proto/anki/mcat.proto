@@ -488,6 +488,16 @@ message GenerateCardsRequest {
   // Optional taxonomy topic tag or hint (e.g. "mcat::biobiochem::enzymes").
   string topic_hint = 3;
   string tag_prefix = 4;
+  // Requested difficulty tier for the whole batch, one of:
+  //   "recall"  — basic recall / definition,
+  //   "mcat"    — exam-level application / reasoning (the standard band),
+  //   "stretch" — harder than the real MCAT (multi-concept integration, edge
+  //               cases, wider scope).
+  // Empty asks the model for a mixed batch. When set, the tier is authoritative
+  // for tagging (every returned card is labelled with that tier) and steers the
+  // generation prompt, so the caller can hit an explicit difficulty
+  // distribution across a topic.
+  string difficulty = 5;
 }
 
 message GeneratedCard {
@@ -498,7 +508,8 @@ message GeneratedCard {
   string answer = 5;
   // Full taxonomy tag, e.g. "mcat::biobiochem::enzymes".
   string topic_tag = 6;
-  // "easy" | "medium" | "hard".
+  // Difficulty tier: "recall" | "mcat" | "stretch". Accepted cards are tagged
+  // "difficulty::<tier>" so the deck spans a wide, measurable difficulty range.
   string difficulty = 7;
   GeneratedCardStatus status = 8;
   CardQualityReport quality = 9;

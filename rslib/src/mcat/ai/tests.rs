@@ -135,6 +135,7 @@ fn generation_rejects_without_registered_source() {
             count: 3,
             topic_hint: "mcat::biobiochem::metabolism".into(),
             tag_prefix: String::new(),
+            difficulty: String::new(),
         })
         .unwrap();
     assert!(!res.ai_available);
@@ -158,6 +159,7 @@ fn generation_produces_checked_cards_and_accepts_them() {
             count: 3,
             topic_hint: "mcat::biobiochem::glycolysis".into(),
             tag_prefix: String::new(),
+            difficulty: String::new(),
         })
         .unwrap();
     assert!(res.ai_available);
@@ -188,6 +190,128 @@ fn generation_produces_checked_cards_and_accepts_them() {
     let nid = NoteId(accept.note_ids[0]);
     let note = col.storage.get_note(nid).unwrap().unwrap();
     assert!(note.tags.iter().any(|t| t == "ai-generated"));
+}
+
+// --- Difficulty tiering + tagging (wide difficulty range) ------------------
+
+#[test]
+fn difficulty_normalizes_to_three_tiers() {
+    use super::generate::normalize_difficulty;
+    use super::generate::normalize_difficulty_opt;
+    // Canonical tiers pass through.
+    assert_eq!(normalize_difficulty("recall"), "recall");
+    assert_eq!(normalize_difficulty("mcat"), "mcat");
+    assert_eq!(normalize_difficulty("stretch"), "stretch");
+    // Legacy easy/medium/hard map onto the tiers.
+    assert_eq!(normalize_difficulty("easy"), "recall");
+    assert_eq!(normalize_difficulty("medium"), "mcat");
+    assert_eq!(normalize_difficulty("hard"), "stretch");
+    // Case / whitespace tolerant, unknown => the standard band.
+    assert_eq!(normalize_difficulty("  STRETCH "), "stretch");
+    assert_eq!(normalize_difficulty("whatever"), "mcat");
+    // The optional form distinguishes "no tier requested".
+    assert_eq!(normalize_difficulty_opt(""), None);
+    assert_eq!(normalize_difficulty_opt("  "), None);
+    assert_eq!(normalize_difficulty_opt("hard").as_deref(), Some("stretch"));
+}
+
+fn generate_tier(col: &mut Collection, sid: &str, tier: &str, count: u32) -> pb::GeneratedCardList {
+    col.mcat_generate_cards(pb::GenerateCardsRequest {
+        source_id: sid.to_string(),
+        count,
+        topic_hint: "mcat::biobiochem::glycolysis".into(),
+        tag_prefix: String::new(),
+        difficulty: tier.to_string(),
+    })
+    .unwrap()
+}
+
+const TIER_EXCERPT: &str = "Glycolysis occurs in the cytosol and converts glucose into two \
+     pyruvate molecules. The committed rate-limiting step is catalyzed by phosphofructokinase-1. \
+     The citric acid cycle oxidizes pyruvate inside the mitochondrial matrix. Competitive \
+     inhibitors raise the apparent Km while leaving Vmax unchanged. Noncompetitive inhibitors \
+     lower Vmax without changing Km. Oxidative phosphorylation produces the bulk of cellular ATP.";
+
+#[test]
+fn requested_tier_labels_every_card() {
+    let mut col = mock_col();
+    let sid = register_source(&mut col, TIER_EXCERPT);
+    for tier in ["recall", "mcat", "stretch"] {
+        let res = generate_tier(&mut col, &sid, tier, 3);
+        assert!(res.ai_available);
+        assert!(!res.cards.is_empty());
+        for card in &res.cards {
+            assert_eq!(
+                card.difficulty, tier,
+                "a requested tier must be authoritative for every card"
+            );
+        }
+    }
+}
+
+#[test]
+fn mixed_generation_spans_all_three_tiers() {
+    let mut col = mock_col();
+    let sid = register_source(&mut col, TIER_EXCERPT);
+    // No requested tier => a mix.
+    let res = col
+        .mcat_generate_cards(pb::GenerateCardsRequest {
+            source_id: sid,
+            count: 6,
+            topic_hint: "mcat::biobiochem::glycolysis".into(),
+            tag_prefix: String::new(),
+            difficulty: String::new(),
+        })
+        .unwrap();
+    let tiers: std::collections::HashSet<&str> =
+        res.cards.iter().map(|c| c.difficulty.as_str()).collect();
+    for expected in ["recall", "mcat", "stretch"] {
+        assert!(
+            tiers.contains(expected),
+            "mixed batch should include {expected}"
+        );
+    }
+}
+
+#[test]
+fn accept_tags_difficulty_tier_and_spans_range() {
+    let mut col = mock_col();
+    let sid = register_source(&mut col, TIER_EXCERPT);
+    // Build a wide-range set the way the pipeline does: generate + accept each
+    // tier in turn, so later tiers are duplicate-checked against earlier ones.
+    let mut created_per_tier = std::collections::HashMap::new();
+    for tier in ["recall", "mcat", "stretch"] {
+        let res = generate_tier(&mut col, &sid, tier, 3);
+        let accept = col
+            .mcat_accept_cards(pb::AcceptCardsRequest {
+                cards: res.cards.clone(),
+                deck_name: String::new(),
+                tag_prefix: String::new(),
+            })
+            .unwrap();
+        created_per_tier.insert(tier, accept.created);
+        // Every accepted card carries difficulty::<tier> + the topic tag.
+        for nid in &accept.note_ids {
+            let note = col.storage.get_note(NoteId(*nid)).unwrap().unwrap();
+            assert!(note
+                .tags
+                .iter()
+                .any(|t| t == &format!("difficulty::{tier}")));
+            assert!(note
+                .tags
+                .iter()
+                .any(|t| t == "mcat::biobiochem::glycolysis"));
+            assert!(note.tags.iter().any(|t| t == "ai-generated"));
+        }
+    }
+    // The tiers do not cannibalise each other via the duplicate gate: each tier
+    // contributes at least one accepted card, so the deck spans the full range.
+    for tier in ["recall", "mcat", "stretch"] {
+        assert!(
+            created_per_tier[tier] >= 1,
+            "tier {tier} should contribute at least one non-duplicate card"
+        );
+    }
 }
 
 // --- 9.4 checker -----------------------------------------------------------
@@ -511,6 +635,7 @@ fn core_scoring_works_when_ai_unavailable() {
             count: 3,
             topic_hint: String::new(),
             tag_prefix: String::new(),
+            difficulty: String::new(),
         })
         .unwrap();
     assert!(!gen.ai_available);

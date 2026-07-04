@@ -35,12 +35,29 @@ wheels:
 installer:
     {{ ninja }} installer:package
 
-# Run the MCAT AI card-quality-checker gold-set evaluation (offline, mock
-# provider; no network/key). Writes mcat/ai_eval/report.md and fails if the
-# checker does not beat the naive baseline.
+# Run the MCAT "AI-on vs AI-off" showcase evaluation across all Phase-2 AI
+# features (9.3 generation, 9.4 checker, 9.5 explanations, 9.6 planner,
+# 9.8 perf-gen). Offline & deterministic (mock provider; no network/key).
+# Writes mcat/ai_eval/report.md and fails if any feature does not beat its
+# no-AI baseline by the pre-registered margin.
 mcat-ai-eval:
     {{ ninja }} pylib
     {{ if os() == "windows" { "$env:MCAT_AI_MOCK='1'; $env:PYTHONPATH='out\\pylib'" } else { "MCAT_AI_MOCK=1 PYTHONPATH=out/pylib" } }} {{ uv }} run python mcat/ai_eval/run_eval.py
+
+# Build custom, difficulty-tiered MCAT decks from the staged OpenStax corpus via
+# the AI generate + quality-check flow. Runs offline against the deterministic
+# mock provider (no network/key) and writes mcat/dist/mcat_generated.apkg. Pass
+# extra args through, e.g. `just mcat-build-deck --dry-run` or
+# `just mcat-build-deck --recall 6 --mcat 6 --stretch 3`.
+mcat-build-deck *args:
+    {{ ninja }} pylib
+    {{ if os() == "windows" { "$env:MCAT_AI_MOCK='1'; $env:PYTHONPATH='out\\pylib'" } else { "MCAT_AI_MOCK=1 PYTHONPATH=out/pylib" } }} {{ uv }} run python mcat/build_deck.py {{ args }}
+
+# Run the deterministic offline tests for the MCAT card-generation pipeline
+# (difficulty tiering/tagging + deck assembly; mock provider, no network/key).
+mcat-build-deck-test:
+    {{ ninja }} pylib
+    {{ if os() == "windows" { "$env:MCAT_AI_MOCK='1'; $env:PYTHONPATH='out\\pylib'" } else { "MCAT_AI_MOCK=1 PYTHONPATH=out/pylib" } }} {{ uv }} run python mcat/tests/test_build_deck.py
 
 # Build and run all checks (lint + test) - lets ninja handle dependencies
 check:

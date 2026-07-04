@@ -30,6 +30,20 @@ const DEFAULT_AI_DECK: &str = "MCAT::AI Generated";
 /// Label applied to every accepted AI card.
 pub(crate) const AI_LABEL_TAG: &str = "ai-generated";
 
+/// The three difficulty tiers spanned by the deck. Kept as an ordered slice so
+/// callers (and the deck-build pipeline) share one vocabulary.
+///
+/// * `recall`  — basic recall / definition.
+/// * `mcat`    — exam-level application / reasoning (the standard MCAT band).
+/// * `stretch` — harder than the real MCAT: multi-concept integration, edge
+///   cases, wider scope.
+pub(crate) const DIFFICULTY_TIERS: [&str; 3] = ["recall", "mcat", "stretch"];
+
+/// Tag namespace applied on acceptance so every card advertises its tier, e.g.
+/// `difficulty::stretch`. This is what makes the wide difficulty range visible
+/// and filterable in the deck.
+pub(crate) const DIFFICULTY_TAG_PREFIX: &str = "difficulty";
+
 #[derive(Deserialize)]
 struct AiGenerateResponse {
     cards: Vec<AiGeneratedCard>,
@@ -95,7 +109,16 @@ impl Collection {
         }
 
         let count = req.count.clamp(1, 20);
-        let generated = match generate_from_source(&client, &source, count, &req.topic_hint) {
+        // A requested tier (recall/mcat/stretch) is authoritative for tagging and
+        // steers the prompt; empty asks the model for a mixed batch.
+        let requested_tier = normalize_difficulty_opt(&req.difficulty);
+        let generated = match generate_from_source(
+            &client,
+            &source,
+            count,
+            &req.topic_hint,
+            requested_tier.as_deref(),
+        ) {
             Ok(g) => g,
             Err(e) => {
                 return Ok(pb::GeneratedCardList {
@@ -148,6 +171,12 @@ impl Collection {
                 pb::GeneratedCardStatus::Blocked
             };
 
+            // A caller-requested tier wins (the model was told to write at that
+            // tier); otherwise fall back to the model's per-card label.
+            let difficulty = requested_tier
+                .clone()
+                .unwrap_or_else(|| normalize_difficulty(&gc.difficulty));
+
             cards.push(pb::GeneratedCard {
                 source_id: source.source_id.clone(),
                 source_name: source.source_name.clone(),
@@ -155,7 +184,7 @@ impl Collection {
                 question: gc.question.trim().to_string(),
                 answer: gc.answer.trim().to_string(),
                 topic_tag,
-                difficulty: normalize_difficulty(&gc.difficulty),
+                difficulty,
                 status: status as i32,
                 quality: Some(report),
                 source_excerpt: source.excerpt.clone(),
@@ -204,6 +233,11 @@ impl Collection {
             if !card.topic_tag.trim().is_empty() {
                 tags.push(card.topic_tag.trim().to_string());
             }
+            // Tag the difficulty tier so the deck spans (and is filterable by) a
+            // wide, measurable difficulty range: difficulty::{recall,mcat,stretch}.
+            if let Some(tier) = normalize_difficulty_opt(&card.difficulty) {
+                tags.push(format!("{DIFFICULTY_TAG_PREFIX}::{tier}"));
+            }
             note.tags = tags;
             self.add_note(&mut note, did)?;
             note_ids.push(note.id.0);
@@ -217,11 +251,50 @@ impl Collection {
     }
 }
 
-fn normalize_difficulty(d: &str) -> String {
+/// Map any difficulty label the model (or a caller) might use onto one of the
+/// three canonical tiers, always returning a tier (defaults to the standard
+/// `mcat` band). Legacy easy/medium/hard values are accepted too.
+pub(crate) fn normalize_difficulty(d: &str) -> String {
     match d.trim().to_lowercase().as_str() {
-        "easy" | "e" => "easy".to_string(),
-        "hard" | "h" => "hard".to_string(),
-        _ => "medium".to_string(),
+        "recall" | "easy" | "basic" | "definition" | "e" => "recall".to_string(),
+        "stretch" | "hard" | "advanced" | "expert" | "integration" | "h" => "stretch".to_string(),
+        _ => "mcat".to_string(),
+    }
+}
+
+/// Like [`normalize_difficulty`] but returns `None` for an empty/blank input, so
+/// callers can distinguish "no tier requested" (mixed batch) from an explicit
+/// tier.
+pub(crate) fn normalize_difficulty_opt(d: &str) -> Option<String> {
+    if d.trim().is_empty() {
+        None
+    } else {
+        Some(normalize_difficulty(d))
+    }
+}
+
+/// Human-facing guidance describing what a card at the given tier should test.
+/// Fed into the generation prompt so questions match MCAT-style scope per tier
+/// rather than generic trivia.
+pub(crate) fn tier_guidance(tier: &str) -> &'static str {
+    match tier {
+        "recall" => {
+            "Write BASIC RECALL cards: a single definition, fact, term or value \
+             stated directly in the source. One step, no reasoning chain."
+        }
+        "stretch" => {
+            "Write STRETCH cards that are HARDER than the real MCAT: integrate \
+             multiple concepts from the source, probe edge cases, quantitative \
+             reasoning or second-order consequences, and require several \
+             inferential steps. Still fully grounded in the source — never \
+             invent facts."
+        }
+        // "mcat" and anything else.
+        _ => {
+            "Write EXAM-LEVEL cards at standard MCAT difficulty: apply a concept \
+             from the source to a scenario or require one or two reasoning steps, \
+             not mere recall."
+        }
     }
 }
 
@@ -264,6 +337,7 @@ fn generate_from_source(
     source: &crate::mcat::ai::sources::StoredSource,
     count: u32,
     topic_hint: &str,
+    tier: Option<&str>,
 ) -> AiResult<AiGenerateResponse> {
     if !client.config().available() {
         return Err(AiError::Unconfigured {
@@ -274,12 +348,29 @@ fn generate_from_source(
     let system = format!(
         "You are an expert MCAT tutor writing high-quality flashcards ONLY from the \
          provided source material. {DATA_ONLY_INSTRUCTION} Produce strict JSON of the \
-         form {{\"cards\":[{{\"question\":\"...\",\"answer\":\"...\",\"topic_tag\":\"mcat::section::topic\",\"difficulty\":\"easy|medium|hard\"}}]}}. \
+         form {{\"cards\":[{{\"question\":\"...\",\"answer\":\"...\",\"topic_tag\":\"mcat::section::topic\",\"difficulty\":\"recall|mcat|stretch\"}}]}}. \
          Every fact must be supported by the source. Do not invent facts not present in \
          the source."
     );
+    // Difficulty steering: a specific tier writes the whole batch at that band;
+    // no tier asks for an explicit spread across all three so the deck covers a
+    // wide range (including the middle).
+    let difficulty_directive = match tier {
+        Some(t) => format!(
+            "{} Set every card's \"difficulty\" to \"{t}\".",
+            tier_guidance(t)
+        ),
+        None => format!(
+            "Produce a MIX of difficulties and label each card's \"difficulty\" \
+             accordingly. {} {} {}",
+            tier_guidance("recall"),
+            tier_guidance("mcat"),
+            tier_guidance("stretch"),
+        ),
+    };
     let user = format!(
-        "Write {count} MCAT flashcards grounded in the following source.{hint}\n\n{fenced}",
+        "Write {count} MCAT flashcards grounded in the following source.{hint} \
+         {difficulty_directive}\n\n{fenced}",
         hint = if topic_hint.trim().is_empty() {
             String::new()
         } else {
@@ -292,6 +383,7 @@ fn generate_from_source(
         "excerpt": source.excerpt,
         "topic_hint": topic_hint,
         "count": count,
+        "difficulty": tier.unwrap_or(""),
     });
     let chat = ChatRequest::new(AiTask::GenerateCards, system, user).with_payload(payload);
     complete_json::<AiGenerateResponse>(client, &chat)
