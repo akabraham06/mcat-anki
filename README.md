@@ -122,9 +122,18 @@ PROTOC="$(which protoc)" bash mobile/AnkiCompanion/gen_swift_proto.sh
 #    -> mobile/AnkiCompanion/Generated/anki/*.pb.swift
 
 # 3. Generate the Xcode project.
-cd mobile/AnkiCompanion && xcodegen generate
+#    Remove any stale in-tree build products first: xcodegen scans its source
+#    root and will otherwise auto-wire the app's INFOPLIST_FILE to a leftover
+#    SwiftProtobuf bundle Info.plist, breaking the build.
+cd mobile/AnkiCompanion && rm -rf AnkiCompanion.xcodeproj build && xcodegen generate
 #    -> mobile/AnkiCompanion/AnkiCompanion.xcodeproj
 ```
+
+> **Keep build output out of the source root.** Always build with a
+> `-derivedDataPath` **outside** `mobile/AnkiCompanion` (the commands below use
+> `../build/DerivedData`, next to the XCFramework). If DerivedData lands inside
+> the project dir, the next `xcodegen generate` will pick up SwiftProtobuf's
+> generated `Info.plist` and mis-set the app's `INFOPLIST_FILE`.
 
 If you regenerate the backend/protos, re-run `mobile/AnkiCompanion/patch_service_indices.sh` to keep the service indices in `AnkiBackend.swift` in sync, then re-run steps 2–3.
 
@@ -134,17 +143,17 @@ If you regenerate the backend/protos, re-run `mobile/AnkiCompanion/patch_service
 - **From the command line:**
 
   ```bash
-  # Build for the simulator
+  # Build for the simulator (DerivedData kept OUT of the source root — see note above)
   cd mobile/AnkiCompanion
   xcodebuild -project AnkiCompanion.xcodeproj -scheme AnkiCompanion \
     -destination 'platform=iOS Simulator,name=iPhone 16' \
-    -configuration Debug -derivedDataPath build/DerivedData \
+    -configuration Debug -derivedDataPath ../build/DerivedData \
     CODE_SIGNING_ALLOWED=NO build
 
   # Boot a device, install, launch
   DEV=$(xcrun simctl create MCAT "com.apple.CoreSimulator.SimDeviceType.iPhone-16" "com.apple.CoreSimulator.SimRuntime.iOS-18-5")
   xcrun simctl boot "$DEV"; open -a Simulator
-  xcrun simctl install "$DEV" build/DerivedData/Build/Products/Debug-iphonesimulator/AnkiCompanion.app
+  xcrun simctl install "$DEV" ../build/DerivedData/Build/Products/Debug-iphonesimulator/AnkiCompanion.app
   xcrun simctl launch "$DEV" net.ankiweb.ankicompanion
   ```
 
