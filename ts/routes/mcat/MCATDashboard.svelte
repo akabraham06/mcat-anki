@@ -18,6 +18,8 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     import { onMount } from "svelte";
 
     import "./mcat-tokens.scss";
+    import ZdogBadge from "./ZdogBadge.svelte";
+    import ZdogInstrument from "./ZdogInstrument.svelte";
 
     export let readiness: ExamReadiness;
     export let targets: TopicTargetList;
@@ -318,24 +320,30 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
             <div class="gauge-top">
                 <div class="gauge-id">
                     <span class="eyebrow">{readiness.exam} readiness</span>
-                    <div class="readout">
-                        {#if gaugeReady}
-                            <span
-                                class="score"
-                                class:ready={onTarget}
-                                class:warn={!onTarget}
-                            >
-                                {Math.round(point)}
-                            </span>
-                            <span class="range">
-                                CI {Math.round(rd?.low ?? 0)}–{Math.round(
-                                    rd?.high ?? 0,
-                                )}
-                            </span>
-                        {:else}
-                            <span class="score muted">– – –</span>
-                            <span class="range">calibrating</span>
-                        {/if}
+                    <div class="readout-row">
+                        <!-- Decorative pseudo-3D instrument accent (Zdog). -->
+                        <div class="gauge-accent">
+                            <ZdogInstrument size={66} />
+                        </div>
+                        <div class="readout">
+                            {#if gaugeReady}
+                                <span
+                                    class="score"
+                                    class:ready={onTarget}
+                                    class:warn={!onTarget}
+                                >
+                                    {Math.round(point)}
+                                </span>
+                                <span class="range">
+                                    CI {Math.round(rd?.low ?? 0)}–{Math.round(
+                                        rd?.high ?? 0,
+                                    )}
+                                </span>
+                            {:else}
+                                <span class="score muted">– – –</span>
+                                <span class="range">calibrating</span>
+                            {/if}
+                        </div>
                     </div>
                     <p class="unlock" class:live={gaugeReady}>{unlockMessage}</p>
                 </div>
@@ -561,6 +569,10 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                                 s.sectionName,
                             )} coverage"
                         >
+                            <!-- Static pseudo-3D depth emblem (Zdog, SVG). -->
+                            <span class="mini-badge">
+                                <ZdogBadge section={s.sectionKey} size={24} />
+                            </span>
                             <span class="mini-name">
                                 {shortSection(s.sectionKey, s.sectionName)}
                             </span>
@@ -937,11 +949,23 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         letter-spacing: 0.16em;
         color: var(--mc-muted);
     }
+    /* Instrument accent + readout share a row so the Zdog gyroscope reads as
+       the dial next to its numeric reading. */
+    .readout-row {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        margin-top: 0.1rem;
+    }
+    .gauge-accent {
+        flex: none;
+        line-height: 0;
+        opacity: 0.95;
+    }
     .readout {
         display: flex;
         align-items: baseline;
         gap: 0.7rem;
-        margin-top: 0.1rem;
     }
     .score {
         font-family: var(--mc-font-display);
@@ -1418,6 +1442,7 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         gap: 0.6rem;
     }
     .mini {
+        position: relative;
         text-align: left;
         border: 1px solid var(--mc-hairline);
         border-top: 3px solid var(--hue);
@@ -1428,6 +1453,15 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         display: flex;
         flex-direction: column;
         gap: 0.2rem;
+    }
+    /* Decorative depth emblem tucked into the card's top-right corner. */
+    .mini-badge {
+        position: absolute;
+        top: 0.4rem;
+        right: 0.45rem;
+        line-height: 0;
+        opacity: 0.9;
+        pointer-events: none;
     }
     .mini:hover,
     .mini.selected {

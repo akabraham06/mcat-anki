@@ -15,6 +15,7 @@
         "out/**",
         "**/*-lock.json",
         "qt/aqt/data/web/js/vendor/*.js",
+        "ts/routes/mcat/vendor/*.js",
         "ftl/qt-repo",
         "ftl/core-repo",
         "ftl/usage",
