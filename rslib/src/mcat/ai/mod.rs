@@ -44,6 +44,44 @@ pub(crate) const DEFAULT_MODEL: &str = "gpt-4o-mini";
 /// the Blocked state. Documented in steps.md and the eval report.
 pub(crate) const DEFAULT_CHECKER_CUTOFF: f64 = 0.7;
 
+/// Optional built-in AI proxy. When set, the app works with **no** user-entered
+/// key: it points at an OpenAI-compatible proxy YOU host (see `mcat/proxy/`),
+/// which injects the real OpenAI key server-side. The value carried by the app
+/// is a LOW-PRIVILEGE, revocable proxy token — NOT your OpenAI key.
+///
+/// Provide it at BUILD time so no secret ever lands in the repo:
+///
+/// ```text
+/// MCAT_AI_PROXY_URL=https://your-site/v1 \
+/// MCAT_AI_PROXY_TOKEN=your-app-token just installer
+/// ```
+///
+/// (or edit the fallback constants below). When unset/empty the app behaves as
+/// before: OpenAI endpoint + a user-supplied key.
+///
+/// NOTE: the token below is the LOW-PRIVILEGE proxy app token (not an OpenAI
+/// key). It is intentionally embedded in the client; rotate it any time by
+/// updating `APP_TOKEN` on the proxy and changing the value here.
+const PROXY_BASE_URL_FALLBACK: &str = "https://enchanting-llama-3dec8a.netlify.app/v1";
+const PROXY_APP_TOKEN_FALLBACK: &str = "ce3b3ae9aeacae55e63edd1e1af470b4a07a9e81511a973f";
+
+/// The built-in proxy `(base_url, app_token)` if one was configured at build
+/// time (env) or via the fallback constants; `None` disables the proxy default.
+fn builtin_proxy() -> Option<(String, String)> {
+    let url = match option_env!("MCAT_AI_PROXY_URL") {
+        Some(u) if !u.trim().is_empty() => u,
+        _ => PROXY_BASE_URL_FALLBACK,
+    };
+    if url.trim().is_empty() {
+        return None;
+    }
+    let token = match option_env!("MCAT_AI_PROXY_TOKEN") {
+        Some(t) if !t.trim().is_empty() => t,
+        _ => PROXY_APP_TOKEN_FALLBACK,
+    };
+    Some((url.trim().to_string(), token.trim().to_string()))
+}
+
 // Collection config keys (checked before environment variables).
 const CFG_BASE_URL: &str = "mcat.ai.base_url";
 const CFG_MODEL: &str = "mcat.ai.model";
@@ -198,21 +236,33 @@ impl Collection {
     /// Resolve AI config: collection config keys first, then environment
     /// variables, then built-in defaults.
     pub(crate) fn mcat_ai_config(&self) -> AiConfig {
-        let base_url = self
-            .get_config_optional::<String, _>(CFG_BASE_URL)
-            .filter(|v| !v.trim().is_empty())
-            .or_else(|| env_nonempty("MCAT_AI_BASE_URL"))
-            .unwrap_or_else(|| DEFAULT_BASE_URL.to_string());
         let model = self
             .get_config_optional::<String, _>(CFG_MODEL)
             .filter(|v| !v.trim().is_empty())
             .or_else(|| env_nonempty("MCAT_AI_MODEL"))
             .unwrap_or_else(|| DEFAULT_MODEL.to_string());
-        let api_key = self
+        // base_url + api_key are resolved together so the built-in proxy can be
+        // the zero-config default without clashing with an explicit user key.
+        let base_url_set = self
+            .get_config_optional::<String, _>(CFG_BASE_URL)
+            .filter(|v| !v.trim().is_empty())
+            .or_else(|| env_nonempty("MCAT_AI_BASE_URL"));
+        let api_key_set = self
             .get_config_optional::<String, _>(CFG_API_KEY)
             .filter(|v| !v.trim().is_empty())
             .or_else(|| env_nonempty("MCAT_AI_API_KEY"))
             .or_else(|| env_nonempty("OPENAI_API_KEY"));
+        let (base_url, api_key) = match (base_url_set, api_key_set) {
+            // An explicit endpoint always wins (paired with whatever key exists).
+            (Some(b), k) => (b, k),
+            // An explicit key with no endpoint => talk to OpenAI directly.
+            (None, Some(k)) => (DEFAULT_BASE_URL.to_string(), Some(k)),
+            // Nothing configured => use the built-in proxy if present, else OpenAI.
+            (None, None) => match builtin_proxy() {
+                Some((url, token)) => (url, (!token.is_empty()).then_some(token)),
+                None => (DEFAULT_BASE_URL.to_string(), None),
+            },
+        };
         let checker_cutoff = self
             .get_config_optional::<f64, _>(CFG_CUTOFF)
             .filter(|v| *v > 0.0 && *v <= 1.0)

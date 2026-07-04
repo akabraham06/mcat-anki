@@ -491,8 +491,9 @@ class MCATAiStudio(QDialog):
         def done(result: Any) -> None:
             showInfo(
                 f"Added {result.created} AI-generated card(s) to the MCAT deck "
-                f"(skipped {result.skipped}). They are tagged 'ai-generated' and "
-                "will sync to mobile.",
+                f"(skipped {result.skipped}). Each card is tagged 'ai-generated' "
+                "plus an 'ai-source::<id>' trace, keeps a visible 'Source: …' "
+                "citation on its answer, and will sync to mobile.",
                 parent=self,
             )
             # Clear the accepted cards from the queue.

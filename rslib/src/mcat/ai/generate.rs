@@ -44,6 +44,41 @@ pub(crate) const DIFFICULTY_TIERS: [&str; 3] = ["recall", "mcat", "stretch"];
 /// and filterable in the deck.
 pub(crate) const DIFFICULTY_TAG_PREFIX: &str = "difficulty";
 
+/// Tag namespace recording the named source an accepted AI card was grounded
+/// in, e.g. `ai-source::src-1712345`. It makes the source trace filterable in
+/// the browser and survives sync; the value is the registered source id, which
+/// resolves back (via the source registry) to the full name/section/excerpt.
+pub(crate) const SOURCE_TAG_PREFIX: &str = "ai-source";
+
+/// A human-readable "Source: …" line appended to an accepted card's answer so
+/// the named source is visible during review (schema → stored → surfaced in
+/// the UI). Empty when no source name is available.
+pub(crate) fn source_citation_line(source_name: &str, source_section: &str) -> String {
+    let name = source_name.trim();
+    if name.is_empty() {
+        return String::new();
+    }
+    let section = source_section.trim();
+    if section.is_empty() {
+        format!("Source: {name}")
+    } else {
+        format!("Source: {name} — {section}")
+    }
+}
+
+/// Turn a source id into a tag-safe token (tags may not contain whitespace).
+pub(crate) fn source_tag(source_id: &str) -> Option<String> {
+    let id = source_id.trim();
+    if id.is_empty() {
+        return None;
+    }
+    let safe: String = id
+        .chars()
+        .map(|c| if c.is_whitespace() { '_' } else { c })
+        .collect();
+    Some(format!("{SOURCE_TAG_PREFIX}::{safe}"))
+}
+
 #[derive(Deserialize)]
 struct AiGenerateResponse {
     cards: Vec<AiGeneratedCard>,
@@ -228,7 +263,15 @@ impl Collection {
             }
             let mut note = notetype.new_note();
             note.set_field(0, &card.question)?;
-            note.set_field(1, &card.answer)?;
+            // Every accepted card keeps a visible "Source: …" citation so the
+            // named source it was grounded in travels with the card into review.
+            let citation = source_citation_line(&card.source_name, &card.source_section);
+            let back = if citation.is_empty() {
+                card.answer.trim().to_string()
+            } else {
+                format!("{}\n\n{}", card.answer.trim(), citation)
+            };
+            note.set_field(1, &back)?;
             let mut tags = vec![AI_LABEL_TAG.to_string()];
             if !card.topic_tag.trim().is_empty() {
                 tags.push(card.topic_tag.trim().to_string());
@@ -237,6 +280,11 @@ impl Collection {
             // wide, measurable difficulty range: difficulty::{recall,mcat,stretch}.
             if let Some(tier) = normalize_difficulty_opt(&card.difficulty) {
                 tags.push(format!("{DIFFICULTY_TAG_PREFIX}::{tier}"));
+            }
+            // Machine-readable source trace: ai-source::<source_id> resolves back
+            // to the registered source (name/section/excerpt) and is filterable.
+            if let Some(tag) = source_tag(&card.source_id) {
+                tags.push(tag);
             }
             note.tags = tags;
             self.add_note(&mut note, did)?;
@@ -262,9 +310,9 @@ pub(crate) fn normalize_difficulty(d: &str) -> String {
     }
 }
 
-/// Like [`normalize_difficulty`] but returns `None` for an empty/blank input, so
-/// callers can distinguish "no tier requested" (mixed batch) from an explicit
-/// tier.
+/// Like [`normalize_difficulty`] but returns `None` for an empty/blank input,
+/// so callers can distinguish "no tier requested" (mixed batch) from an
+/// explicit tier.
 pub(crate) fn normalize_difficulty_opt(d: &str) -> Option<String> {
     if d.trim().is_empty() {
         None

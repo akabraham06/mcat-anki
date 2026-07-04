@@ -32,3 +32,9 @@ mobile/AnkiCompanion/build/
 *.xcuserstate
 **/DerivedData/
 **/*.hmap
+
+.agents/
+skills-lock.json
+
+# Local Netlify folder
+.netlify

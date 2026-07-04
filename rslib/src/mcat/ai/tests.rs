@@ -59,19 +59,60 @@ fn register_source(col: &mut Collection, excerpt: &str) -> String {
 
 // --- Config resolution -----------------------------------------------------
 
+/// Clear every env var that participates in AI config resolution so a test
+/// sees only the collection config + baked-in defaults. A stray
+/// `OPENAI_API_KEY` (or the other overrides) would legitimately take precedence
+/// over the built-in proxy, which would make these assertions
+/// environment-dependent.
+fn clear_ai_env() {
+    for key in [
+        "MCAT_AI_BASE_URL",
+        "MCAT_AI_API_KEY",
+        "OPENAI_API_KEY",
+        "MCAT_AI_MODEL",
+        "MCAT_AI_MOCK",
+    ] {
+        std::env::remove_var(key);
+    }
+}
+
 #[test]
 fn config_defaults_and_masking() {
+    clear_ai_env();
     let col = Collection::new();
     let cfg = col.mcat_ai_config();
-    assert_eq!(cfg.base_url, super::DEFAULT_BASE_URL);
     assert_eq!(cfg.model, super::DEFAULT_MODEL);
     assert_eq!(cfg.checker_cutoff, super::DEFAULT_CHECKER_CUTOFF);
-    // No key and a non-local endpoint => unavailable.
-    assert!(!cfg.configured());
-    assert!(!cfg.available());
+    // The zero-config default now resolves to the built-in proxy (asserted in
+    // detail by `builtin_proxy_is_the_zero_config_default`).
 
     assert_eq!(mask_key("sk-abcdef123456"), "sk-...3456");
     assert_eq!(mask_key(""), "");
+}
+
+/// With nothing configured and no overriding env vars, the app must fall back
+/// to the built-in hosted proxy so AI works with ZERO user input. This is what
+/// turns the status pill green out of the box, so guard the baked values here.
+#[test]
+fn builtin_proxy_is_the_zero_config_default() {
+    clear_ai_env();
+    let col = Collection::new();
+    let cfg = col.mcat_ai_config();
+    assert_eq!(
+        cfg.base_url,
+        "https://enchanting-llama-3dec8a.netlify.app/v1"
+    );
+    assert_eq!(
+        cfg.api_key.as_deref(),
+        Some("ce3b3ae9aeacae55e63edd1e1af470b4a07a9e81511a973f")
+    );
+    // enabled defaults to true and a key (the proxy token) is present, so the
+    // config is both configured and available.
+    assert!(cfg.configured());
+    assert!(
+        cfg.available(),
+        "the built-in proxy must make AI available with no user input"
+    );
 }
 
 #[test]
@@ -190,6 +231,19 @@ fn generation_produces_checked_cards_and_accepts_them() {
     let nid = NoteId(accept.note_ids[0]);
     let note = col.storage.get_note(nid).unwrap().unwrap();
     assert!(note.tags.iter().any(|t| t == "ai-generated"));
+    // Every accepted card keeps its named source end-to-end: a machine-readable
+    // ai-source::<id> tag (resolves back to the registry) and a visible
+    // "Source: …" citation on the answer field.
+    assert!(
+        note.tags.iter().any(|t| t == &format!("ai-source::{sid}")),
+        "accepted card must carry a source tag that resolves to the registered source"
+    );
+    assert!(
+        note.fields()[1].contains("Source: Kaplan Biochem Ch. 3"),
+        "accepted card must surface its named source citation"
+    );
+    // And that source id resolves back to the full registered source.
+    assert!(col.mcat_find_source(&sid).is_some());
 }
 
 // --- Difficulty tiering + tagging (wide difficulty range) ------------------
@@ -511,7 +565,10 @@ fn ai_plan_cites_evidence_when_available() {
 
 #[test]
 fn ai_plan_falls_back_to_recommender_when_ai_off() {
-    let mut col = Collection::new(); // no mock => AI unavailable
+    // No mock, and AI explicitly off; otherwise the built-in proxy default
+    // would make AI available.
+    let mut col = Collection::new();
+    col.set_config("mcat.ai.enabled", &false).unwrap();
     add_knowledge(&mut col, "q", "a", &["mcat::biobiochem::metabolism"]);
 
     let plan = col.mcat_ai_study_plan(rreq()).unwrap();
@@ -618,7 +675,10 @@ fn retry_recovers_from_a_single_bad_response() {
 /// The rubric-critical guarantee: when AI fails, review/scoring still work.
 #[test]
 fn core_scoring_works_when_ai_unavailable() {
-    let mut col = Collection::new(); // AI off (no mock, no key)
+    // No mock, and AI explicitly off; otherwise the built-in proxy default
+    // would make AI available.
+    let mut col = Collection::new();
+    col.set_config("mcat.ai.enabled", &false).unwrap();
     add_knowledge(&mut col, "q", "a", &["mcat::biobiochem::metabolism"]);
     col.answer_good();
     col.clear_study_queues();

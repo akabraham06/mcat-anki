@@ -1,0 +1,139 @@
+name: Build Installers (unsigned)
+run-name: "Build unsigned installers @ ${{ github.ref_name }}"
+
+# On-demand, secrets-free desktop installers for macOS + Windows (+ Linux),
+# built from the current branch with ALL local changes included. This is the
+# clean-install path for forks/dev builds: it reuses the exact same build steps
+# as release.yml but SKIPS every code-signing, notarization and publishing step,
+# so it needs no Apple/Azure credentials and no `release` environment.
+#
+# Run it from the GitHub UI: Actions -> "Build Installers (unsigned)" -> Run
+# workflow (pick the branch). Download the per-platform artifacts when done:
+#   installer-macos        (.dmg, Apple Silicon)
+#   installer-macos-intel  (.dmg, Intel)
+#   installer-windows      (.msi, x64)
+#   installer-linux        (.tar.zst)
+#
+# The artifacts are UNSIGNED. See README-MCAT.md for the one-time Gatekeeper
+# (macOS) / SmartScreen (Windows) bypass needed to launch an unsigned build.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Build profile: 2 = ReleaseWithLto (matches release.yml / tools/build-installer).
+  RELEASE: 2
+  N2_OUTPUT_PROGRESS: "1"
+  N2_OUTPUT_SUCCESS: "1"
+
+concurrency:
+  group: build-installers-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos-arm:
+    runs-on: macos-14
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+      - name: Setup build environment
+        uses: ./.github/actions/setup-anki
+      - name: Build installer (unsigned)
+        run: ./tools/build-installer
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+        if: always()
+        with:
+          name: logs-installer-macos
+          path: out/installer/logs/
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+        with:
+          name: installer-macos
+          path: out/installer/dist/
+
+  macos-intel:
+    runs-on: macos-15-intel
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+      - name: Setup build environment
+        uses: ./.github/actions/setup-anki
+      - name: Build installer (unsigned)
+        run: ./tools/build-installer
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+        if: always()
+        with:
+          name: logs-installer-macos-intel
+          path: out/installer/logs/
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+        with:
+          name: installer-macos-intel
+          path: out/installer/dist/
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+      - name: Setup build environment
+        uses: ./.github/actions/setup-anki
+      - name: Build app
+        run: tools\ninja installer:build
+      # Package straight away (no signing between build and package).
+      - name: Package installer (unsigned)
+        shell: pwsh
+        run: |
+          $version = (Get-Content .version).Trim()
+          out\pyenv\scripts\python.exe qt\tools\build_installer.py --version $version package
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+        if: always()
+        with:
+          name: logs-installer-windows
+          path: out/installer/logs/
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+        with:
+          name: installer-windows
+          path: out/installer/dist/
+
+  linux:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+      - name: Setup build environment
+        uses: ./.github/actions/setup-anki
+      - name: Build and install fcitx5-qt for bundling
+        run: |
+          sudo apt-get install --yes --no-install-recommends \
+            cmake extra-cmake-modules \
+            libfcitx5core-dev \
+            qt6-base-dev \
+            qt6-base-private-dev \
+            libgl-dev \
+            libxkbcommon-dev \
+            libx11-dev \
+            gettext \
+            patchelf
+          git clone --depth 1 --branch 5.0.10 \
+            https://github.com/fcitx/fcitx5-qt.git /tmp/fcitx5-qt
+          cmake -S /tmp/fcitx5-qt -B /tmp/fcitx5-qt-build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DENABLE_QT4=no \
+            -DENABLE_QT5=no \
+            -DENABLE_QT6=yes \
+            -DCMAKE_INSTALL_PREFIX=/usr
+          cmake --build /tmp/fcitx5-qt-build -j$(nproc)
+          sudo cmake --install /tmp/fcitx5-qt-build
+      - name: Build installer (unsigned)
+        run: ./tools/build-installer
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+        if: always()
+        with:
+          name: logs-installer-linux
+          path: out/installer/logs/
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+        with:
+          name: installer-linux
+          path: out/installer/dist/

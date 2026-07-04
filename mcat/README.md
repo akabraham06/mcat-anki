@@ -6,15 +6,15 @@ spanning a **wide difficulty range**.
 
 ## What's here
 
-| Path | Purpose |
-| --- | --- |
-| `build_deck.py` | **The dynamic card-generation pipeline** (this deliverable). |
-| `sources/openstax/` | Staged OpenStax corpus (56 sources, CC BY-NC-SA 4.0) mapped to the taxonomy. |
-| `sources/register_sources.py` | Registers the corpus into a live collection. |
-| `content.py` / `gen_deck.py` | The hand-authored starter deck (learning + exam + CARS). |
-| `ai_eval/` | Offline gold-set evaluation of the Phase-2 AI features. |
-| `tests/test_build_deck.py` | Deterministic offline tests for the pipeline. |
-| `dist/` | Built `.apkg` output. |
+| Path                          | Purpose                                                                      |
+| ----------------------------- | ---------------------------------------------------------------------------- |
+| `build_deck.py`               | **The dynamic card-generation pipeline** (this deliverable).                 |
+| `sources/openstax/`           | Staged OpenStax corpus (56 sources, CC BY-NC-SA 4.0) mapped to the taxonomy. |
+| `sources/register_sources.py` | Registers the corpus into a live collection.                                 |
+| `content.py` / `gen_deck.py`  | The hand-authored starter deck (learning + exam + CARS).                     |
+| `ai_eval/`                    | Offline gold-set evaluation of the Phase-2 AI features.                      |
+| `tests/test_build_deck.py`    | Deterministic offline tests for the pipeline.                                |
+| `dist/`                       | Built `.apkg` output.                                                        |
 
 ## How it works
 
@@ -38,10 +38,10 @@ It reuses the existing RPCs (and their Python wrappers in
 
 Every card is generated at, and tagged with, one of three tiers:
 
-| Tier | Tag | Meaning |
-| --- | --- | --- |
-| `recall` | `difficulty::recall` | basic recall / definition |
-| `mcat` | `difficulty::mcat` | exam-level application / reasoning (the standard MCAT band) |
+| Tier      | Tag                   | Meaning                                                                            |
+| --------- | --------------------- | ---------------------------------------------------------------------------------- |
+| `recall`  | `difficulty::recall`  | basic recall / definition                                                          |
+| `mcat`    | `difficulty::mcat`    | exam-level application / reasoning (the standard MCAT band)                        |
 | `stretch` | `difficulty::stretch` | **harder than the real MCAT** — multi-concept integration, edge cases, wider scope |
 
 The per-topic target distribution is explicit and configurable — defaults to

@@ -84,9 +84,17 @@ def test_generation_requires_source_then_generates_and_checks():
         assert card.quality.categories  # checked before entering the deck
         assert any(c.key == "source_supported" for c in card.quality.categories)
 
-    # Accept the reviewed cards -> real, ai-generated-tagged notes.
+    # Accept the reviewed cards -> real, ai-generated-tagged notes that keep the
+    # named source end-to-end (a resolvable ai-source::<id> tag + a visible
+    # "Source: …" citation on the answer).
     accept = col.mcat_accept_generated_cards(cards=res.cards)
     assert accept.created >= 1
+    note = col.get_note(accept.note_ids[0])
+    assert "ai-generated" in note.tags
+    assert f"ai-source::{sid}" in note.tags
+    assert "Source: Biochem Primer" in note["Back"]
+    # The tag resolves back to the full registered source.
+    assert any(s.source_id == sid for s in col.mcat_list_ai_sources())
     col.close()
 
 

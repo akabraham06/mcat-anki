@@ -61,7 +61,9 @@ export function prefersReducedMotion(): boolean {
  * cleanup function. */
 export function watchReducedMotion(onChange: (reduced: boolean) => void): () => void {
     if (typeof window === "undefined" || !window.matchMedia) {
-        return () => {};
+        return () => {
+            // no-op: matchMedia unavailable, nothing to unsubscribe
+        };
     }
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     const handler = (): void => onChange(mq.matches);
@@ -74,7 +76,9 @@ export function watchReducedMotion(onChange: (reduced: boolean) => void): () => 
  * cleanup function. */
 export function watchTheme(onChange: () => void): () => void {
     if (typeof document === "undefined" || typeof MutationObserver === "undefined") {
-        return () => {};
+        return () => {
+            // no-op: MutationObserver unavailable, nothing to disconnect
+        };
     }
     let night = document.documentElement.classList.contains("night-mode");
     const observer = new MutationObserver(() => {

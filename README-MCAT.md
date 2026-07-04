@@ -46,6 +46,51 @@ compute identical scores.
 > Developer ID signing + Apple notarization (which requires a paid Apple
 > Developer account). That has **not** been done.
 
+## Clean installers for both macOS and Windows (recommended)
+
+You do **not** need a Windows machine (or a paid signing certificate) to get a
+clean installer for each platform. The repo ships a secrets-free GitHub Actions
+workflow that builds **all** desktop installers from the current branch, with
+every local change included:
+
+**`.github/workflows/build-installers.yml`** — "Build Installers (unsigned)".
+
+1. Push the branch to your GitHub fork (Actions must be enabled on the fork).
+2. In the fork: **Actions → "Build Installers (unsigned)" → Run workflow**, and
+   pick the branch. (Or from the CLI: `gh workflow run build-installers.yml --ref <branch>`.)
+3. When the run finishes, download the per-platform artifacts from the run page:
+   - `installer-macos` — `.dmg`, Apple Silicon
+   - `installer-macos-intel` — `.dmg`, Intel
+   - `installer-windows` — `.msi`, x64
+   - `installer-linux` — `.tar.zst`
+
+This reuses the exact build steps as the official `release.yml` but **skips all
+code-signing, notarization, and publishing**, so it needs no Apple/Azure
+secrets and no special `release` environment. The artifacts are therefore
+**unsigned** — see the bypass steps below.
+
+> The stock `release.yml` can also produce these same unsigned artifacts if you
+> dispatch it with its defaults (`sign=false`, no draft/PyPI); the dedicated
+> workflow above just removes the release-only version/PyPI inputs so there's
+> nothing to get wrong.
+
+**Launching an unsigned build:**
+
+- **macOS:** same Gatekeeper bypass as above (right-click → Open, or
+  `xattr -dr com.apple.quarantine "/Applications/Anki MCAT.app"`).
+- **Windows:** SmartScreen will warn on an unsigned `.msi`. Click **"More
+  info" → "Run anyway"** to proceed (first launch only).
+
+**Local single-platform build.** On your own machine you can also build the
+installer for _that_ platform directly:
+
+```bash
+just installer     # .dmg on macOS, .msi on Windows, .tar.zst on Linux
+```
+
+Output lands in `out/installer/dist/`. (This is the current-platform-only path;
+use the CI workflow above to get the other platforms.)
+
 ## Building the desktop app from source (macOS, Windows, or Linux)
 
 **Prerequisites**
@@ -69,9 +114,11 @@ just installer      # build an installer for the current platform
 
 **Cross-platform note.** The build system supports macOS, Windows, and Linux
 (Windows uses pwsh + native-tls; other platforms use rustls). The MCAT
-additions are pure Rust / TypeScript / Python with no platform-specific code,
-but these MCAT changes have **not yet been exercised through an actual Windows
-build**.
+additions are pure Rust / TypeScript / Python with no platform-specific code.
+The Windows installer is produced on a Windows CI runner via the
+[Build Installers workflow](#clean-installers-for-both-macos-and-windows-recommended)
+above; it has not been hand-tested on Windows hardware, but it is built from the
+same sources through the same Briefcase packaging path as the official release.
 
 ## Building & running the iOS app (macOS only)
 
@@ -126,3 +173,35 @@ this is **not** real-time; each side must sync.
 > **Media note:** media sync is currently **disabled** on mobile, so
 > images/audio are not transferred to the phone yet. Card text, scheduling, and
 > reviews are.
+
+## AI features (optional)
+
+The MCAT AI features (card generation, quality checker, missed-question
+explanations, study planner, perf-question generation) call an
+OpenAI-compatible endpoint. They are **optional and degrade gracefully** — with
+no/invalid key the app falls back to deterministic behavior and the reviewer
+keeps working.
+
+There are three ways to supply credentials:
+
+1. **Per-user, in-app (default).** Each user pastes their own key into
+   **AI Settings**; it's stored (masked) in their collection, never in the repo.
+2. **Your own machine.** Set `OPENAI_API_KEY` (or `MCAT_AI_API_KEY`) in the
+   environment that launches the app (`export OPENAI_API_KEY=... && just run`).
+   GUI-launched apps don't inherit a shell's env, so this suits dev use.
+3. **Zero user input via a hosted proxy (recommended for distribution).** You
+   host a small proxy that holds the real OpenAI key server-side; the app ships
+   pre-pointed at it with a low-privilege app token. Deploy the ready-made proxy
+   in [`mcat/proxy/`](./mcat/proxy/README.md), then build with it baked in:
+
+   ```bash
+   MCAT_AI_PROXY_URL="https://<your-site>/v1" \
+   MCAT_AI_PROXY_TOKEN="<your app token>" \
+   just installer
+   ```
+
+   No key is ever placed in the app binary or the repo. See
+   [`mcat/proxy/README.md`](./mcat/proxy/README.md) for deploy steps and the
+   important **spend-cap / abuse-protection** notes.
+
+> Never commit an API key. OpenAI auto-revokes keys pushed to public repos.

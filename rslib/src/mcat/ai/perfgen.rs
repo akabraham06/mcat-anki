@@ -15,6 +15,8 @@ use anki_proto::mcat as pb;
 use serde::Deserialize;
 
 use super::complete_json;
+use super::generate::source_citation_line;
+use super::generate::source_tag;
 use super::generate::AI_LABEL_TAG;
 use super::prompt::fence_source;
 use super::prompt::DATA_ONLY_INSTRUCTION;
@@ -199,16 +201,25 @@ impl Collection {
             }
             let mut note = notetype.new_note();
             note.set_field(0, &q.question)?;
-            let back = if q.explanation.trim().is_empty() {
+            let mut back = if q.explanation.trim().is_empty() {
                 q.answer.clone()
             } else {
                 format!("{}\n\n{}", q.answer, q.explanation)
             };
+            // Keep the named source visible on the accepted performance item.
+            let citation = source_citation_line(&q.source_name, "");
+            if !citation.is_empty() {
+                back = format!("{back}\n\n{citation}");
+            }
             note.set_field(1, &back)?;
             // Label AI-generated + mark as performance evidence.
             let mut tags = vec![AI_LABEL_TAG.to_string(), PERF_TAG.to_string()];
             if !q.topic_tag.trim().is_empty() {
                 tags.push(q.topic_tag.trim().to_string());
+            }
+            // Machine-readable source trace (resolves to the registered source).
+            if let Some(tag) = source_tag(&q.source_id) {
+                tags.push(tag);
             }
             note.tags = tags;
             self.add_note(&mut note, did)?;

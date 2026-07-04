@@ -44,6 +44,21 @@ mcat-ai-eval:
     {{ ninja }} pylib
     {{ if os() == "windows" { "$env:MCAT_AI_MOCK='1'; $env:PYTHONPATH='out\\pylib'" } else { "MCAT_AI_MOCK=1 PYTHONPATH=out/pylib" } }} {{ uv }} run python mcat/ai_eval/run_eval.py
 
+# Verify the app still produces MCAT scores with AI switched OFF: deterministic
+# memory/section scores are computed from review history and the readiness score
+# follows the written give-up rule, with no AI involved (offline; no network/key).
+mcat-ai-verify-scoring-off:
+    {{ ninja }} pylib
+    {{ if os() == "windows" { "$env:PYTHONPATH='out\\pylib'" } else { "PYTHONPATH=out/pylib" } }} {{ uv }} run python mcat/ai_eval/verify_scoring_ai_off.py
+
+# Zero-config LIVE AI smoke check: with a clean env (no key), the app resolves the
+# built-in hosted proxy, reports AI available, and returns a real 9.4 checker
+# judgement + 9.3 source-grounded generation (every card names its source).
+# Requires network and spends a small amount of the configured proxy's quota.
+mcat-ai-verify-live:
+    {{ ninja }} pylib
+    {{ if os() == "windows" { "$env:PYTHONPATH='out\\pylib'" } else { "PYTHONPATH=out/pylib" } }} {{ uv }} run python mcat/ai_eval/verify_live_ai.py
+
 # Build custom, difficulty-tiered MCAT decks from the staged OpenStax corpus via
 # the AI generate + quality-check flow. Runs offline against the deterministic
 # mock provider (no network/key) and writes mcat/dist/mcat_generated.apkg. Pass

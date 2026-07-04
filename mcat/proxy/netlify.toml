@@ -1,0 +1,25 @@
+# Netlify site config for the MCAT AI proxy.
+# Deploy just this folder (mcat/proxy) as its own Netlify site:
+#   cd mcat/proxy && netlify deploy --prod
+# Then set OPENAI_API_KEY and APP_TOKEN in the site's environment.
+
+[build]
+functions = "netlify/functions"
+# No frontend to build; this site is functions-only. The no-op command
+# overrides any stale build command set in the Netlify UI (e.g. `yarn run
+# build`), which would otherwise fail since there's nothing to build.
+command = "echo 'no build step'"
+publish = "public"
+
+[functions]
+# Use the modern Functions v2 runtime (ESM, Request/Response, config.path).
+node_bundler = "esbuild"
+
+# Explicitly map the public /v1 path to the function. This makes drag-and-drop
+# (Netlify Drop) deploys work too, where the Functions-v2 `config.path` route is
+# sometimes not registered. status=200 = rewrite (proxy), not a browser redirect.
+[[redirects]]
+from = "/v1/chat/completions"
+to = "/.netlify/functions/chat"
+status = 200
+force = true
