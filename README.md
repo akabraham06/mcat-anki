@@ -47,6 +47,22 @@ open out/installer/dist/anki-26.05-mac-apple.dmg
 
 Then drag **Anki** into **Applications** and launch it (first launch: right‑click → **Open** to bypass Gatekeeper, as the build is not notarized).
 
+### Option A2 — download prebuilt installers for macOS **and** Windows (no build needed)
+
+A secrets-free GitHub Actions workflow builds unsigned installers for every
+desktop platform from the current branch:
+
+- **Actions → "Build Installers (unsigned)" → Run workflow** (or
+  `gh workflow run build-installers.yml --ref <branch>`), then download the
+  artifacts: `installer-macos` (`.dmg`, Apple Silicon), `installer-macos-intel`
+  (`.dmg`, Intel), `installer-windows` (`.msi`, x64), `installer-linux`
+  (`.tar.zst`).
+- First launch of an unsigned build: **macOS** → right‑click → **Open**;
+  **Windows** → SmartScreen **"More info" → "Run anyway"**.
+
+See [`README-MCAT.md`](./README-MCAT.md#clean-installers-for-both-macos-and-windows-recommended)
+for the full walkthrough.
+
 ### Option B — build from source and run (development)
 
 ```bash
