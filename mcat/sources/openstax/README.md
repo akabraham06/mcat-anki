@@ -26,7 +26,7 @@ What that means for reuse:
   decks built from this content is not.
 - **ShareAlike** — adaptations must be shared under the same CC BY-NC-SA 4.0
   license.
-- The OpenStax **name and logo** are trademarks and are *not* covered by the CC
+- The OpenStax **name and logo** are trademarks and are _not_ covered by the CC
   license.
 
 Full license text: <https://creativecommons.org/licenses/by-nc-sa/4.0/>
@@ -60,7 +60,7 @@ mcat/sources/
 ```
 
 Each `index.json` record has: `source_key`, `name`
-(e.g. *"OpenStax Biology 2e — 3.4 Proteins"*), `source_section`, `topic_key`
+(e.g. _"OpenStax Biology 2e — 3.4 Proteins"_), `source_section`, `topic_key`
 (full `mcat::section::topic` tag), `book`/`book_title`, `page_title`,
 `page_uuid`, `url` (free-access link), `text_file`, `char_count`, and the
 `license*` + `attribution` fields.
@@ -69,14 +69,14 @@ Each `index.json` record has: `source_key`, `name`
 
 56 sources drawn from 6 books:
 
-| Book | Sources |
-| --- | --- |
-| Biology 2e | 13 |
-| Chemistry 2e | 19 |
-| College Physics 2e | 5 |
-| Psychology 2e | 13 |
-| Organic Chemistry | 3 |
-| Introduction to Sociology 3e | 3 |
+| Book                         | Sources |
+| ---------------------------- | ------- |
+| Biology 2e                   | 13      |
+| Chemistry 2e                 | 19      |
+| College Physics 2e           | 5       |
+| Psychology 2e                | 13      |
+| Organic Chemistry            | 3       |
+| Introduction to Sociology 3e | 3       |
 
 By MCAT section:
 

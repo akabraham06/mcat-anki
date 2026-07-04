@@ -1082,7 +1082,7 @@ class Collection(DeprecatedNamesMixin):
     def mcat_ghost_pace(
         self, tag_prefix: str = "", search: str = "", max_questions: int = 0
     ) -> mcat_pb2.GhostPace:
-        """"Beat-your-ghost" gamification: the pace profile of the user's
+        """ "Beat-your-ghost" gamification: the pace profile of the user's
         previous BEST timed exam session, so the timed reviewer can race the
         user against their past self. Returns available=False on the first run
         (nothing to race) or when the ghost feature is disabled. Pure engagement

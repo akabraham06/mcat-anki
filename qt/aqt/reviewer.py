@@ -1082,9 +1082,7 @@ timerStopped = false;
                 ghost_q_ms = questions[idx].cumulative_time_ms - prev
                 used_frac = min(1.0, (ghost_q_ms / 1000.0) / max_time_secs)
                 frac = 1.0 - used_frac
-        self.bottom.web.eval(
-            f"if(window.mcatGhostMarker){{mcatGhostMarker({frac});}}"
-        )
+        self.bottom.web.eval(f"if(window.mcatGhostMarker){{mcatGhostMarker({frac});}}")
 
     def _mcat_update_ghost_readout(self) -> None:
         """Refresh the compact "vs best" readout beside the timer."""
@@ -1144,9 +1142,7 @@ timerStopped = false;
         summary = f"{round(user_acc * 100)}% · {self._mcat_fmt_mmss(user_time)}"
         if ghost is None:
             # First run: nothing to race, so just record the baseline.
-            print(
-                f"MCAT ghost: baseline set ({summary}, {answered} questions)"
-            )
+            print(f"MCAT ghost: baseline set ({summary}, {answered} questions)")
             tooltip(f"{tr.mcat_ghost_baseline_set()}  {summary}", parent=self.mw)
             return
         won = (user_acc > ghost.accuracy + 1e-9) or (

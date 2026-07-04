@@ -517,9 +517,9 @@ The whole app is retinted from **one** source rather than per-surface CSS:
   `ts/lib/sass/_fonts.scss` declares the `@font-face` rules + `--font-sans`
   / `--font-mono` / `--font-display`; `ts/routes/base.scss` routes the
   global SvelteKit stack; `qt/aqt/webview.py` injects the same `@font-face`
-  + body/mono families into every Qt webview (toolbar, deck browser,
-  overview, editor, browser). Card/note content keeps its own reviewer CSS
-  and is untouched.
+  - body/mono families into every Qt webview (toolbar, deck browser,
+    overview, editor, browser). Card/note content keeps its own reviewer CSS
+    and is untouched.
 
 ### Light + dark correctness
 
@@ -549,7 +549,7 @@ upstream file, so future Anki updates that touch the palette ramps will
 conflict here. The change is contained to two neutral ramps (no semantic
 or structural edits), so conflicts should be mechanical. The font
 injection in `webview.py` and the `build_fonts` action are additive and
-low-risk. Aesthetic risk taken: retinting the *global* neutrals (not just
+low-risk. Aesthetic risk taken: retinting the _global_ neutrals (not just
 MCAT) so the product reads as one instrument; justified because the brief
 explicitly asked for app-wide cohesion, and luminance was preserved to
 keep normal Anki legible.

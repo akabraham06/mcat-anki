@@ -610,7 +610,9 @@ create table if not exists profiles
         return theme_manager.night_mode
 
     def theme(self) -> Theme:
-        return Theme(self.meta.get("theme", 0))
+        # MCAT fork: default to the professional light theme rather than
+        # following the OS (which is often dark), so the app ships light.
+        return Theme(self.meta.get("theme", Theme.LIGHT.value))
 
     def set_theme(self, theme: Theme) -> None:
         self.meta["theme"] = theme.value
