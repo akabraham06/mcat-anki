@@ -3,9 +3,9 @@ name: CI
 on:
   workflow_dispatch:
   push:
-    branches: [main, 'release/**']
+    branches: [main, mcat-mastery, 'release/**']
   pull_request:
-    branches: [main]
+    branches: [main, mcat-mastery]
     types: [opened, synchronize, reopened, labeled]
 
 concurrency:
