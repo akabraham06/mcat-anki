@@ -74,6 +74,76 @@ mcat-build-deck-test:
     {{ ninja }} pylib
     {{ if os() == "windows" { "$env:MCAT_AI_MOCK='1'; $env:PYTHONPATH='out\\pylib'" } else { "MCAT_AI_MOCK=1 PYTHONPATH=out/pylib" } }} {{ uv }} run python mcat/tests/test_build_deck.py
 
+# One-command performance benchmark on the shared 50,000-card MCAT deck (7h):
+# times the core engine actions (search, next/answer/undo, topic mastery, exam
+# readiness, recommender) and reports p50/p95/worst — never a single number.
+# Generates + caches the deck on first run to mcat/bench/.cache (git-ignored).
+mcat-bench:
+    {{ ninja }} pylib
+    {{ if os() == "windows" { "$env:PYTHONPATH='out\\pylib'" } else { "PYTHONPATH=out/pylib" } }} {{ uv }} run python mcat/bench/run_bench.py
+
+# Crash-safety + offline AI-off tests (7g): SIGKILLs a review worker mid-write 20
+# times and asserts zero SQLite corruption and no lost reviews after every kill,
+# then confirms the app still scores deterministically with AI disabled.
+mcat-crash-test:
+    {{ ninja }} pylib
+    {{ if os() == "windows" { "$env:PYTHONPATH='out\\pylib'" } else { "PYTHONPATH=out/pylib" } }} {{ uv }} run python mcat/tests/crash_harness.py
+
+# Sync same-card conflict test (7b): builds two collections from a shared base,
+# reviews distinct cards in each (asserts the union keeps all reviews once) and
+# the SAME card in both (asserts later-mtime wins), faithfully applying the merge
+# rule in rslib/src/sync/collection/chunks.rs. Deterministic; no network.
+mcat-sync-conflict:
+    {{ ninja }} pylib
+    {{ if os() == "windows" { "$env:PYTHONPATH='out\\pylib'" } else { "PYTHONPATH=out/pylib" } }} {{ uv }} run python mcat/tests/sync_conflict_test.py
+
+# Model-validation eval #1: calibration of the FSRS memory model (Brier / log
+# loss / ECE + reliability diagram) on seeded synthetic recall data, cross-checked
+# against the live engine. Offline & deterministic. Writes calibration_curve.svg.
+mcat-eval-calibration:
+    {{ ninja }} pylib
+    {{ if os() == "windows" { "$env:PYTHONPATH='out\\pylib'" } else { "PYTHONPATH=out/pylib" } }} {{ uv }} run python mcat/ai_eval/memory_calibration.py
+
+# Model-validation eval #2: held-out accuracy of the performance model on the
+# real EXAM_MCQ bank vs a majority-class baseline (seeded synthetic outcomes,
+# real scheduler/engine). Offline & deterministic.
+mcat-eval-performance:
+    {{ ninja }} pylib
+    {{ if os() == "windows" { "$env:PYTHONPATH='out\\pylib'" } else { "PYTHONPATH=out/pylib" } }} {{ uv }} run python mcat/ai_eval/performance_holdout.py
+
+# Measurement experiment 7d: recall-vs-transfer (paraphrase) gap on 30 authored
+# same-idea reworded item pairs over a seeded synthetic learner, with a control
+# that collapses the gap to ~0. Offline (mock provider), deterministic.
+mcat-eval-paraphrase:
+    {{ ninja }} pylib
+    {{ if os() == "windows" { "$env:MCAT_AI_MOCK='1'; $env:PYTHONPATH='out\\pylib'" } else { "MCAT_AI_MOCK=1 PYTHONPATH=out/pylib" } }} {{ uv }} run python mcat/ai_eval/paraphrase_experiment.py
+
+# Measurement experiment: three-build study test under equal study time (blocked
+# vs interleaved vs interleaved+recommender). Study order/exam weights come from
+# the real Rust RPCs; reports the honest negative recommender result. Offline.
+mcat-eval-study:
+    {{ ninja }} pylib
+    {{ if os() == "windows" { "$env:MCAT_AI_MOCK='1'; $env:PYTHONPATH='out\\pylib'" } else { "MCAT_AI_MOCK=1 PYTHONPATH=out/pylib" } }} {{ uv }} run python mcat/ai_eval/study_three_build.py
+
+# Measurement experiment 7e: train/test leakage scan — flags any held-out eval
+# item that duplicates (exact or Jaccard >= 0.70) a training item, with a planted
+# sanity check proving the scanner is not blind. Offline (mock provider).
+mcat-eval-leakage:
+    {{ ninja }} pylib
+    {{ if os() == "windows" { "$env:MCAT_AI_MOCK='1'; $env:PYTHONPATH='out\\pylib'" } else { "MCAT_AI_MOCK=1 PYTHONPATH=out/pylib" } }} {{ uv }} run python mcat/ai_eval/leakage_scan.py
+
+# Measurement experiment 7f: gold-set check of the 9.4 quality checker at a
+# pre-registered 0.70 cutoff — three ground-truth quality counts + block/pass
+# breakdown + false-block calibration. Offline (mock provider), deterministic.
+mcat-eval-goldset:
+    {{ ninja }} pylib
+    {{ if os() == "windows" { "$env:MCAT_AI_MOCK='1'; $env:PYTHONPATH='out\\pylib'" } else { "MCAT_AI_MOCK=1 PYTHONPATH=out/pylib" } }} {{ uv }} run python mcat/ai_eval/gold_set_check.py
+
+# Convenience: run the whole MCAT model-validation + measurement eval suite
+# (calibration, performance held-out, paraphrase, three-build study, leakage,
+# gold-set). Each is offline & deterministic; see mcat/ai_eval/*.md for write-ups.
+mcat-eval-all: mcat-eval-calibration mcat-eval-performance mcat-eval-paraphrase mcat-eval-study mcat-eval-leakage mcat-eval-goldset
+
 # Build and run all checks (lint + test) - lets ninja handle dependencies
 check:
     {{ ninja }} pylib qt check
