@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  ExportOptions for an AD-HOC (a.k.a. "release-testing") export.
+
+  Produces an .ipa signed with an Ad Hoc distribution profile. Installable ONLY
+  on devices whose UDIDs are registered in the provisioning profile / your
+  Apple Developer account (up to 100 devices per type per year). Good for:
+  handing a grader an .ipa they install via Apple Configurator, `devicectl`,
+  or an OTA manifest — no TestFlight/App Review required.
+
+  Requires a PAID Apple Developer Program membership.
+
+  `__DEVELOPMENT_TEAM__` is substituted with your 10-char Team ID by
+  build_ipa.sh (which reads $DEVELOPMENT_TEAM).
+
+  Note: Xcode 16 also accepts the newer method name "release-testing" as a
+  synonym for "ad-hoc"; "ad-hoc" still works in 16.4.
+-->
+<plist version="1.0">
+<dict>
+  <key>method</key>
+  <string>ad-hoc</string>
+  <key>teamID</key>
+  <string>__DEVELOPMENT_TEAM__</string>
+  <key>signingStyle</key>
+  <string>automatic</string>
+  <key>stripSwiftSymbols</key>
+  <true/>
+  <key>compileBitcode</key>
+  <false/>
+  <key>destination</key>
+  <string>export</string>
+</dict>
+</plist>

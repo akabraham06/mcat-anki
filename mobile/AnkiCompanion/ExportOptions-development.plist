@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  ExportOptions for a DEVELOPMENT (sideload / "debugging") export.
+
+  Produces an .ipa signed with a Development profile. Installable on devices
+  that are registered to the team's provisioning profile (Automatic signing
+  will register the current Mac's connected device / your account devices).
+  Good for: installing on your own device via Xcode/`devicectl`, AltStore, or
+  Apple Configurator.
+
+  `__DEVELOPMENT_TEAM__` is substituted with your 10-char Team ID by
+  build_ipa.sh (which reads $DEVELOPMENT_TEAM). If you run xcodebuild's
+  -exportArchive by hand, replace it yourself first.
+
+  Note: Xcode 16 also accepts the newer method name "debugging" as a synonym
+  for "development"; "development" still works in 16.4.
+-->
+<plist version="1.0">
+<dict>
+  <key>method</key>
+  <string>development</string>
+  <key>teamID</key>
+  <string>__DEVELOPMENT_TEAM__</string>
+  <key>signingStyle</key>
+  <string>automatic</string>
+  <key>stripSwiftSymbols</key>
+  <true/>
+  <key>compileBitcode</key>
+  <false/>
+  <key>destination</key>
+  <string>export</string>
+</dict>
+</plist>

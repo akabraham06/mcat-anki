@@ -31,9 +31,9 @@ targets:
       - path: .
         excludes:
           - "project.yml"
-          - "gen_swift_proto.sh"
-          - "patch_service_indices.sh"
+          - "*.sh"
           - "*.md"
+          - "*.plist"
           - "build"
           - "*.xcodeproj"
     dependencies:
@@ -49,6 +49,27 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: "MCAT"
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1,2"
+        # ---- Code signing (device builds) ----------------------------------
+        # These are placeholders that resolve at `xcodegen generate` time from
+        # the environment, so a plain `xcodegen generate` (no env) yields an
+        # unsigned project that still builds for the Simulator.
+        #
+        #   DEVELOPMENT_TEAM  – your 10-char Apple Team ID (Membership page in
+        #                       developer.apple.com, or Xcode > Settings >
+        #                       Accounts). Empty ⇒ no team ⇒ Simulator-only.
+        #   CODE_SIGN_STYLE   – Automatic (default) lets Xcode manage the
+        #                       provisioning profile via -allowProvisioningUpdates;
+        #                       set to Manual to supply your own profile.
+        #
+        # `${DEVELOPMENT_TEAM}` is a build-setting placeholder: with nothing
+        # supplying it, it resolves to empty (Simulator-only). build_ipa.sh /
+        # xcodebuild override it on the command line for device archives
+        # (`DEVELOPMENT_TEAM=ABCDE12345 ...`). See DISTRIBUTION.md.
+        DEVELOPMENT_TEAM: ${DEVELOPMENT_TEAM}
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "Apple Development"
+        # Simulator SDK never needs a signing identity, regardless of the above.
+        "CODE_SIGN_IDENTITY[sdk=iphonesimulator*]": ""
         # The engine xcframework (mobile/build_ios.sh) ships only the Apple-silicon
         # simulator + device slices (aarch64-apple-ios-sim / aarch64-apple-ios).
         # There is no x86_64 slice, so exclude it from simulator builds — every

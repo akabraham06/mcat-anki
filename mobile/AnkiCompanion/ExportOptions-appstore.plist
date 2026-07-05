@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  ExportOptions for an APP STORE / TestFlight (a.k.a. "app-store-connect")
+  export.
+
+  Produces an .ipa signed with an App Store distribution profile, ready to
+  upload to App Store Connect. Once processed, the build is distributable to
+  testers via TestFlight (internal testers need no App Review; external
+  testers need a lightweight Beta App Review). Good for: installing on ANY
+  clean device that joins your TestFlight.
+
+  Requires a PAID Apple Developer Program membership + an app record in
+  App Store Connect matching the bundle id net.ankiweb.ankicompanion.
+
+  `__DEVELOPMENT_TEAM__` is substituted with your 10-char Team ID by
+  build_ipa.sh (which reads $DEVELOPMENT_TEAM).
+
+  Note: Xcode 16 also accepts the newer method name "app-store-connect" as a
+  synonym for "app-store"; "app-store" still works in 16.4.
+-->
+<plist version="1.0">
+<dict>
+  <key>method</key>
+  <string>app-store</string>
+  <key>teamID</key>
+  <string>__DEVELOPMENT_TEAM__</string>
+  <key>signingStyle</key>
+  <string>automatic</string>
+  <key>stripSwiftSymbols</key>
+  <true/>
+  <key>uploadSymbols</key>
+  <true/>
+  <key>manageAppVersionAndBuildNumber</key>
+  <true/>
+  <key>destination</key>
+  <string>export</string>
+</dict>
+</plist>
