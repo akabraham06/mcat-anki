@@ -548,112 +548,136 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                 <p class="ai-note">{aiDirection}</p>
             {/if}
         </section>
+    </div>
+    <!-- The two-panel cluster above is the whole "am I ready + what next"
+         answer. Everything below is analytical detail, collapsed by default and
+         revealed only on user input (progressive disclosure). -->
 
-        <!-- ===== Section vitals strip ===== -->
-        {#if sections.length}
-            <section class="vitals">
-                <header class="panel-head">
-                    <h2>Section vitals</h2>
-                    <span class="src">memory, per section (118–132)</span>
-                </header>
-                <div class="vital-strip">
-                    {#each sections as s (s.sectionKey)}
-                        <button
-                            type="button"
-                            class="mini"
-                            class:selected={selectedSection === s.sectionKey}
-                            style="--hue:{hueOf(s.sectionKey)}"
-                            on:click={() => focusSection(s.sectionKey)}
-                            title="Show {shortSection(
-                                s.sectionKey,
-                                s.sectionName,
-                            )} coverage"
-                        >
-                            <!-- Static pseudo-3D depth emblem (Zdog, SVG). -->
-                            <span class="mini-badge">
-                                <ZdogBadge section={s.sectionKey} size={24} />
-                            </span>
-                            <span class="mini-name">
-                                {shortSection(s.sectionKey, s.sectionName)}
-                            </span>
-                            {#if s.available}
-                                <span class="mini-score">{Math.round(s.point)}</span>
-                                <div class="mini-gauge">
-                                    <div
-                                        class="mini-band"
-                                        style="left:{sectionBand(s)
-                                            .left}%;width:{Math.max(
-                                            2,
-                                            sectionBand(s).right - sectionBand(s).left,
-                                        )}%"
-                                    ></div>
-                                    <div
-                                        class="mini-needle"
-                                        style="left:{sectionPos(s)}%"
-                                    ></div>
-                                </div>
-                                <span class="mini-sub">mem {pct(s.memoryPercent)}</span>
-                            {:else}
-                                <span class="mini-score muted">—</span>
-                                <div class="mini-gauge empty"></div>
-                                <span class="mini-sub muted">no data yet</span>
-                            {/if}
-                        </button>
-                    {/each}
-                </div>
-            </section>
-        {/if}
+    <!-- ===== Section scores + coverage map (section vitals double as the
+         coverage-map filter, so they share one disclosure). ===== -->
+    {#if sections.length || coverageSections.length}
+        <details class="detail-region">
+            <summary class="detail-toggle">
+                <span>Section scores &amp; coverage map</span>
+                <span class="detail-hint">per-section readiness · topic coverage</span>
+            </summary>
 
-        <!-- ===== Coverage map: decks reframed by MCAT taxonomy ===== -->
-        {#if coverageSections.length}
-            <section class="coverage-map">
-                <header class="panel-head">
-                    <h2>Coverage map</h2>
-                    {#if selectedSection}
-                        <button
-                            class="chip-clear"
-                            on:click={() => (selectedSection = "")}
-                        >
-                            Show all sections
-                        </button>
-                    {:else}
-                        <span class="src">by section → topic</span>
-                    {/if}
-                </header>
-                {#each visibleCoverage as sec (sec.key)}
-                    <div class="cov-section" style="--hue:{hueOf(sec.key)}">
-                        <div class="cov-head">
-                            <span class="cov-name">
-                                {shortSection(sec.key, sec.name)}
-                            </span>
-                            <span class="cov-stat">
-                                {pct(sec.coverage)} topics covered
-                            </span>
-                        </div>
-                        <ul class="cov-topics">
-                            {#each sec.topics as t (t.key)}
-                                <li class:dim={!t.inDeck}>
-                                    <span class="cov-topic">{t.name}</span>
-                                    <div class="cov-bar">
+            {#if sections.length}
+                <section class="vitals">
+                    <header class="panel-head">
+                        <h2>Section vitals</h2>
+                        <span class="src">memory, per section (118–132)</span>
+                    </header>
+                    <div class="vital-strip">
+                        {#each sections as s (s.sectionKey)}
+                            <button
+                                type="button"
+                                class="mini"
+                                class:selected={selectedSection === s.sectionKey}
+                                style="--hue:{hueOf(s.sectionKey)}"
+                                on:click={() => focusSection(s.sectionKey)}
+                                title="Show {shortSection(
+                                    s.sectionKey,
+                                    s.sectionName,
+                                )} coverage"
+                            >
+                                <!-- Static pseudo-3D depth emblem (Zdog, SVG). -->
+                                <span class="mini-badge">
+                                    <ZdogBadge section={s.sectionKey} size={24} />
+                                </span>
+                                <span class="mini-name">
+                                    {shortSection(s.sectionKey, s.sectionName)}
+                                </span>
+                                {#if s.available}
+                                    <span class="mini-score">
+                                        {Math.round(s.point)}
+                                    </span>
+                                    <div class="mini-gauge">
                                         <div
-                                            class="cov-fill"
-                                            style="width:{Math.max(
-                                                0,
-                                                Math.min(100, t.coverage),
+                                            class="mini-band"
+                                            style="left:{sectionBand(s)
+                                                .left}%;width:{Math.max(
+                                                2,
+                                                sectionBand(s).right -
+                                                    sectionBand(s).left,
                                             )}%"
                                         ></div>
+                                        <div
+                                            class="mini-needle"
+                                            style="left:{sectionPos(s)}%"
+                                        ></div>
                                     </div>
-                                    <span class="cov-pct">{pct(t.coverage)}</span>
-                                </li>
-                            {/each}
-                        </ul>
+                                    <span class="mini-sub">
+                                        mem {pct(s.memoryPercent)}
+                                    </span>
+                                {:else}
+                                    <span class="mini-score muted">—</span>
+                                    <div class="mini-gauge empty"></div>
+                                    <span class="mini-sub muted">no data yet</span>
+                                {/if}
+                            </button>
+                        {/each}
                     </div>
-                {/each}
-            </section>
-        {/if}
+                </section>
+            {/if}
 
-        <!-- ===== Supporting readouts (quiet) ===== -->
-        {#if supportScores.length}
+            <!-- ===== Coverage map: decks reframed by MCAT taxonomy ===== -->
+            {#if coverageSections.length}
+                <section class="coverage-map">
+                    <header class="panel-head">
+                        <h2>Coverage map</h2>
+                        {#if selectedSection}
+                            <button
+                                class="chip-clear"
+                                on:click={() => (selectedSection = "")}
+                            >
+                                Show all sections
+                            </button>
+                        {:else}
+                            <span class="src">by section → topic</span>
+                        {/if}
+                    </header>
+                    {#each visibleCoverage as sec (sec.key)}
+                        <div class="cov-section" style="--hue:{hueOf(sec.key)}">
+                            <div class="cov-head">
+                                <span class="cov-name">
+                                    {shortSection(sec.key, sec.name)}
+                                </span>
+                                <span class="cov-stat">
+                                    {pct(sec.coverage)} topics covered
+                                </span>
+                            </div>
+                            <ul class="cov-topics">
+                                {#each sec.topics as t (t.key)}
+                                    <li class:dim={!t.inDeck}>
+                                        <span class="cov-topic">{t.name}</span>
+                                        <div class="cov-bar">
+                                            <div
+                                                class="cov-fill"
+                                                style="width:{Math.max(
+                                                    0,
+                                                    Math.min(100, t.coverage),
+                                                )}%"
+                                            ></div>
+                                        </div>
+                                        <span class="cov-pct">{pct(t.coverage)}</span>
+                                    </li>
+                                {/each}
+                            </ul>
+                        </div>
+                    {/each}
+                </section>
+            {/if}
+        </details>
+    {/if}
+
+    <!-- ===== Memory & performance detail ===== -->
+    {#if supportScores.length}
+        <details class="detail-region">
+            <summary class="detail-toggle">
+                <span>Memory &amp; performance detail</span>
+                <span class="detail-hint">retention · accuracy · pacing signals</span>
+            </summary>
             <section class="support">
                 {#each supportScores as est (est.label)}
                     <div class="readout-card" class:abstain={!est.available}>
@@ -718,10 +742,10 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                     </div>
                 {/each}
             </section>
-        {/if}
-    </div>
-    <!-- tail cell of the cluster; below-the-fold analysis follows -->
+        </details>
+    {/if}
 
+    <!-- ===== Full analysis: transfer gaps · pacing · session builder ===== -->
     <details class="detail-region">
         <summary class="detail-toggle">
             <span>Full analysis</span>
@@ -871,11 +895,7 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         display: grid;
         gap: clamp(0.7rem, 1.4vw, 1.1rem);
         grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
-        grid-template-areas:
-            "gauge plan"
-            "vitals plan"
-            "support support"
-            "coverage coverage";
+        grid-template-areas: "gauge plan";
         align-items: start;
     }
     .cluster > .gauge-panel {
@@ -884,15 +904,6 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     .cluster > .plan-panel {
         grid-area: plan;
         height: 100%;
-    }
-    .cluster > .vitals {
-        grid-area: vitals;
-    }
-    .cluster > .support {
-        grid-area: support;
-    }
-    .cluster > .coverage-map {
-        grid-area: coverage;
     }
 
     /* --- Shared panel chrome (kept quiet) --- */
@@ -1883,6 +1894,11 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         letter-spacing: 0.04em;
         text-transform: none;
     }
+    /* Revealed sections (vitals, coverage map, support, analysis panels) get
+       breathing room below their summary. */
+    .detail-region > section {
+        margin-top: 0.9rem;
+    }
     .detail-region .panel:first-of-type {
         margin-top: 0.4rem;
     }
@@ -1902,10 +1918,7 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
             grid-template-columns: 1fr;
             grid-template-areas:
                 "gauge"
-                "plan"
-                "vitals"
-                "support"
-                "coverage";
+                "plan";
         }
         .cluster > .plan-panel {
             height: auto;
