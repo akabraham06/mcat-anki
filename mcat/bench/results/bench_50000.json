@@ -1,0 +1,78 @@
+{
+  "num_cards": 50000,
+  "cards_in_collection": 50000,
+  "iterations": 40,
+  "deck_gen": {
+    "graded_reviews": 44957,
+    "coverage_percent": 100.0,
+    "perf_cards": 7971,
+    "knowledge_cards": 42029,
+    "size_bytes": 20492288
+  },
+  "actions": [
+    {
+      "action": "search_all",
+      "n": 40,
+      "p50_ms": 12.986,
+      "p95_ms": 13.398,
+      "worst_ms": 13.555,
+      "mean_ms": 12.963
+    },
+    {
+      "action": "search_tag",
+      "n": 40,
+      "p50_ms": 41.995,
+      "p95_ms": 44.073,
+      "worst_ms": 45.387,
+      "mean_ms": 42.057
+    },
+    {
+      "action": "next_card",
+      "n": 40,
+      "p50_ms": 0.07,
+      "p95_ms": 0.078,
+      "worst_ms": 0.143,
+      "mean_ms": 0.073
+    },
+    {
+      "action": "topic_mastery",
+      "n": 40,
+      "p50_ms": 383.197,
+      "p95_ms": 395.755,
+      "worst_ms": 411.846,
+      "mean_ms": 385.024
+    },
+    {
+      "action": "exam_readiness",
+      "n": 40,
+      "p50_ms": 352.083,
+      "p95_ms": 360.395,
+      "worst_ms": 456.73,
+      "mean_ms": 355.393
+    },
+    {
+      "action": "study_recommendation",
+      "n": 40,
+      "p50_ms": 351.967,
+      "p95_ms": 362.606,
+      "worst_ms": 369.282,
+      "mean_ms": 353.575
+    },
+    {
+      "action": "answer_card",
+      "n": 40,
+      "p50_ms": 0.533,
+      "p95_ms": 1.254,
+      "worst_ms": 2.665,
+      "mean_ms": 0.659
+    },
+    {
+      "action": "undo",
+      "n": 40,
+      "p50_ms": 0.457,
+      "p95_ms": 0.684,
+      "worst_ms": 0.876,
+      "mean_ms": 0.485
+    }
+  ]
+}

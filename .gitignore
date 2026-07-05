@@ -25,6 +25,10 @@ docs/_build/
 docs/autoapi/
 .complexipy_cache
 
+# MCAT benchmark deck cache (large generated .anki2 files; regenerable via
+# `just mcat-bench`, which calls mcat/bench/gen_big_deck.py)
+mcat/bench/.cache/
+
 # iOS companion build artifacts (regenerable via mobile/build_ios.sh + xcodegen)
 mobile/build/
 mobile/AnkiCompanion/build/
