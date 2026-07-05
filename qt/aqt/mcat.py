@@ -167,9 +167,13 @@ class MCATHome:
             interleave = not url.endswith(":0")
             self._start_interleaved_session(interleave)
         elif url == "mcat:ai-settings":
-            # One-click "turn on AI": open the AI Card Studio, which hosts the
-            # AI Settings dialog (base URL / model / key / enable).
-            aqt.dialogs.open("MCATAiStudio", self.mw)
+            # One-click "turn on AI": open just the AI Settings modal (base URL /
+            # model / key / enable). Card generation itself now lives inline on
+            # the dashboard, so this only surfaces configuration.
+            from aqt.mcat_ai import AiSettingsDialog
+
+            if AiSettingsDialog(self.mw, self.mw).exec():
+                self.refresh()
         return False
 
     def _study_now(self) -> None:

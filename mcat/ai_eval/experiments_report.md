@@ -44,12 +44,12 @@ rote memory partially fires, scaled by word overlap with the original.
 
 **Results.**
 
-| Measure | Value |
-| --- | --- |
-| Mean recall on ORIGINAL cards | **70.9%** |
-| Mean accuracy on REWORDED questions | **49.6%** |
-| **Transfer gap (recall − reworded)** | **21.3 pts** |
-| Control gap (no surface memorisation, perfect transfer) | **0.0 pts** |
+| Measure                                                 | Value        |
+| ------------------------------------------------------- | ------------ |
+| Mean recall on ORIGINAL cards                           | **70.9%**    |
+| Mean accuracy on REWORDED questions                     | **49.6%**    |
+| **Transfer gap (recall − reworded)**                    | **21.3 pts** |
+| Control gap (no surface memorisation, perfect transfer) | **0.0 pts**  |
 
 The control (set surface-memorisation propensity `phi = 0`, transfer `tau = 1`)
 drives the gap to **0.0 pts**, confirming that in this model a non-trivial gap
@@ -71,6 +71,7 @@ path is exercised in the script to show availability.
 which scheduling build produces the best learning-outcome proxy?
 
 **Builds.**
+
 - **A = blocked** (one topic at a time, no recommender) — `mcat_interleaved_session(interleave=False)`
 - **B = interleaved** — `mcat_interleaved_session(interleave=True)`
 - **C = interleaved + topic-weighted recommender** — weighted round-robin using the deterministic recommender's real `priority_score` (`mcat_study_recommendation`)
@@ -87,11 +88,11 @@ reviews/arm** (45%).
 
 **Results.**
 
-| Build | Transfer accuracy |
-| --- | --- |
-| A blocked (no recommender) | 69.1% |
-| **B interleaved** | **75.3%** |
-| C interleaved + weighted recommender | 74.7% |
+| Build                                | Transfer accuracy |
+| ------------------------------------ | ----------------- |
+| A blocked (no recommender)           | 69.1%             |
+| **B interleaved**                    | **75.3%**         |
+| C interleaved + weighted recommender | 74.7%             |
 
 - Interleaving vs blocking: **+6.2 pts** (B 75.3% vs A 69.1%). Real driver:
   under an equal budget, blocked practice exhausts the budget on the first 2–3
@@ -119,16 +120,16 @@ items**. Flag any test item that is an exact match or token-set Jaccard ≥ **0.
 
 **Result.**
 
-| Metric | Value |
-| --- | --- |
-| Threshold (Jaccard, pre-registered) | 0.70 |
-| Training items | 165 |
-| Held-out test items | 66 |
-| Exact-duplicate leaks | 0 |
-| Near-duplicate leaks | 0 |
-| **Total leaked** | **0 / 66 — CLEAN** |
-| Highest test↔train similarity observed | 0.44 |
-| Sanity check (planted training item) | **caught** (scanner not blind) |
+| Metric                                 | Value                          |
+| -------------------------------------- | ------------------------------ |
+| Threshold (Jaccard, pre-registered)    | 0.70                           |
+| Training items                         | 165                            |
+| Held-out test items                    | 66                             |
+| Exact-duplicate leaks                  | 0                              |
+| Near-duplicate leaks                   | 0                              |
+| **Total leaked**                       | **0 / 66 — CLEAN**             |
+| Highest test↔train similarity observed | 0.44                           |
+| Sanity check (planted training item)   | **caught** (scanner not blind) |
 
 The held-out set is genuinely novel surface (nearest neighbour only 0.44), and
 the planted-duplicate sanity check confirms the scanner detects a real leak.
@@ -145,19 +146,19 @@ candidate is run through the 9.4 quality checker; failing cards are BLOCKED.
 
 **The three counts (ground-truth quality of the 50 candidates).**
 
-| Count | Definition | Value |
-| --- | --- | --- |
-| (a) correct + useful | flaw = none | **20** |
-| (b) wrong (wrong fact) | flaw = unsupported | **6** |
+| Count                        | Definition                         | Value  |
+| ---------------------------- | ---------------------------------- | ------ |
+| (a) correct + useful         | flaw = none                        | **20** |
+| (b) wrong (wrong fact)       | flaw = unsupported                 | **6**  |
 | (c) correct-but-bad-teaching | flaw = vague / trivial / duplicate | **24** |
 
 **Checker decisions at cutoff 0.70.**
 
-| Bucket | Blocked | Passed |
-| --- | --- | --- |
-| (a) correct + useful | 0 | 20 |
-| (b) wrong fact | 6 | 0 |
-| (c) bad teaching | 24 | 0 |
+| Bucket               | Blocked | Passed |
+| -------------------- | ------- | ------ |
+| (a) correct + useful | 0       | 20     |
+| (b) wrong fact       | 6       | 0      |
+| (c) bad teaching     | 24      | 0      |
 
 - **Blocked total: 30 / 50.**
 - Wrong-fact caught: **6/6**; bad-teaching caught: **24/24**; good cards wrongly
@@ -173,10 +174,10 @@ candidate is run through the 9.4 quality checker; failing cards are BLOCKED.
 
 - **These are offline mock-provider numbers.** Free-text magnitudes (7d gap,
   checker precision) depend on the model; the honest offline claim is that the
-  *harness, gating, grounding, and coverage logic* behave as designed.
+  _harness, gating, grounding, and coverage logic_ behave as designed.
   Re-run with `MCAT_AI_MOCK=0` and a real key for live magnitudes.
 - **No real students.** The 7d and three-build learners are SYNTHETIC with fixed
-  seeds. Their outcome *magnitudes* reflect modelling assumptions
+  seeds. Their outcome _magnitudes_ reflect modelling assumptions
   (surface-memorisation propensity, transfer success, learning rate). What is
   real and reusable: (a) the authored same-idea item sets, (b) the measurement
   harnesses, (c) the paired/controlled designs, and (d) the study arms' study
@@ -186,7 +187,7 @@ candidate is run through the 9.4 quality checker; failing cards are BLOCKED.
   recommender (C) did **not** beat plain interleaving (B) under equal study time
   (−0.6 pts). Even coverage captured the benefit; targeted weighting hit
   diminishing returns and can starve a de-prioritised topic. Interleaving beating
-  blocking (+6.2 pts) is itself a consequence of the *real* session ordering
+  blocking (+6.2 pts) is itself a consequence of the _real_ session ordering
   under a capped budget, not a hand-set bonus.
 - **Leakage is clean but verified, not assumed:** the 0/66 result is backed by a
   planted-duplicate sanity check proving the scanner catches real leaks.

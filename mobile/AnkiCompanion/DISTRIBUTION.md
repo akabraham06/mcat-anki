@@ -2,7 +2,7 @@
 
 The Simulator build (`xcodebuild ... -destination 'platform=iOS Simulator,...'`)
 runs fine unsigned, but **you cannot install a Simulator build on a physical
-iPhone/iPad**. A clean-device install requires a *code-signed* app, and code
+iPhone/iPad**. A clean-device install requires a _code-signed_ app, and code
 signing requires **one external thing this repo cannot provide: your Apple
 Development Team ID.**
 
@@ -17,10 +17,10 @@ export — is automated by [`build_ipa.sh`](./build_ipa.sh) and the
 
 ## Where to find your Team ID
 
-* **Free (personal) team:** Xcode → **Settings → Accounts** → sign in with any
+- **Free (personal) team:** Xcode → **Settings → Accounts** → sign in with any
   Apple ID → select the team → the ID is shown in parentheses. Also visible in
   the target’s **Signing & Capabilities** tab once you pick the team.
-* **Paid team:** <https://developer.apple.com/account> → **Membership** → *Team ID*.
+- **Paid team:** <https://developer.apple.com/account> → **Membership** → _Team ID_.
 
 Plug it in via the `DEVELOPMENT_TEAM` environment variable — never hard-code it
 into `project.yml` (that file keeps a `${DEVELOPMENT_TEAM}` placeholder so a
@@ -30,11 +30,11 @@ plain `xcodegen generate` still produces a Simulator-buildable project).
 
 ## The three routes
 
-| Route | Apple account | Devices | Lifespan | Best for |
-|-------|---------------|---------|----------|----------|
-| **A. Personal-team sideload** | Free Apple ID | Your own devices | App expires after **7 days**, must re-install | Zero cost, fastest for one grader |
-| **B. Ad-hoc IPA** | **Paid** ($99/yr) | Up to 100 registered UDIDs / device type / yr | 1 year (profile) | Handing a specific grader an `.ipa` |
-| **C. TestFlight** | **Paid** ($99/yr) | Any device that joins the beta | 90 days / build | Any clean device, no cable needed |
+| Route                         | Apple account     | Devices                                       | Lifespan                                      | Best for                            |
+| ----------------------------- | ----------------- | --------------------------------------------- | --------------------------------------------- | ----------------------------------- |
+| **A. Personal-team sideload** | Free Apple ID     | Your own devices                              | App expires after **7 days**, must re-install | Zero cost, fastest for one grader   |
+| **B. Ad-hoc IPA**             | **Paid** ($99/yr) | Up to 100 registered UDIDs / device type / yr | 1 year (profile)                              | Handing a specific grader an `.ipa` |
+| **C. TestFlight**             | **Paid** ($99/yr) | Any device that joins the beta                | 90 days / build                               | Any clean device, no cable needed   |
 
 ---
 
@@ -83,12 +83,12 @@ Produces an `.ipa` that installs on devices whose **UDIDs are registered** to
 your team. No App Review, no TestFlight.
 
 1. **Register the target device UDID(s)** (once per device):
-   * Get the UDID: connect the device and run
+   - Get the UDID: connect the device and run
      ```bash
      xcrun devicectl list devices              # shows UDIDs of attached devices
      ```
-     or read it from *Finder → [device] → (click the info line under the name)*.
-   * Add it at <https://developer.apple.com/account/resources/devices/list>
+     or read it from _Finder → [device] → (click the info line under the name)_.
+   - Add it at <https://developer.apple.com/account/resources/devices/list>
      → **+** → paste the UDID. (Automatic signing below will pull it into the
      profile.)
 2. **Build the ad-hoc IPA:**
@@ -98,13 +98,13 @@ your team. No App Review, no TestFlight.
    # -> ../build/ipa/AnkiCompanion.ipa
    ```
 3. **Install on the device** (any one of):
-   * Cable, modern:
+   - Cable, modern:
      ```bash
      xcrun devicectl device install app \
        --device <UDID> ../build/ipa/AnkiCompanion.ipa
      ```
-   * **Apple Configurator** (drag the `.ipa` onto the device), or
-   * **OTA**: host the `.ipa` + a `manifest.plist` on HTTPS and open an
+   - **Apple Configurator** (drag the `.ipa` onto the device), or
+   - **OTA**: host the `.ipa` + a `manifest.plist` on HTTPS and open an
      `itms-services://?action=download-manifest&url=...` link on the device.
 
 If a device isn’t in the profile, install fails — re-add its UDID and rebuild.
@@ -138,16 +138,16 @@ DEVELOPMENT_TEAM=ABCDE12345 ./build_ipa.sh app-store
 
 Pick whichever you prefer; all three upload the same `.ipa`.
 
-* **`xcrun altool`** (scriptable):
+- **`xcrun altool`** (scriptable):
   ```bash
   xcrun altool --upload-app -f ../build/ipa/AnkiCompanion.ipa -t ios \
     --apiKey <KEY_ID> --apiIssuer <ISSUER_ID>
   # (place AuthKey_<KEY_ID>.p8 in ~/.appstoreconnect/private_keys/)
   ```
-* **`xcrun notarytool`** — note: `notarytool` is for *notarizing Mac apps*, not
+- **`xcrun notarytool`** — note: `notarytool` is for _notarizing Mac apps_, not
   for iOS App Store uploads. For iOS, use `altool` (above) or Transporter
   (below). It’s listed here only to clarify the distinction.
-* **Transporter.app** (Mac App Store, GUI): sign in, **+ ADD APP**, select the
+- **Transporter.app** (Mac App Store, GUI): sign in, **+ ADD APP**, select the
   `.ipa`, **Deliver**.
 
 You can also skip `build_ipa.sh` and do archive+upload in one shot from Xcode:
@@ -168,8 +168,8 @@ You can also skip `build_ipa.sh` and do archive+upload in one shot from Xcode:
 
 These were confirmed on Xcode 16.4 after the `project.yml` signing changes:
 
-* **Project still generates** cleanly with `xcodegen generate`.
-* **Simulator build still succeeds:**
+- **Project still generates** cleanly with `xcodegen generate`.
+- **Simulator build still succeeds:**
   ```bash
   cd mobile/AnkiCompanion
   rm -rf AnkiCompanion.xcodeproj build && xcodegen generate
@@ -179,7 +179,7 @@ These were confirmed on Xcode 16.4 after the `project.yml` signing changes:
     -clonedSourcePackagesDirPath ../build/SourcePackages build
   # ** BUILD SUCCEEDED **
   ```
-* **Device archive step works end-to-end** (proving the pipeline up to signing
+- **Device archive step works end-to-end** (proving the pipeline up to signing
   is sound), using `CODE_SIGNING_ALLOWED=NO` to stand in for a real team:
   ```bash
   cd mobile/AnkiCompanion

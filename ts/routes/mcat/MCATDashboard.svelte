@@ -4,16 +4,26 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 -->
 <script lang="ts">
     import type {
+        AiSource,
         AiStatus,
         AiStudyPlan,
         ExamReadiness,
+        GeneratedCard,
         InterleavedSession,
         ScoreEstimate,
         SectionScore,
         TopicMasteryList,
         TopicTargetList,
     } from "@generated/anki/mcat_pb";
-    import { buildInterleavedSession } from "@generated/backend";
+    import { GeneratedCardStatus } from "@generated/anki/mcat_pb";
+    import {
+        acceptGeneratedCards,
+        buildInterleavedSession,
+        generateCards,
+        listAiSources,
+        registerAiSource,
+        removeAiSource,
+    } from "@generated/backend";
     import { bridgeCommand, bridgeCommandsAvailable } from "@tslib/bridgecommand";
     import { onMount } from "svelte";
 
@@ -129,6 +139,7 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         } catch {
             // ignore
         }
+        void loadSources();
         requestAnimationFrame(() => {
             settled = true;
         });
@@ -308,6 +319,175 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
             left: posOf(s.low, SECTION_MIN, SECTION_MAX),
             right: posOf(s.high, SECTION_MIN, SECTION_MAX),
         };
+    }
+
+    // ===== AI Card Studio (in-dashboard generation) =====
+    // The whole "generate AI flashcards" experience that used to live in a
+    // separate Tools-menu dialog now sits here on the dashboard: register /
+    // pick a grounding source, generate source-grounded candidates, inspect the
+    // quality-checker verdict + inspectable source trace, and accept passing
+    // cards into the MCAT deck. It degrades gracefully — with AI off the
+    // generate button is disabled and the reason is shown, but sources and the
+    // review queue keep working (9.9).
+    let studioSources: AiSource[] = [];
+    let selectedSourceId = "";
+    let showNewSource = false;
+    let newName = "";
+    let newSection = "";
+    let newExcerpt = "";
+    let topicHint = "";
+    let genCount = 5;
+    let difficulty = ""; // "" mixed | recall | mcat | stretch
+    let generating = false;
+    let candidates: GeneratedCard[] = [];
+    let checked: boolean[] = [];
+    let accepting = false;
+    let acceptMsg = "";
+    let studioError = "";
+    let expandedRow = -1;
+
+    $: selectedSource = studioSources.find((s) => s.sourceId === selectedSourceId);
+    $: passingCount = candidates.filter(
+        (c) => c.status === GeneratedCardStatus.NEEDS_REVIEW,
+    ).length;
+    $: blockedCount = candidates.length - passingCount;
+    $: canGenerate = aiOn && !!selectedSourceId && !generating;
+    $: generateTitle = (() => {
+        if (!aiOn) {
+            return aiReason;
+        }
+        if (!selectedSourceId) {
+            return "Register a source first.";
+        }
+        return "";
+    })();
+
+    const statusLabel: Record<number, string> = {
+        [GeneratedCardStatus.BLOCKED]: "Blocked",
+        [GeneratedCardStatus.NEEDS_REVIEW]: "Needs review",
+        [GeneratedCardStatus.ACCEPTED]: "Accepted",
+        [GeneratedCardStatus.DUPLICATE]: "Duplicate",
+    };
+
+    async function loadSources(select?: string): Promise<void> {
+        try {
+            const list = await listAiSources({ tagPrefix: "" });
+            studioSources = list.sources;
+            if (select) {
+                selectedSourceId = select;
+            } else if (!studioSources.some((s) => s.sourceId === selectedSourceId)) {
+                selectedSourceId = studioSources[0]?.sourceId ?? "";
+            }
+        } catch (e) {
+            studioError = String(e);
+        }
+    }
+
+    async function saveNewSource(): Promise<void> {
+        if (!newName.trim() || !newExcerpt.trim()) {
+            studioError = "A source needs a name and a non-empty excerpt.";
+            return;
+        }
+        studioError = "";
+        try {
+            const list = await registerAiSource({
+                sourceId: "",
+                sourceName: newName.trim(),
+                sourceSection: newSection.trim(),
+                excerpt: newExcerpt.trim(),
+                registeredAt: 0n,
+            });
+            studioSources = list.sources;
+            selectedSourceId =
+                list.sources[list.sources.length - 1]?.sourceId ?? selectedSourceId;
+            newName = newSection = newExcerpt = "";
+            showNewSource = false;
+        } catch (e) {
+            studioError = String(e);
+        }
+    }
+
+    async function removeSource(): Promise<void> {
+        if (!selectedSourceId) {
+            return;
+        }
+        try {
+            const list = await removeAiSource({ sourceId: selectedSourceId });
+            studioSources = list.sources;
+            selectedSourceId = studioSources[0]?.sourceId ?? "";
+        } catch (e) {
+            studioError = String(e);
+        }
+    }
+
+    async function generate(): Promise<void> {
+        if (!selectedSourceId) {
+            studioError = "Register and select a source first.";
+            return;
+        }
+        generating = true;
+        studioError = "";
+        acceptMsg = "";
+        candidates = [];
+        expandedRow = -1;
+        try {
+            const res = await generateCards({
+                sourceId: selectedSourceId,
+                count: genCount,
+                topicHint: topicHint.trim(),
+                tagPrefix: "",
+                difficulty,
+            });
+            if (!res.aiAvailable) {
+                studioError = `AI unavailable: ${res.unavailableReason}`;
+                return;
+            }
+            candidates = res.cards;
+            checked = candidates.map(
+                (c) => c.status === GeneratedCardStatus.NEEDS_REVIEW,
+            );
+            if (!candidates.length) {
+                studioError = "No candidates were produced. Try again.";
+            }
+        } catch (e) {
+            studioError = String(e);
+        } finally {
+            generating = false;
+        }
+    }
+
+    async function acceptChecked(): Promise<void> {
+        const chosen = candidates.filter((_, i) => checked[i]);
+        if (!chosen.length) {
+            acceptMsg = "Check one or more passing cards to accept.";
+            return;
+        }
+        accepting = true;
+        acceptMsg = "";
+        studioError = "";
+        try {
+            const res = await acceptGeneratedCards({
+                cards: chosen,
+                deckName: "",
+                tagPrefix: "",
+            });
+            const skipped = res.skipped ? ` (skipped ${res.skipped})` : "";
+            acceptMsg =
+                `Added ${res.created} card${res.created === 1 ? "" : "s"} to the ` +
+                `MCAT deck${skipped}. Each keeps a visible “Source:” citation and syncs to mobile.`;
+            const keep = candidates.filter((_, i) => !checked[i]);
+            candidates = keep;
+            checked = keep.map((c) => c.status === GeneratedCardStatus.NEEDS_REVIEW);
+            expandedRow = -1;
+        } catch (e) {
+            studioError = String(e);
+        } finally {
+            accepting = false;
+        }
+    }
+
+    function toggleRow(i: number): void {
+        expandedRow = expandedRow === i ? -1 : i;
     }
 </script>
 
@@ -552,6 +732,245 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     <!-- The two-panel cluster above is the whole "am I ready + what next"
          answer. Everything below is analytical detail, collapsed by default and
          revealed only on user input (progressive disclosure). -->
+
+    <!-- ===== AI Card Studio: generate source-grounded flashcards, in-dashboard
+         (first-class, no longer buried in the Tools menu). ===== -->
+    <details class="detail-region studio" open={candidates.length > 0}>
+        <summary class="detail-toggle">
+            <span>Generate AI flashcards</span>
+            <span class="detail-hint">source-grounded · quality-checked · cited</span>
+        </summary>
+
+        <section class="studio-body">
+            <div class="studio-statusbar">
+                <span class="studio-pill" class:on={aiOn}>
+                    <span class="dot"></span>
+                    {aiOn
+                        ? `AI ready · ${aiStatus?.model || "model"}`
+                        : "AI unavailable"}
+                </span>
+                {#if !aiOn}
+                    <span class="studio-reason">
+                        {aiReason || "Turn on AI to generate cards."}
+                    </span>
+                    {#if inDesktopShell}
+                        <button class="link-btn" on:click={openAiSettings}>
+                            AI settings…
+                        </button>
+                    {/if}
+                {/if}
+            </div>
+
+            <!-- Source picker + register -->
+            <div class="studio-row">
+                <label class="fld grow">
+                    <span class="fld-label">Grounding source</span>
+                    <select
+                        bind:value={selectedSourceId}
+                        disabled={!studioSources.length}
+                    >
+                        {#if !studioSources.length}
+                            <option value="">No sources yet — add one</option>
+                        {/if}
+                        {#each studioSources as s (s.sourceId)}
+                            <option value={s.sourceId}>
+                                {s.sourceName}{s.sourceSection
+                                    ? ` (${s.sourceSection})`
+                                    : ""}
+                            </option>
+                        {/each}
+                    </select>
+                </label>
+                <button class="ghost" on:click={() => (showNewSource = !showNewSource)}>
+                    {showNewSource ? "Cancel" : "New source…"}
+                </button>
+                {#if selectedSourceId}
+                    <button class="ghost" on:click={removeSource}>Remove</button>
+                {/if}
+            </div>
+
+            {#if showNewSource}
+                <div class="new-source">
+                    <div class="studio-row">
+                        <label class="fld grow">
+                            <span class="fld-label">Name</span>
+                            <input
+                                bind:value={newName}
+                                placeholder="e.g. Kaplan Biochemistry"
+                            />
+                        </label>
+                        <label class="fld grow">
+                            <span class="fld-label">Section / page</span>
+                            <input
+                                bind:value={newSection}
+                                placeholder="e.g. Ch. 9, p. 312"
+                            />
+                        </label>
+                    </div>
+                    <label class="fld">
+                        <span class="fld-label">Excerpt</span>
+                        <textarea
+                            bind:value={newExcerpt}
+                            rows="4"
+                            placeholder="Paste the source text to ground generation in. Cards can only cite text that appears here."
+                        ></textarea>
+                    </label>
+                    <div class="studio-row">
+                        <button class="solid" on:click={saveNewSource}>
+                            Save source
+                        </button>
+                    </div>
+                </div>
+            {/if}
+
+            {#if selectedSource}
+                <details class="src-trace">
+                    <summary>Source trace — {selectedSource.sourceName}</summary>
+                    <pre>{selectedSource.excerpt}</pre>
+                </details>
+            {/if}
+
+            <!-- Generation controls -->
+            <div class="studio-row gen-controls">
+                <label class="fld grow">
+                    <span class="fld-label">Topic tag (optional)</span>
+                    <input
+                        bind:value={topicHint}
+                        placeholder="mcat::biobiochem::enzymes"
+                    />
+                </label>
+                <label class="fld">
+                    <span class="fld-label">Difficulty</span>
+                    <select bind:value={difficulty}>
+                        <option value="">Mixed</option>
+                        <option value="recall">Recall</option>
+                        <option value="mcat">MCAT</option>
+                        <option value="stretch">Stretch</option>
+                    </select>
+                </label>
+                <label class="fld count">
+                    <span class="fld-label">Count</span>
+                    <input type="number" min="1" max="20" bind:value={genCount} />
+                </label>
+                <button
+                    class="solid gen"
+                    on:click={generate}
+                    disabled={!canGenerate}
+                    title={generateTitle}
+                >
+                    {generating ? "Generating…" : "Generate"}
+                </button>
+            </div>
+
+            {#if studioError}
+                <p class="studio-error">{studioError}</p>
+            {/if}
+
+            <!-- Candidate review queue -->
+            {#if candidates.length}
+                <div class="cand-summary">
+                    <b>{candidates.length}</b>
+                    candidates ·
+                    <b>{passingCount}</b>
+                    passing ·
+                    <b>{blockedCount}</b>
+                     blocked/duplicate
+                </div>
+                <ul class="cand-list">
+                    {#each candidates as c, i (i)}
+                        {@const passed = c.status === GeneratedCardStatus.NEEDS_REVIEW}
+                        <li class:blocked={!passed}>
+                            <div class="cand-head">
+                                <input
+                                    type="checkbox"
+                                    bind:checked={checked[i]}
+                                    disabled={!passed}
+                                    title={passed
+                                        ? "Accept this card"
+                                        : "Only passing cards can be accepted"}
+                                />
+                                <span class="verdict v-{c.status}">
+                                    {statusLabel[c.status] ?? "?"}
+                                </span>
+                                <button class="cand-q" on:click={() => toggleRow(i)}>
+                                    {c.question}
+                                </button>
+                                {#if c.quality}
+                                    <span class="cand-score">
+                                        {c.quality.overallScore.toFixed(2)}
+                                    </span>
+                                {/if}
+                            </div>
+                            {#if expandedRow === i}
+                                <div class="cand-detail">
+                                    <p>
+                                        <strong>Answer:</strong>
+                                        {c.answer}
+                                    </p>
+                                    <p class="cand-meta">
+                                        Topic: {c.topicTag || "—"} · Difficulty: {c.difficulty ||
+                                            "—"}
+                                        {#if c.quality}
+                                            · verdict {c.quality.verdict} (cutoff
+                                            {c.quality.cutoff.toFixed(2)})
+                                        {/if}
+                                    </p>
+                                    {#if c.quality?.categories.length}
+                                        <table class="cat-table">
+                                            <tbody>
+                                                {#each c.quality.categories as cat (cat.key)}
+                                                    <tr>
+                                                        <td
+                                                            class:ok={cat.passed}
+                                                            class:bad={!cat.passed}
+                                                        >
+                                                            {cat.passed ? "✓" : "✗"}
+                                                        </td>
+                                                        <td>{cat.label}</td>
+                                                        <td class="num">
+                                                            {cat.score.toFixed(2)}
+                                                        </td>
+                                                        <td class="reason">
+                                                            {cat.reason}
+                                                        </td>
+                                                    </tr>
+                                                {/each}
+                                            </tbody>
+                                        </table>
+                                    {/if}
+                                    {#if c.sourceExcerpt}
+                                        <details class="src-trace">
+                                            <summary>
+                                                Source trace — {c.sourceName}
+                                                {c.sourceSection}
+                                            </summary>
+                                            <pre>{c.sourceExcerpt}</pre>
+                                        </details>
+                                    {/if}
+                                </div>
+                            {/if}
+                        </li>
+                    {/each}
+                </ul>
+                <div class="studio-row accept-row">
+                    <button class="solid" on:click={acceptChecked} disabled={accepting}>
+                        {accepting ? "Adding…" : "Accept checked → MCAT deck"}
+                    </button>
+                    {#if acceptMsg}
+                        <span class="accept-msg">{acceptMsg}</span>
+                    {/if}
+                </div>
+            {:else if !generating}
+                <p class="studio-empty">
+                    Register a source, then generate candidate cards. Nothing is added
+                    to your deck until you accept it — every accepted card carries a
+                    visible source citation and is tagged
+                    <code>ai-generated</code>
+                    .
+                </p>
+            {/if}
+        </section>
+    </details>
 
     <!-- ===== Section scores + coverage map (section vitals double as the
          coverage-map filter, so they share one disclosure). ===== -->
@@ -1901,6 +2320,340 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     }
     .detail-region .panel:first-of-type {
         margin-top: 0.4rem;
+    }
+
+    /* ===================== AI Card Studio (in-dashboard) ===================== */
+    /* The generation experience reads as a first-class dashboard instrument:
+       a status bar, source + generation controls on quiet fields, and a
+       verdict-coded candidate queue — all in the same token language as the
+       gauge and plan panels. */
+    .studio-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 0.4rem 0.1rem 0.6rem;
+    }
+    .studio-statusbar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+    .studio-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        border: 1px solid var(--mc-hairline);
+        border-radius: 999px;
+        padding: 0.22rem 0.7rem;
+        font-family: var(--mc-font-mono);
+        font-size: 0.72rem;
+        letter-spacing: 0.03em;
+        color: var(--mc-muted);
+    }
+    .studio-pill .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--mc-warn);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--mc-warn) 22%, transparent);
+    }
+    .studio-pill.on {
+        color: var(--mc-ready);
+        border-color: color-mix(in srgb, var(--mc-ready) 45%, var(--mc-hairline));
+    }
+    .studio-pill.on .dot {
+        background: var(--mc-ready);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--mc-ready) 28%, transparent);
+    }
+    .studio-reason {
+        font-size: 0.82rem;
+        color: var(--mc-muted);
+    }
+    .link-btn {
+        background: transparent;
+        border: none;
+        padding: 0;
+        color: var(--mc-chemphys);
+        font-family: var(--mc-font-mono);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        cursor: pointer;
+    }
+    .link-btn:hover {
+        text-decoration: underline;
+    }
+
+    .studio-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 0.65rem;
+    }
+    .fld {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        min-width: 0;
+    }
+    .fld.grow {
+        flex: 1 1 12rem;
+    }
+    .fld.count {
+        width: 4.5rem;
+    }
+    .fld-label {
+        font-family: var(--mc-font-mono);
+        font-size: 0.66rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--mc-muted);
+    }
+    .studio-body input,
+    .studio-body select,
+    .studio-body textarea {
+        font-family: var(--mc-font-body);
+        font-size: 0.88rem;
+        color: var(--mc-text);
+        background: var(--mc-panel-2);
+        border: 1px solid var(--mc-hairline);
+        border-radius: 7px;
+        padding: 0.4rem 0.55rem;
+    }
+    .studio-body textarea {
+        resize: vertical;
+        line-height: 1.45;
+    }
+    .studio-body input:focus,
+    .studio-body select:focus,
+    .studio-body textarea:focus {
+        outline: none;
+        border-color: var(--mc-chemphys);
+    }
+    .studio-body input:disabled,
+    .studio-body select:disabled {
+        opacity: 0.55;
+    }
+
+    /* Buttons: ghost (secondary) and solid (primary), matching the CTA voice. */
+    .studio-body .ghost,
+    .studio-body .solid {
+        border-radius: 8px;
+        padding: 0.45rem 0.95rem;
+        font-family: var(--mc-font-body);
+        font-size: 0.88rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid var(--mc-hairline);
+    }
+    .studio-body .ghost {
+        background: transparent;
+        color: var(--mc-text);
+    }
+    .studio-body .ghost:hover {
+        border-color: var(--mc-muted);
+    }
+    .studio-body .solid {
+        background: var(--mc-chemphys);
+        color: #04122e;
+        border-color: transparent;
+    }
+    .studio-body .solid:hover:not(:disabled) {
+        filter: brightness(1.08);
+    }
+    .studio-body .solid.gen {
+        background: var(--mc-ready);
+        color: #06231a;
+    }
+    .studio-body .solid:disabled {
+        opacity: 0.5;
+        cursor: default;
+    }
+
+    .new-source {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        border: 1px solid var(--mc-hairline);
+        border-radius: 10px;
+        padding: 0.85rem;
+        background: var(--mc-panel);
+    }
+
+    .src-trace {
+        font-size: 0.82rem;
+        color: var(--mc-muted);
+    }
+    .src-trace summary {
+        cursor: pointer;
+        font-family: var(--mc-font-mono);
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--mc-chemphys);
+    }
+    .src-trace pre {
+        margin: 0.45rem 0 0;
+        max-height: 12rem;
+        overflow: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: var(--mc-panel-2);
+        border: 1px solid var(--mc-hairline);
+        border-radius: 7px;
+        padding: 0.6rem 0.7rem;
+        font-family: var(--mc-font-mono);
+        font-size: 0.78rem;
+        line-height: 1.5;
+        color: var(--mc-text);
+    }
+
+    .studio-error {
+        margin: 0;
+        color: var(--mc-warn);
+        font-size: 0.85rem;
+    }
+
+    /* --- Candidate review queue --- */
+    .cand-summary {
+        font-family: var(--mc-font-mono);
+        font-size: 0.76rem;
+        color: var(--mc-muted);
+    }
+    .cand-summary b {
+        color: var(--mc-text);
+        font-weight: 600;
+    }
+    .cand-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+    .cand-list li {
+        border: 1px solid var(--mc-hairline);
+        border-radius: 9px;
+        background: var(--mc-panel);
+        padding: 0.5rem 0.65rem;
+    }
+    .cand-list li.blocked {
+        opacity: 0.62;
+    }
+    .cand-head {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+    .cand-head input[type="checkbox"] {
+        flex: none;
+        padding: 0;
+    }
+    .verdict {
+        flex: none;
+        font-family: var(--mc-font-mono);
+        font-size: 0.62rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-radius: 999px;
+        padding: 0.12rem 0.5rem;
+        border: 1px solid currentColor;
+        white-space: nowrap;
+    }
+    .verdict.v-1 {
+        color: var(--mc-warn);
+    } /* Blocked */
+    .verdict.v-2 {
+        color: var(--mc-chemphys);
+    } /* Needs review */
+    .verdict.v-3 {
+        color: var(--mc-ready);
+    } /* Accepted */
+    .verdict.v-5 {
+        color: var(--mc-cars);
+    } /* Duplicate */
+    .cand-q {
+        flex: 1;
+        min-width: 0;
+        text-align: left;
+        background: transparent;
+        border: none;
+        color: var(--mc-text);
+        font-family: var(--mc-font-body);
+        font-size: 0.9rem;
+        cursor: pointer;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .cand-q:hover {
+        color: var(--mc-chemphys);
+    }
+    .cand-score {
+        flex: none;
+        font-family: var(--mc-font-mono);
+        font-size: 0.78rem;
+        color: var(--mc-muted);
+        font-variant-numeric: tabular-nums;
+    }
+    .cand-detail {
+        margin-top: 0.55rem;
+        padding-top: 0.55rem;
+        border-top: 1px solid var(--mc-hairline);
+        font-size: 0.86rem;
+    }
+    .cand-detail p {
+        margin: 0 0 0.4rem;
+    }
+    .cand-meta {
+        font-family: var(--mc-font-mono);
+        font-size: 0.74rem;
+        color: var(--mc-muted);
+    }
+    .cat-table {
+        margin: 0.3rem 0 0.5rem;
+    }
+    .cat-table td {
+        border-bottom: none;
+        padding: 0.14rem 0.5rem 0.14rem 0;
+        font-size: 0.8rem;
+        vertical-align: top;
+    }
+    .cat-table td.ok {
+        color: var(--mc-ready);
+    }
+    .cat-table td.bad {
+        color: var(--mc-warn);
+    }
+    .cat-table td.num {
+        font-family: var(--mc-font-mono);
+        font-variant-numeric: tabular-nums;
+        color: var(--mc-muted);
+    }
+    .cat-table td.reason {
+        color: var(--mc-muted);
+    }
+    .accept-row {
+        align-items: center;
+        margin-top: 0.2rem;
+    }
+    .accept-msg {
+        font-size: 0.84rem;
+        color: var(--mc-ready);
+    }
+    .studio-empty {
+        margin: 0;
+        font-size: 0.86rem;
+        color: var(--mc-muted);
+    }
+    .studio-empty code {
+        font-family: var(--mc-font-mono);
+        font-size: 0.82em;
+        background: var(--mc-panel-2);
+        border-radius: 4px;
+        padding: 0.05rem 0.3rem;
     }
 
     /* Visible keyboard focus everywhere. */

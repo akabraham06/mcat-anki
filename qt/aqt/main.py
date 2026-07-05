@@ -1337,8 +1337,12 @@ title="{}" {}>{}</button>""".format(
         # available for callers that open it directly.
         self.moveToState("mcat")
 
-    def on_mcat_ai_studio(self) -> None:
-        aqt.dialogs.open("MCATAiStudio", self)
+    def on_mcat_ai_settings(self) -> None:
+        # Card generation now lives inline on the MCAT dashboard; the Tools entry
+        # only surfaces AI configuration (base URL / model / key / enable).
+        from aqt.mcat_ai import AiSettingsDialog
+
+        AiSettingsDialog(self, self).exec()
 
     def onPrefs(self) -> None:
         aqt.dialogs.open("Preferences", self)
@@ -1482,10 +1486,10 @@ title="{}" {}>{}</button>""".format(
         qconnect(self.action_mcat_dashboard.triggered, self.on_mcat_dashboard)
         m.menuTools.addAction(self.action_mcat_dashboard)
 
-        # Tools: MCAT AI Card Studio (Phase 2)
-        self.action_mcat_ai_studio = QAction("MCAT AI Card Studio", self)
-        qconnect(self.action_mcat_ai_studio.triggered, self.on_mcat_ai_studio)
-        m.menuTools.addAction(self.action_mcat_ai_studio)
+        # Tools: MCAT AI settings (card generation itself lives on the dashboard)
+        self.action_mcat_ai_settings = QAction("MCAT AI Settings…", self)
+        qconnect(self.action_mcat_ai_settings.triggered, self.on_mcat_ai_settings)
+        m.menuTools.addAction(self.action_mcat_ai_settings)
 
         # View
         qconnect(

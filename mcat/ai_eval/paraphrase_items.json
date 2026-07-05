@@ -8,8 +8,14 @@
             "original_question": "What does a competitive inhibitor do to the apparent Km and to Vmax of an enzyme?",
             "original_answer": "It raises the apparent Km while leaving Vmax unchanged.",
             "reworded": [
-                {"question": "A drug binds an enzyme's active site; adding excess substrate fully restores the maximum rate. How are Km and Vmax affected?", "answer": "Apparent Km increases, Vmax is unchanged (classic competitive inhibition)."},
-                {"question": "On a Lineweaver-Burk plot, an inhibitor changes the x-intercept but the lines meet at the same y-intercept. What type of inhibition is this and what is the effect on Vmax?", "answer": "Competitive inhibition; Vmax is unchanged while apparent Km rises."}
+                {
+                    "question": "A drug binds an enzyme's active site; adding excess substrate fully restores the maximum rate. How are Km and Vmax affected?",
+                    "answer": "Apparent Km increases, Vmax is unchanged (classic competitive inhibition)."
+                },
+                {
+                    "question": "On a Lineweaver-Burk plot, an inhibitor changes the x-intercept but the lines meet at the same y-intercept. What type of inhibition is this and what is the effect on Vmax?",
+                    "answer": "Competitive inhibition; Vmax is unchanged while apparent Km rises."
+                }
             ]
         },
         {
@@ -18,8 +24,14 @@
             "original_question": "What does a noncompetitive inhibitor do to Km and Vmax?",
             "original_answer": "It lowers Vmax while leaving Km unchanged.",
             "reworded": [
-                {"question": "An inhibitor binds an allosteric site and adding more substrate does not restore the rate. What happens to Vmax and Km?", "answer": "Vmax decreases; Km is unchanged."},
-                {"question": "Why can't excess substrate reverse a pure noncompetitive inhibitor's effect on the maximum reaction rate?", "answer": "It binds away from the active site, so it lowers Vmax without changing substrate affinity (Km)."}
+                {
+                    "question": "An inhibitor binds an allosteric site and adding more substrate does not restore the rate. What happens to Vmax and Km?",
+                    "answer": "Vmax decreases; Km is unchanged."
+                },
+                {
+                    "question": "Why can't excess substrate reverse a pure noncompetitive inhibitor's effect on the maximum reaction rate?",
+                    "answer": "It binds away from the active site, so it lowers Vmax without changing substrate affinity (Km)."
+                }
             ]
         },
         {
@@ -28,8 +40,14 @@
             "original_question": "Where in the cell does glycolysis occur?",
             "original_answer": "In the cytosol.",
             "reworded": [
-                {"question": "A cell is stripped of all its membrane-bound organelles but still converts glucose to pyruvate. Which compartment must this pathway run in?", "answer": "The cytosol."},
-                {"question": "Unlike the citric acid cycle, glycolysis does not require the mitochondrion. In which cellular location does it take place?", "answer": "The cytosol."}
+                {
+                    "question": "A cell is stripped of all its membrane-bound organelles but still converts glucose to pyruvate. Which compartment must this pathway run in?",
+                    "answer": "The cytosol."
+                },
+                {
+                    "question": "Unlike the citric acid cycle, glycolysis does not require the mitochondrion. In which cellular location does it take place?",
+                    "answer": "The cytosol."
+                }
             ]
         },
         {
@@ -38,8 +56,14 @@
             "original_question": "What is the net ATP and NADH yield of glycolysis per glucose?",
             "original_answer": "Two ATP and two NADH.",
             "reworded": [
-                {"question": "Starting from one glucose, how many ATP are netted and how many NADH are produced by the time two pyruvate are formed?", "answer": "Net 2 ATP and 2 NADH."},
-                {"question": "Glycolysis consumes 2 ATP and produces 4 ATP. What is the NET ATP, and how many NADH accompany it?", "answer": "Net 2 ATP and 2 NADH."}
+                {
+                    "question": "Starting from one glucose, how many ATP are netted and how many NADH are produced by the time two pyruvate are formed?",
+                    "answer": "Net 2 ATP and 2 NADH."
+                },
+                {
+                    "question": "Glycolysis consumes 2 ATP and produces 4 ATP. What is the NET ATP, and how many NADH accompany it?",
+                    "answer": "Net 2 ATP and 2 NADH."
+                }
             ]
         },
         {
@@ -48,8 +72,14 @@
             "original_question": "What is the committed, rate-limiting step of glycolysis?",
             "original_answer": "PFK-1 converting fructose-6-phosphate to fructose-1,6-bisphosphate.",
             "reworded": [
-                {"question": "Which enzyme's activity would you inhibit to shut down glycolysis at its main regulatory control point?", "answer": "Phosphofructokinase-1 (PFK-1)."},
-                {"question": "High ATP allosterically slows one glycolytic enzyme most strongly, setting the pathway's pace. Which reaction is this?", "answer": "PFK-1 phosphorylating fructose-6-phosphate to fructose-1,6-bisphosphate."}
+                {
+                    "question": "Which enzyme's activity would you inhibit to shut down glycolysis at its main regulatory control point?",
+                    "answer": "Phosphofructokinase-1 (PFK-1)."
+                },
+                {
+                    "question": "High ATP allosterically slows one glycolytic enzyme most strongly, setting the pathway's pace. Which reaction is this?",
+                    "answer": "PFK-1 phosphorylating fructose-6-phosphate to fructose-1,6-bisphosphate."
+                }
             ]
         },
         {
@@ -58,8 +88,14 @@
             "original_question": "Under anaerobic conditions, what regenerates NAD+ so glycolysis can continue?",
             "original_answer": "Lactate fermentation.",
             "reworded": [
-                {"question": "A sprinting muscle has no oxygen but keeps making ATP via glycolysis. What process restores its NAD+ supply?", "answer": "Lactate fermentation (reducing pyruvate to lactate)."},
-                {"question": "Why does pyruvate get reduced to lactate when oxygen is absent?", "answer": "To regenerate NAD+ from NADH so glycolysis can keep running."}
+                {
+                    "question": "A sprinting muscle has no oxygen but keeps making ATP via glycolysis. What process restores its NAD+ supply?",
+                    "answer": "Lactate fermentation (reducing pyruvate to lactate)."
+                },
+                {
+                    "question": "Why does pyruvate get reduced to lactate when oxygen is absent?",
+                    "answer": "To regenerate NAD+ from NADH so glycolysis can keep running."
+                }
             ]
         },
         {
@@ -68,8 +104,14 @@
             "original_question": "Where is the electron transport chain located?",
             "original_answer": "On the inner mitochondrial membrane.",
             "reworded": [
-                {"question": "A proton gradient for ATP synthesis is built across which specific membrane during oxidative phosphorylation?", "answer": "The inner mitochondrial membrane."},
-                {"question": "Cristae increase the surface area available for which respiratory machinery?", "answer": "The electron transport chain on the inner mitochondrial membrane."}
+                {
+                    "question": "A proton gradient for ATP synthesis is built across which specific membrane during oxidative phosphorylation?",
+                    "answer": "The inner mitochondrial membrane."
+                },
+                {
+                    "question": "Cristae increase the surface area available for which respiratory machinery?",
+                    "answer": "The electron transport chain on the inner mitochondrial membrane."
+                }
             ]
         },
         {
@@ -78,8 +120,14 @@
             "original_question": "What does ATP synthase use to produce ATP?",
             "original_answer": "The proton gradient across the inner mitochondrial membrane.",
             "reworded": [
-                {"question": "An uncoupler makes the inner membrane leaky to protons. Why does ATP production collapse?", "answer": "ATP synthase depends on the proton gradient, which the uncoupler dissipates."},
-                {"question": "What form of stored energy does ATP synthase convert into the chemical bond energy of ATP?", "answer": "The electrochemical proton (H+) gradient."}
+                {
+                    "question": "An uncoupler makes the inner membrane leaky to protons. Why does ATP production collapse?",
+                    "answer": "ATP synthase depends on the proton gradient, which the uncoupler dissipates."
+                },
+                {
+                    "question": "What form of stored energy does ATP synthase convert into the chemical bond energy of ATP?",
+                    "answer": "The electrochemical proton (H+) gradient."
+                }
             ]
         },
         {
@@ -88,8 +136,14 @@
             "original_question": "For a reaction with \u0394H > 0 and \u0394S > 0, when is it spontaneous?",
             "original_answer": "At high temperatures.",
             "reworded": [
-                {"question": "An endothermic reaction that increases disorder is nonspontaneous when cold. What change makes \u0394G negative?", "answer": "Raising the temperature (the T\u0394S term dominates)."},
-                {"question": "Melting ice is endothermic and raises entropy. Why is it spontaneous above 0\u00b0C but not below?", "answer": "\u0394G = \u0394H - T\u0394S becomes negative only at high enough T."}
+                {
+                    "question": "An endothermic reaction that increases disorder is nonspontaneous when cold. What change makes \u0394G negative?",
+                    "answer": "Raising the temperature (the T\u0394S term dominates)."
+                },
+                {
+                    "question": "Melting ice is endothermic and raises entropy. Why is it spontaneous above 0\u00b0C but not below?",
+                    "answer": "\u0394G = \u0394H - T\u0394S becomes negative only at high enough T."
+                }
             ]
         },
         {
@@ -98,8 +152,14 @@
             "original_question": "What is the sign of \u0394G for a spontaneous process?",
             "original_answer": "Negative.",
             "reworded": [
-                {"question": "A reaction proceeds forward without external energy input. What must be true of its Gibbs free energy change?", "answer": "\u0394G < 0."},
-                {"question": "If \u0394G for a process is positive, is it spontaneous as written?", "answer": "No; a spontaneous process has \u0394G negative."}
+                {
+                    "question": "A reaction proceeds forward without external energy input. What must be true of its Gibbs free energy change?",
+                    "answer": "\u0394G < 0."
+                },
+                {
+                    "question": "If \u0394G for a process is positive, is it spontaneous as written?",
+                    "answer": "No; a spontaneous process has \u0394G negative."
+                }
             ]
         },
         {
@@ -108,8 +168,14 @@
             "original_question": "How does adding a catalyst affect the equilibrium constant Keq?",
             "original_answer": "It does not change Keq; it only speeds forward and reverse rates equally.",
             "reworded": [
-                {"question": "An enzyme accelerates a reaction 10^6-fold. What happens to the position of equilibrium?", "answer": "It is unchanged; catalysts don't shift equilibrium."},
-                {"question": "Why can a catalyst make you reach equilibrium faster without changing the final product-to-reactant ratio?", "answer": "It lowers activation energy for both directions equally, so Keq is unchanged."}
+                {
+                    "question": "An enzyme accelerates a reaction 10^6-fold. What happens to the position of equilibrium?",
+                    "answer": "It is unchanged; catalysts don't shift equilibrium."
+                },
+                {
+                    "question": "Why can a catalyst make you reach equilibrium faster without changing the final product-to-reactant ratio?",
+                    "answer": "It lowers activation energy for both directions equally, so Keq is unchanged."
+                }
             ]
         },
         {
@@ -118,8 +184,14 @@
             "original_question": "If doubling [A] quadruples the rate, what is the reaction order in A?",
             "original_answer": "Second order.",
             "reworded": [
-                {"question": "Tripling the concentration of a reactant multiplies the rate ninefold. What is the order with respect to that reactant?", "answer": "Second order."},
-                {"question": "A reactant's exponent in the rate law is 2. By what factor does the rate change when its concentration doubles?", "answer": "It quadruples (rate rises 4x)."}
+                {
+                    "question": "Tripling the concentration of a reactant multiplies the rate ninefold. What is the order with respect to that reactant?",
+                    "answer": "Second order."
+                },
+                {
+                    "question": "A reactant's exponent in the rate law is 2. By what factor does the rate change when its concentration doubles?",
+                    "answer": "It quadruples (rate rises 4x)."
+                }
             ]
         },
         {
@@ -128,8 +200,14 @@
             "original_question": "What is the pH of 0.01 M HCl?",
             "original_answer": "2.",
             "reworded": [
-                {"question": "A strong monoprotic acid is present at 10^-2 M. What is the solution's pH?", "answer": "pH = 2."},
-                {"question": "You dilute a strong acid to 0.01 M. Assuming full dissociation, compute the pH.", "answer": "2 (\u2212log 0.01)."}
+                {
+                    "question": "A strong monoprotic acid is present at 10^-2 M. What is the solution's pH?",
+                    "answer": "pH = 2."
+                },
+                {
+                    "question": "You dilute a strong acid to 0.01 M. Assuming full dissociation, compute the pH.",
+                    "answer": "2 (\u2212log 0.01)."
+                }
             ]
         },
         {
@@ -138,8 +216,14 @@
             "original_question": "Titrating a weak acid with a strong base gives an equivalence-point pH that is?",
             "original_answer": "Above 7 (basic).",
             "reworded": [
-                {"question": "At the equivalence point of a weak-acid/strong-base titration, only the conjugate base remains. Is the pH acidic, neutral, or basic?", "answer": "Basic (pH > 7)."},
-                {"question": "Why isn't the equivalence-point pH exactly 7 when titrating acetic acid with NaOH?", "answer": "The conjugate base (acetate) hydrolyzes, making the solution basic."}
+                {
+                    "question": "At the equivalence point of a weak-acid/strong-base titration, only the conjugate base remains. Is the pH acidic, neutral, or basic?",
+                    "answer": "Basic (pH > 7)."
+                },
+                {
+                    "question": "Why isn't the equivalence-point pH exactly 7 when titrating acetic acid with NaOH?",
+                    "answer": "The conjugate base (acetate) hydrolyzes, making the solution basic."
+                }
             ]
         },
         {
@@ -148,8 +232,14 @@
             "original_question": "At which electrode does reduction occur?",
             "original_answer": "The cathode.",
             "reworded": [
-                {"question": "Electrons are consumed as a species gains them at one electrode. By definition, which electrode is this?", "answer": "The cathode."},
-                {"question": "In both galvanic and electrolytic cells, where does reduction always take place?", "answer": "At the cathode."}
+                {
+                    "question": "Electrons are consumed as a species gains them at one electrode. By definition, which electrode is this?",
+                    "answer": "The cathode."
+                },
+                {
+                    "question": "In both galvanic and electrolytic cells, where does reduction always take place?",
+                    "answer": "At the cathode."
+                }
             ]
         },
         {
@@ -158,8 +248,14 @@
             "original_question": "In a galvanic cell, electrons flow from which electrode to which?",
             "original_answer": "From the anode to the cathode.",
             "reworded": [
-                {"question": "Through the external wire of a spontaneous voltaic cell, which way do electrons travel?", "answer": "From anode to cathode."},
-                {"question": "Oxidation releases electrons at one terminal that then travel to drive reduction at the other. Name the source and destination electrodes.", "answer": "Source: anode; destination: cathode."}
+                {
+                    "question": "Through the external wire of a spontaneous voltaic cell, which way do electrons travel?",
+                    "answer": "From anode to cathode."
+                },
+                {
+                    "question": "Oxidation releases electrons at one terminal that then travel to drive reduction at the other. Name the source and destination electrodes.",
+                    "answer": "Source: anode; destination: cathode."
+                }
             ]
         },
         {
@@ -168,8 +264,14 @@
             "original_question": "How many unpaired electrons does nitrogen (2p^3) have?",
             "original_answer": "Three.",
             "reworded": [
-                {"question": "By Hund's rule, how many unpaired electrons occupy the 2p subshell of a neutral nitrogen atom?", "answer": "Three."},
-                {"question": "An element has three half-filled p orbitals in its valence shell. How many unpaired electrons is that?", "answer": "Three."}
+                {
+                    "question": "By Hund's rule, how many unpaired electrons occupy the 2p subshell of a neutral nitrogen atom?",
+                    "answer": "Three."
+                },
+                {
+                    "question": "An element has three half-filled p orbitals in its valence shell. How many unpaired electrons is that?",
+                    "answer": "Three."
+                }
             ]
         },
         {
@@ -178,8 +280,14 @@
             "original_question": "Which has the larger radius, Na or Na+?",
             "original_answer": "Na (the neutral atom).",
             "reworded": [
-                {"question": "Removing an electron from sodium changes its size. Is the resulting cation larger or smaller than the atom?", "answer": "Smaller; so neutral Na is larger."},
-                {"question": "Why is a cation generally smaller than its parent atom?", "answer": "Fewer electrons mean less electron-electron repulsion and a greater effective nuclear pull, so Na+ < Na."}
+                {
+                    "question": "Removing an electron from sodium changes its size. Is the resulting cation larger or smaller than the atom?",
+                    "answer": "Smaller; so neutral Na is larger."
+                },
+                {
+                    "question": "Why is a cation generally smaller than its parent atom?",
+                    "answer": "Fewer electrons mean less electron-electron repulsion and a greater effective nuclear pull, so Na+ < Na."
+                }
             ]
         },
         {
@@ -188,8 +296,14 @@
             "original_question": "As a fluid speeds up through a constriction, what happens to its pressure?",
             "original_answer": "The pressure drops (Bernoulli's principle).",
             "reworded": [
-                {"question": "Blood accelerates through a narrowed artery. What does Bernoulli predict about the lateral pressure there?", "answer": "It decreases."},
-                {"question": "Why does the pressure fall where a pipe narrows and flow speeds up?", "answer": "Bernoulli: faster flow has higher kinetic energy, so pressure drops."}
+                {
+                    "question": "Blood accelerates through a narrowed artery. What does Bernoulli predict about the lateral pressure there?",
+                    "answer": "It decreases."
+                },
+                {
+                    "question": "Why does the pressure fall where a pipe narrows and flow speeds up?",
+                    "answer": "Bernoulli: faster flow has higher kinetic energy, so pressure drops."
+                }
             ]
         },
         {
@@ -198,8 +312,14 @@
             "original_question": "In classical conditioning, what is a conditioned stimulus?",
             "original_answer": "A previously neutral stimulus that, after pairing with an unconditioned stimulus, triggers a conditioned response.",
             "reworded": [
-                {"question": "A bell that once meant nothing now makes a dog salivate after being paired with food. What is the bell now called?", "answer": "A conditioned stimulus."},
-                {"question": "After repeated pairing with a stimulus that naturally causes a response, a neutral cue starts causing that response on its own. Name the cue's new role.", "answer": "Conditioned stimulus."}
+                {
+                    "question": "A bell that once meant nothing now makes a dog salivate after being paired with food. What is the bell now called?",
+                    "answer": "A conditioned stimulus."
+                },
+                {
+                    "question": "After repeated pairing with a stimulus that naturally causes a response, a neutral cue starts causing that response on its own. Name the cue's new role.",
+                    "answer": "Conditioned stimulus."
+                }
             ]
         },
         {
@@ -208,8 +328,14 @@
             "original_question": "What is negative reinforcement?",
             "original_answer": "Removing an aversive stimulus to increase the frequency of a behavior.",
             "reworded": [
-                {"question": "Taking an aspirin stops a headache, so you take aspirin more often for pain. Which operant principle is this?", "answer": "Negative reinforcement."},
-                {"question": "How does negative reinforcement differ from punishment in its effect on behavior?", "answer": "Negative reinforcement removes something aversive and INCREASES the behavior; punishment decreases it."}
+                {
+                    "question": "Taking an aspirin stops a headache, so you take aspirin more often for pain. Which operant principle is this?",
+                    "answer": "Negative reinforcement."
+                },
+                {
+                    "question": "How does negative reinforcement differ from punishment in its effect on behavior?",
+                    "answer": "Negative reinforcement removes something aversive and INCREASES the behavior; punishment decreases it."
+                }
             ]
         },
         {
@@ -218,8 +344,14 @@
             "original_question": "What is the testing effect?",
             "original_answer": "Retrieving information from memory (self-testing) improves long-term retention more than rereading.",
             "reworded": [
-                {"question": "Two students study the same notes; one rereads, one uses flashcards to self-quiz. Who tends to remember more a week later, and what is this called?", "answer": "The self-quizzer; this is the testing (retrieval-practice) effect."},
-                {"question": "Why does actively recalling material beat passively rereading it for durable learning?", "answer": "Retrieval practice strengthens memory traces (the testing effect)."}
+                {
+                    "question": "Two students study the same notes; one rereads, one uses flashcards to self-quiz. Who tends to remember more a week later, and what is this called?",
+                    "answer": "The self-quizzer; this is the testing (retrieval-practice) effect."
+                },
+                {
+                    "question": "Why does actively recalling material beat passively rereading it for durable learning?",
+                    "answer": "Retrieval practice strengthens memory traces (the testing effect)."
+                }
             ]
         },
         {
@@ -228,8 +360,14 @@
             "original_question": "What is the spacing effect?",
             "original_answer": "Distributing study over time yields better long-term retention than massing it together.",
             "reworded": [
-                {"question": "Reviewing a deck a little each day beats one long cram session for retention. What principle explains this?", "answer": "The spacing effect (distributed practice)."},
-                {"question": "Why do spaced repetition schedules improve durable memory compared with massed practice?", "answer": "Spacing (the spacing effect) strengthens consolidation over time."}
+                {
+                    "question": "Reviewing a deck a little each day beats one long cram session for retention. What principle explains this?",
+                    "answer": "The spacing effect (distributed practice)."
+                },
+                {
+                    "question": "Why do spaced repetition schedules improve durable memory compared with massed practice?",
+                    "answer": "Spacing (the spacing effect) strengthens consolidation over time."
+                }
             ]
         },
         {
@@ -238,8 +376,14 @@
             "original_question": "What is the direction of information flow in the central dogma?",
             "original_answer": "DNA to RNA to protein (transcription then translation).",
             "reworded": [
-                {"question": "Order these processes: translation, transcription, replication, for expressing a gene as protein from DNA.", "answer": "Transcription (DNA->RNA) then translation (RNA->protein)."},
-                {"question": "A retrovirus makes DNA from RNA. Which step of the standard central dogma does this reverse?", "answer": "The DNA->RNA (transcription) direction; normal flow is DNA->RNA->protein."}
+                {
+                    "question": "Order these processes: translation, transcription, replication, for expressing a gene as protein from DNA.",
+                    "answer": "Transcription (DNA->RNA) then translation (RNA->protein)."
+                },
+                {
+                    "question": "A retrovirus makes DNA from RNA. Which step of the standard central dogma does this reverse?",
+                    "answer": "The DNA->RNA (transcription) direction; normal flow is DNA->RNA->protein."
+                }
             ]
         },
         {
@@ -248,8 +392,14 @@
             "original_question": "How do enzymes speed up reactions?",
             "original_answer": "By lowering the activation energy, without changing \u0394G or the equilibrium.",
             "reworded": [
-                {"question": "An enzyme increases a reaction's rate but not its equilibrium constant. What quantity did it change?", "answer": "The activation energy (Ea)."},
-                {"question": "Why doesn't an enzyme make a nonspontaneous (\u0394G>0) reaction spontaneous?", "answer": "It only lowers Ea; it cannot change \u0394G."}
+                {
+                    "question": "An enzyme increases a reaction's rate but not its equilibrium constant. What quantity did it change?",
+                    "answer": "The activation energy (Ea)."
+                },
+                {
+                    "question": "Why doesn't an enzyme make a nonspontaneous (\u0394G>0) reaction spontaneous?",
+                    "answer": "It only lowers Ea; it cannot change \u0394G."
+                }
             ]
         },
         {
@@ -258,8 +408,14 @@
             "original_question": "In a buffer, what is true when pH equals the pKa?",
             "original_answer": "The concentrations of the weak acid and its conjugate base are equal.",
             "reworded": [
-                {"question": "A buffer resists pH change best at which pH, and what does the Henderson-Hasselbalch equation say about [A-]/[HA] there?", "answer": "At pH = pKa, where [A-] = [HA] (ratio = 1)."},
-                {"question": "If half of a weak acid has been neutralized in a titration, how does the pH relate to the pKa?", "answer": "pH = pKa (half-equivalence point)."}
+                {
+                    "question": "A buffer resists pH change best at which pH, and what does the Henderson-Hasselbalch equation say about [A-]/[HA] there?",
+                    "answer": "At pH = pKa, where [A-] = [HA] (ratio = 1)."
+                },
+                {
+                    "question": "If half of a weak acid has been neutralized in a titration, how does the pH relate to the pKa?",
+                    "answer": "pH = pKa (half-equivalence point)."
+                }
             ]
         },
         {
@@ -268,8 +424,14 @@
             "original_question": "Which way does water move across a semipermeable membrane by osmosis?",
             "original_answer": "From low solute concentration to high solute concentration (down its own concentration gradient).",
             "reworded": [
-                {"question": "A cell is placed in a hypertonic solution. Does it gain or lose water, and why?", "answer": "It loses water; water moves toward the higher solute (outside)."},
-                {"question": "Toward which compartment does water flow: the one with more dissolved solute or less?", "answer": "Toward the one with more solute (higher osmolarity)."}
+                {
+                    "question": "A cell is placed in a hypertonic solution. Does it gain or lose water, and why?",
+                    "answer": "It loses water; water moves toward the higher solute (outside)."
+                },
+                {
+                    "question": "Toward which compartment does water flow: the one with more dissolved solute or less?",
+                    "answer": "Toward the one with more solute (higher osmolarity)."
+                }
             ]
         },
         {
@@ -278,8 +440,14 @@
             "original_question": "State Ohm's law relating voltage, current, and resistance.",
             "original_answer": "V = IR (voltage equals current times resistance).",
             "reworded": [
-                {"question": "If resistance stays fixed and you double the voltage across a resistor, what happens to the current?", "answer": "It doubles (I = V/R)."},
-                {"question": "A 12 V source drives 3 A through a resistor. What is the resistance?", "answer": "4 ohms (R = V/I)."}
+                {
+                    "question": "If resistance stays fixed and you double the voltage across a resistor, what happens to the current?",
+                    "answer": "It doubles (I = V/R)."
+                },
+                {
+                    "question": "A 12 V source drives 3 A through a resistor. What is the resistance?",
+                    "answer": "4 ohms (R = V/I)."
+                }
             ]
         },
         {
@@ -288,8 +456,14 @@
             "original_question": "Why is hemoglobin's oxygen-binding curve sigmoidal?",
             "original_answer": "Because of cooperative binding: O2 binding at one subunit increases affinity at the others.",
             "reworded": [
-                {"question": "The first O2 makes it easier for hemoglobin to bind the next. What is this property called, and what curve shape does it produce?", "answer": "Positive cooperativity; a sigmoidal (S-shaped) curve."},
-                {"question": "Myoglobin has a hyperbolic O2 curve while hemoglobin's is S-shaped. What structural feature accounts for the difference?", "answer": "Hemoglobin's multiple subunits bind O2 cooperatively; myoglobin is a single subunit."}
+                {
+                    "question": "The first O2 makes it easier for hemoglobin to bind the next. What is this property called, and what curve shape does it produce?",
+                    "answer": "Positive cooperativity; a sigmoidal (S-shaped) curve."
+                },
+                {
+                    "question": "Myoglobin has a hyperbolic O2 curve while hemoglobin's is S-shaped. What structural feature accounts for the difference?",
+                    "answer": "Hemoglobin's multiple subunits bind O2 cooperatively; myoglobin is a single subunit."
+                }
             ]
         },
         {
@@ -298,8 +472,14 @@
             "original_question": "In what orientation do the two strands of a DNA double helix run?",
             "original_answer": "Antiparallel: one strand runs 5' to 3' and the complementary strand runs 3' to 5'.",
             "reworded": [
-                {"question": "DNA polymerase synthesizes only 5'->3'. Why does this force one strand to be made continuously and the other in fragments?", "answer": "Because the two template strands are antiparallel, so the lagging strand is copied in Okazaki fragments."},
-                {"question": "If one strand of a duplex reads 5'-ATGC-3', in which direction does the complementary strand read across from it?", "answer": "3'-TACG-5' (the strands are antiparallel)."}
+                {
+                    "question": "DNA polymerase synthesizes only 5'->3'. Why does this force one strand to be made continuously and the other in fragments?",
+                    "answer": "Because the two template strands are antiparallel, so the lagging strand is copied in Okazaki fragments."
+                },
+                {
+                    "question": "If one strand of a duplex reads 5'-ATGC-3', in which direction does the complementary strand read across from it?",
+                    "answer": "3'-TACG-5' (the strands are antiparallel)."
+                }
             ]
         }
     ]

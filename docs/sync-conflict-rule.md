@@ -38,7 +38,7 @@ then sync:
 
 1. **Both reviews are preserved.** Each device wrote its own `revlog` row with a
    distinct millisecond id; sync unions the rows. The study log / review counts
-   therefore reflect that *two* reviews genuinely happened — correct, not
+   therefore reflect that _two_ reviews genuinely happened — correct, not
    double-counting (they were two real, distinct reviews).
 2. **The card's current state has one clear winner:** the review with the **later
    modification timestamp** wins. The card's due date, interval, ease, reps and

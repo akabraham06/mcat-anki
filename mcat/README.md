@@ -6,18 +6,18 @@ spanning a **wide difficulty range**.
 
 ## What's here
 
-| Path                          | Purpose                                                                      |
-| ----------------------------- | ---------------------------------------------------------------------------- |
-| `build_deck.py`               | **The dynamic card-generation pipeline** (this deliverable).                 |
-| `sources/openstax/`           | Staged OpenStax corpus (56 sources, CC BY-NC-SA 4.0) mapped to the taxonomy. |
-| `sources/register_sources.py` | Registers the corpus into a live collection.                                 |
-| `content.py` / `gen_deck.py`  | The hand-authored starter deck (learning + exam + CARS).                     |
-| `ai_eval/`                    | Offline evaluations: AI features, model validation, and measurement experiments. |
+| Path                          | Purpose                                                                           |
+| ----------------------------- | --------------------------------------------------------------------------------- |
+| `build_deck.py`               | **The dynamic card-generation pipeline** (this deliverable).                      |
+| `sources/openstax/`           | Staged OpenStax corpus (56 sources, CC BY-NC-SA 4.0) mapped to the taxonomy.      |
+| `sources/register_sources.py` | Registers the corpus into a live collection.                                      |
+| `content.py` / `gen_deck.py`  | The hand-authored starter deck (learning + exam + CARS).                          |
+| `ai_eval/`                    | Offline evaluations: AI features, model validation, and measurement experiments.  |
 | `bench/`                      | 50k-card engine benchmark (`run_bench.py`; deck cache in `.cache/`, git-ignored). |
-| `tests/test_build_deck.py`    | Deterministic offline tests for the pipeline.                                |
-| `tests/crash_harness.py`      | Crash-safety + offline AI-off harness (`just mcat-crash-test`).              |
-| `tests/sync_conflict_test.py` | Sync same-card conflict merge simulation (`just mcat-sync-conflict`).        |
-| `dist/`                       | Built `.apkg` output.                                                        |
+| `tests/test_build_deck.py`    | Deterministic offline tests for the pipeline.                                     |
+| `tests/crash_harness.py`      | Crash-safety + offline AI-off harness (`just mcat-crash-test`).                   |
+| `tests/sync_conflict_test.py` | Sync same-card conflict merge simulation (`just mcat-sync-conflict`).             |
+| `dist/`                       | Built `.apkg` output.                                                             |
 
 ## How it works
 

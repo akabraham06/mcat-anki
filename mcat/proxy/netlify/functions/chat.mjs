@@ -1,3 +1,6 @@
+// Copyright: Ankitects Pty Ltd and contributors
+// License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+
 // OpenAI-compatible forwarding proxy for the Anki MCAT app.
 //
 // The app is built to call `POST {base_url}/chat/completions` with a bearer

@@ -258,17 +258,17 @@ crash-safety each have a one-command proof and a write-up. All are **offline and
 deterministic** (synthetic seeded learners for outcomes; the formulas and engine
 calls are real — see the honesty notes in each report).
 
-| Area | Command | Headline result | Write-up |
-| --- | --- | --- | --- |
-| Memory-model calibration | `just mcat-eval-calibration` | Brier **0.190**, log loss **0.560**, ECE **0.022** (engine-checked to \|Δ\|≈2.8e-4) | [`model_validation_report.md`](./mcat/ai_eval/model_validation_report.md) |
-| Performance held-out accuracy | `just mcat-eval-performance` | **71.3%** vs **59.6%** majority baseline | [`model_validation_report.md`](./mcat/ai_eval/model_validation_report.md) |
-| Recall→transfer (paraphrase) | `just mcat-eval-paraphrase` | **21.3 pt** gap (control collapses to 0.0) | [`experiments_report.md`](./mcat/ai_eval/experiments_report.md) |
-| Three-build study (equal time) | `just mcat-eval-study` | interleave **+6.2 pts**; recommender **−0.6 pts** (honest negative) | [`experiments_report.md`](./mcat/ai_eval/experiments_report.md) |
-| Train/test leakage scan | `just mcat-eval-leakage` | **0 / 66** leaked (nearest 0.44; sanity-checked) | [`experiments_report.md`](./mcat/ai_eval/experiments_report.md) |
-| Gold-set quality gate | `just mcat-eval-goldset` | **0/20** good blocked, **6/6** wrong + **24/24** bad-teaching caught | [`report.md`](./mcat/ai_eval/report.md) |
-| 50k-card engine benchmark | `just mcat-bench` | full readiness recompute ≈ **0.35 s**; search ≈ 13 ms; answer/undo < 1 ms | [`bench_50000.md`](./mcat/bench/results/bench_50000.md) |
-| Crash-safety + offline AI-off | `just mcat-crash-test` | 20 mid-write SIGKILLs → **0 corruptions, 0 lost reviews**; scores with AI off | (asserts in-harness) |
-| Sync same-card conflict rule | `just mcat-sync-conflict` | reviews never lost/duplicated; card state = later-mtime winner | [`sync-conflict-rule.md`](./docs/sync-conflict-rule.md) |
+| Area                           | Command                      | Headline result                                                                     | Write-up                                                                  |
+| ------------------------------ | ---------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Memory-model calibration       | `just mcat-eval-calibration` | Brier **0.190**, log loss **0.560**, ECE **0.022** (engine-checked to \|Δ\|≈2.8e-4) | [`model_validation_report.md`](./mcat/ai_eval/model_validation_report.md) |
+| Performance held-out accuracy  | `just mcat-eval-performance` | **71.3%** vs **59.6%** majority baseline                                            | [`model_validation_report.md`](./mcat/ai_eval/model_validation_report.md) |
+| Recall→transfer (paraphrase)   | `just mcat-eval-paraphrase`  | **21.3 pt** gap (control collapses to 0.0)                                          | [`experiments_report.md`](./mcat/ai_eval/experiments_report.md)           |
+| Three-build study (equal time) | `just mcat-eval-study`       | interleave **+6.2 pts**; recommender **−0.6 pts** (honest negative)                 | [`experiments_report.md`](./mcat/ai_eval/experiments_report.md)           |
+| Train/test leakage scan        | `just mcat-eval-leakage`     | **0 / 66** leaked (nearest 0.44; sanity-checked)                                    | [`experiments_report.md`](./mcat/ai_eval/experiments_report.md)           |
+| Gold-set quality gate          | `just mcat-eval-goldset`     | **0/20** good blocked, **6/6** wrong + **24/24** bad-teaching caught                | [`report.md`](./mcat/ai_eval/report.md)                                   |
+| 50k-card engine benchmark      | `just mcat-bench`            | full readiness recompute ≈ **0.35 s**; search ≈ 13 ms; answer/undo < 1 ms           | [`bench_50000.md`](./mcat/bench/results/bench_50000.md)                   |
+| Crash-safety + offline AI-off  | `just mcat-crash-test`       | 20 mid-write SIGKILLs → **0 corruptions, 0 lost reviews**; scores with AI off       | (asserts in-harness)                                                      |
+| Sync same-card conflict rule   | `just mcat-sync-conflict`    | reviews never lost/duplicated; card state = later-mtime winner                      | [`sync-conflict-rule.md`](./docs/sync-conflict-rule.md)                   |
 
 Run the whole model-validation + measurement suite at once with `just mcat-eval-all`.
 

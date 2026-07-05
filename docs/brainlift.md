@@ -1,7 +1,7 @@
 # Brainlift — MCAT Anki Mastery
 
 > **Personalize this.** This is a factual, repo-grounded starting point. Replace
-> this note with your own voice: what *you* learned, where you got stuck, and the
+> this note with your own voice: what _you_ learned, where you got stuck, and the
 > judgement calls you'd defend in a review. The technical claims below are all
 > traceable to code and to the eval reports in this repository.
 
@@ -25,11 +25,11 @@ and coaching only** — they never feed the score.
 ## Why these decisions
 
 - **Change the engine, not a plugin.** Putting MCAT logic in `rslib` means the
-  desktop and phone compute *identical* numbers for free, and sync/scheduling
+  desktop and phone compute _identical_ numbers for free, and sync/scheduling
   come along for the ride. The cost is a brownfield change to a mature codebase
   (see `steps.md` for upstream files touched and merge-risk notes).
 - **Three scores, not one.** Recall (Memory) is necessary but not sufficient for
-  an exam. Splitting out Performance (accuracy on *new* exam-style questions) and
+  an exam. Splitting out Performance (accuracy on _new_ exam-style questions) and
   Readiness (a weighted blend) makes the difference measurable — and the
   transfer-gap metric quantifies how much recall doesn't survive rewording.
 - **Honesty rule / abstention.** Readiness refuses to produce a number until
@@ -83,15 +83,15 @@ and coaching only** — they never feed the score.
 
 ## Where the proof lives
 
-| Area | Command | Report |
-| --- | --- | --- |
-| AI features vs no-AI baselines | `just mcat-ai-eval` | `mcat/ai_eval/report.md` |
-| Memory + performance model validation | `just mcat-eval-calibration`, `just mcat-eval-performance` | `mcat/ai_eval/model_validation_report.md` |
-| Transfer, three-build study, leakage, gold-set | `just mcat-eval-paraphrase` · `mcat-eval-study` · `mcat-eval-leakage` · `mcat-eval-goldset` | `mcat/ai_eval/experiments_report.md` |
-| Engine performance at 50k cards | `just mcat-bench` | `mcat/bench/results/bench_50000.md` |
-| Crash safety + offline AI-off | `just mcat-crash-test` | (asserts in-harness) |
-| Sync conflict rule | `just mcat-sync-conflict` | `docs/sync-conflict-rule.md` |
-| The three models, in depth | — | `docs/model-descriptions.md` |
+| Area                                           | Command                                                                                     | Report                                    |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| AI features vs no-AI baselines                 | `just mcat-ai-eval`                                                                         | `mcat/ai_eval/report.md`                  |
+| Memory + performance model validation          | `just mcat-eval-calibration`, `just mcat-eval-performance`                                  | `mcat/ai_eval/model_validation_report.md` |
+| Transfer, three-build study, leakage, gold-set | `just mcat-eval-paraphrase` · `mcat-eval-study` · `mcat-eval-leakage` · `mcat-eval-goldset` | `mcat/ai_eval/experiments_report.md`      |
+| Engine performance at 50k cards                | `just mcat-bench`                                                                           | `mcat/bench/results/bench_50000.md`       |
+| Crash safety + offline AI-off                  | `just mcat-crash-test`                                                                      | (asserts in-harness)                      |
+| Sync conflict rule                             | `just mcat-sync-conflict`                                                                   | `docs/sync-conflict-rule.md`              |
+| The three models, in depth                     | —                                                                                           | `docs/model-descriptions.md`              |
 
 ## Honesty caveats
 
