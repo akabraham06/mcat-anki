@@ -1,0 +1,707 @@
+{
+  "_comment": "Gold set of 50 Q&A with known-correct MCAT answers (rubric 7f). Sourced from the curated EXAM_MCQ bank (each item has a single verified-correct option + explanation). Used by gold_set_check.py as (1) the known-correct reference and (2) a false-block calibration set run through the 9.4 quality checker at the pre-registered 0.70 cutoff.",
+  "cutoff": 0.7,
+  "count": 50,
+  "items": [
+    {
+      "id": "gold-00",
+      "topic": "mcat::chemphys::thermodynamics",
+      "question": "A reaction has ΔH > 0 and ΔS > 0. At what temperatures is it spontaneous?",
+      "options": [
+        "At all temperatures",
+        "At high temperatures",
+        "At low temperatures",
+        "Never"
+      ],
+      "correct_letter": "B",
+      "answer": "At high temperatures",
+      "explanation": "ΔG = ΔH − TΔS. With ΔH > 0 and ΔS > 0, high T makes the −TΔS term dominate, so ΔG < 0."
+    },
+    {
+      "id": "gold-01",
+      "topic": "mcat::chemphys::thermodynamics",
+      "question": "For a reaction with ΔS < 0, how does raising the temperature affect spontaneity?",
+      "options": [
+        "Makes it more spontaneous",
+        "Makes it less spontaneous",
+        "No effect",
+        "Always spontaneous"
+      ],
+      "correct_letter": "B",
+      "answer": "Makes it less spontaneous",
+      "explanation": "With ΔS < 0, the −TΔS term is positive and grows with T, raising ΔG."
+    },
+    {
+      "id": "gold-02",
+      "topic": "mcat::chemphys::thermodynamics",
+      "question": "A process releases heat and increases order. Classify ΔH and ΔS.",
+      "options": [
+        "ΔH < 0, ΔS < 0",
+        "ΔH > 0, ΔS > 0",
+        "ΔH < 0, ΔS > 0",
+        "ΔH > 0, ΔS < 0"
+      ],
+      "correct_letter": "A",
+      "answer": "ΔH < 0, ΔS < 0",
+      "explanation": "Releasing heat is exothermic (ΔH < 0); increased order means ΔS < 0."
+    },
+    {
+      "id": "gold-03",
+      "topic": "mcat::chemphys::kinetics",
+      "question": "Adding a catalyst doubles the forward rate. What happens to Keq?",
+      "options": [
+        "It doubles",
+        "It halves",
+        "It is unchanged",
+        "It depends on temperature"
+      ],
+      "correct_letter": "C",
+      "answer": "It is unchanged",
+      "explanation": "A catalyst speeds forward and reverse equally; Keq and ΔG are unchanged."
+    },
+    {
+      "id": "gold-04",
+      "topic": "mcat::chemphys::kinetics",
+      "question": "For A + B → C, doubling [A] quadruples the rate. What is the order in A?",
+      "options": [
+        "Zero order",
+        "First order",
+        "Second order",
+        "Third order"
+      ],
+      "correct_letter": "C",
+      "answer": "Second order",
+      "explanation": "rate ∝ [A]^n and 2^n = 4, so n = 2."
+    },
+    {
+      "id": "gold-05",
+      "topic": "mcat::chemphys::kinetics",
+      "question": "A multi-step mechanism speeds up when its slowest step is bypassed. Why?",
+      "options": [
+        "The fast steps set the rate",
+        "The slowest step is rate-determining",
+        "Catalysts remove all intermediates",
+        "Equilibrium shifts right"
+      ],
+      "correct_letter": "B",
+      "answer": "The slowest step is rate-determining",
+      "explanation": "Overall rate is limited by the slowest (rate-determining) step."
+    },
+    {
+      "id": "gold-06",
+      "topic": "mcat::chemphys::acids_bases",
+      "question": "What is the pH of 0.01 M HCl?",
+      "options": [
+        "1",
+        "2",
+        "7",
+        "12"
+      ],
+      "correct_letter": "B",
+      "answer": "2",
+      "explanation": "A strong acid fully dissociates; pH = −log(0.01) = 2."
+    },
+    {
+      "id": "gold-07",
+      "topic": "mcat::chemphys::acids_bases",
+      "question": "Titrating a weak acid with a strong base: the equivalence-point pH is?",
+      "options": [
+        "Below 7",
+        "Exactly 7",
+        "Above 7",
+        "Impossible to determine"
+      ],
+      "correct_letter": "C",
+      "answer": "Above 7",
+      "explanation": "The conjugate base remaining at equivalence makes the solution basic."
+    },
+    {
+      "id": "gold-08",
+      "topic": "mcat::chemphys::acids_bases",
+      "question": "Identify the conjugate base of H2PO4⁻.",
+      "options": [
+        "H3PO4",
+        "HPO4²⁻",
+        "PO4³⁻",
+        "OH⁻"
+      ],
+      "correct_letter": "B",
+      "answer": "HPO4²⁻",
+      "explanation": "Removing one proton from H2PO4⁻ gives HPO4²⁻."
+    },
+    {
+      "id": "gold-09",
+      "topic": "mcat::chemphys::atomic_structure",
+      "question": "How many unpaired electrons does nitrogen (2p³) have?",
+      "options": [
+        "1",
+        "2",
+        "3",
+        "0"
+      ],
+      "correct_letter": "C",
+      "answer": "3",
+      "explanation": "By Hund's rule the three 2p electrons occupy separate orbitals, all unpaired."
+    },
+    {
+      "id": "gold-10",
+      "topic": "mcat::chemphys::atomic_structure",
+      "question": "Which has the larger radius, Na or Na⁺?",
+      "options": [
+        "Na",
+        "Na⁺",
+        "They are equal",
+        "It depends on temperature"
+      ],
+      "correct_letter": "A",
+      "answer": "Na",
+      "explanation": "Losing an electron reduces electron-electron repulsion, so the cation is smaller."
+    },
+    {
+      "id": "gold-11",
+      "topic": "mcat::chemphys::electrochemistry",
+      "question": "In electrolysis, reduction occurs at which electrode?",
+      "options": [
+        "The anode",
+        "The cathode",
+        "The salt bridge",
+        "Both electrodes"
+      ],
+      "correct_letter": "B",
+      "answer": "The cathode",
+      "explanation": "Reduction always occurs at the cathode, by definition."
+    },
+    {
+      "id": "gold-12",
+      "topic": "mcat::chemphys::electrochemistry",
+      "question": "E°cell is negative. Is the reaction spontaneous as written?",
+      "options": [
+        "Yes",
+        "No",
+        "Only at high temperature",
+        "Only with a catalyst"
+      ],
+      "correct_letter": "B",
+      "answer": "No",
+      "explanation": "Negative E° means ΔG > 0, so the reaction is nonspontaneous as written."
+    },
+    {
+      "id": "gold-13",
+      "topic": "mcat::chemphys::electrochemistry",
+      "question": "In a galvanic cell, electrons flow from which electrode to which?",
+      "options": [
+        "Cathode to anode",
+        "Anode to cathode",
+        "In both directions",
+        "They do not flow"
+      ],
+      "correct_letter": "B",
+      "answer": "Anode to cathode",
+      "explanation": "Electrons flow from the anode (oxidation) to the cathode (reduction)."
+    },
+    {
+      "id": "gold-14",
+      "topic": "mcat::chemphys::fluids",
+      "question": "A fluid speeds up through a constriction. What happens to its pressure?",
+      "options": [
+        "It increases",
+        "It decreases",
+        "It is unchanged",
+        "It drops to zero"
+      ],
+      "correct_letter": "B",
+      "answer": "It decreases",
+      "explanation": "By Bernoulli's principle, faster flow corresponds to lower pressure."
+    },
+    {
+      "id": "gold-15",
+      "topic": "mcat::chemphys::fluids",
+      "question": "A pipe narrows to half its cross-sectional area. What happens to flow velocity?",
+      "options": [
+        "It halves",
+        "It is unchanged",
+        "It doubles",
+        "It quadruples"
+      ],
+      "correct_letter": "C",
+      "answer": "It doubles",
+      "explanation": "Continuity (A1v1 = A2v2): halving the area doubles the velocity."
+    },
+    {
+      "id": "gold-16",
+      "topic": "mcat::chemphys::stoichiometry",
+      "question": "How many moles of O2 react with 2 mol H2 to form water?",
+      "options": [
+        "0.5 mol",
+        "1 mol",
+        "2 mol",
+        "4 mol"
+      ],
+      "correct_letter": "B",
+      "answer": "1 mol",
+      "explanation": "2 H2 + O2 → 2 H2O, so 2 mol H2 needs 1 mol O2."
+    },
+    {
+      "id": "gold-17",
+      "topic": "mcat::chemphys::stoichiometry",
+      "question": "For N2 + 3 H2 → 2 NH3 with 3 mol H2 and 1 mol N2, which is limiting?",
+      "options": [
+        "H2",
+        "N2",
+        "Neither (exact ratio)",
+        "NH3"
+      ],
+      "correct_letter": "C",
+      "answer": "Neither (exact ratio)",
+      "explanation": "3 mol H2 to 1 mol N2 is exactly the 3:1 stoichiometric ratio, so neither is limiting."
+    },
+    {
+      "id": "gold-18",
+      "topic": "mcat::chemphys::thermochemistry",
+      "question": "Is bond breaking endothermic or exothermic?",
+      "options": [
+        "Exothermic",
+        "Endothermic",
+        "Neither",
+        "Always spontaneous"
+      ],
+      "correct_letter": "B",
+      "answer": "Endothermic",
+      "explanation": "Breaking a bond requires an input of energy, so it is endothermic."
+    },
+    {
+      "id": "gold-19",
+      "topic": "mcat::chemphys::thermochemistry",
+      "question": "By Hess's law, if step 1 = −100 kJ and step 2 = +40 kJ, the net ΔH is?",
+      "options": [
+        "−140 kJ",
+        "−60 kJ",
+        "+60 kJ",
+        "+140 kJ"
+      ],
+      "correct_letter": "B",
+      "answer": "−60 kJ",
+      "explanation": "ΔH is a state function; −100 + 40 = −60 kJ."
+    },
+    {
+      "id": "gold-20",
+      "topic": "mcat::biobiochem::amino_acids",
+      "question": "At physiological pH, what is the charge on glutamate's side chain?",
+      "options": [
+        "Positive",
+        "Negative",
+        "Neutral",
+        "It has no side chain"
+      ],
+      "correct_letter": "B",
+      "answer": "Negative",
+      "explanation": "The side-chain carboxyl is deprotonated (carboxylate), giving a negative charge."
+    },
+    {
+      "id": "gold-21",
+      "topic": "mcat::biobiochem::amino_acids",
+      "question": "Which amino acid disrupts alpha-helices because of its rigid ring?",
+      "options": [
+        "Glycine",
+        "Proline",
+        "Alanine",
+        "Serine"
+      ],
+      "correct_letter": "B",
+      "answer": "Proline",
+      "explanation": "Proline's ring locks its backbone and it lacks an amide H, breaking helices."
+    },
+    {
+      "id": "gold-22",
+      "topic": "mcat::biobiochem::amino_acids",
+      "question": "A peptide residue has no stereocenter. Which amino acid is it?",
+      "options": [
+        "Glycine",
+        "Alanine",
+        "Valine",
+        "Cysteine"
+      ],
+      "correct_letter": "A",
+      "answer": "Glycine",
+      "explanation": "Glycine's side chain is a hydrogen, so its alpha carbon is not a stereocenter."
+    },
+    {
+      "id": "gold-23",
+      "topic": "mcat::biobiochem::protein_structure",
+      "question": "A reducing agent breaks which protein bond?",
+      "options": [
+        "Peptide bonds",
+        "Hydrogen bonds",
+        "Disulfide bonds",
+        "Ionic bonds"
+      ],
+      "correct_letter": "C",
+      "answer": "Disulfide bonds",
+      "explanation": "Reduction cleaves disulfide (S–S) bonds back to free thiols."
+    },
+    {
+      "id": "gold-24",
+      "topic": "mcat::biobiochem::protein_structure",
+      "question": "Beta-sheets are stabilized primarily by what interaction?",
+      "options": [
+        "Disulfide bonds",
+        "Backbone hydrogen bonds",
+        "Hydrophobic packing only",
+        "Peptide bonds"
+      ],
+      "correct_letter": "B",
+      "answer": "Backbone hydrogen bonds",
+      "explanation": "Secondary structure, including beta-sheets, is held by backbone hydrogen bonds."
+    },
+    {
+      "id": "gold-25",
+      "topic": "mcat::biobiochem::protein_structure",
+      "question": "Heat denaturation disrupts which level of structure first?",
+      "options": [
+        "Primary",
+        "Tertiary",
+        "The peptide backbone",
+        "Covalent bonds"
+      ],
+      "correct_letter": "B",
+      "answer": "Tertiary",
+      "explanation": "Non-covalent tertiary contacts unfold first; the primary sequence is retained."
+    },
+    {
+      "id": "gold-26",
+      "topic": "mcat::biobiochem::enzymes",
+      "question": "A drug raises apparent Km but leaves Vmax unchanged. What kind of inhibitor is it?",
+      "options": [
+        "Competitive",
+        "Noncompetitive",
+        "Uncompetitive",
+        "Irreversible"
+      ],
+      "correct_letter": "A",
+      "answer": "Competitive",
+      "explanation": "Competitive inhibitors raise apparent Km with Vmax unchanged (outcompeted by substrate)."
+    },
+    {
+      "id": "gold-27",
+      "topic": "mcat::biobiochem::enzymes",
+      "question": "An inhibitor lowers Vmax but does not change Km. What type is it?",
+      "options": [
+        "Competitive",
+        "Noncompetitive",
+        "None",
+        "Allosteric activator"
+      ],
+      "correct_letter": "B",
+      "answer": "Noncompetitive",
+      "explanation": "Classic noncompetitive inhibition lowers Vmax while Km is unchanged."
+    },
+    {
+      "id": "gold-28",
+      "topic": "mcat::biobiochem::enzymes",
+      "question": "Adding more substrate reverses the inhibition. Which inhibitor type is it?",
+      "options": [
+        "Competitive",
+        "Noncompetitive",
+        "Uncompetitive",
+        "Irreversible"
+      ],
+      "correct_letter": "A",
+      "answer": "Competitive",
+      "explanation": "Competitive inhibition is overcome by increasing substrate concentration."
+    },
+    {
+      "id": "gold-29",
+      "topic": "mcat::biobiochem::enzymes",
+      "question": "Enzyme activity rises then falls as temperature increases. The fall is caused by?",
+      "options": [
+        "Lower substrate concentration",
+        "Denaturation above the optimum",
+        "A higher Km",
+        "Product inhibition"
+      ],
+      "correct_letter": "B",
+      "answer": "Denaturation above the optimum",
+      "explanation": "Above the optimal temperature the enzyme denatures, losing activity."
+    },
+    {
+      "id": "gold-30",
+      "topic": "mcat::biobiochem::metabolism",
+      "question": "Which process occurs in the mitochondrial matrix?",
+      "options": [
+        "Glycolysis",
+        "The Krebs cycle",
+        "Glycogenolysis",
+        "Translation"
+      ],
+      "correct_letter": "B",
+      "answer": "The Krebs cycle",
+      "explanation": "The citric acid (Krebs) cycle runs in the mitochondrial matrix; glycolysis is cytosolic."
+    },
+    {
+      "id": "gold-31",
+      "topic": "mcat::biobiochem::metabolism",
+      "question": "Cyanide blocks complex IV. What happens to ATP synthesis?",
+      "options": [
+        "It increases",
+        "It halts",
+        "It is unchanged",
+        "It doubles"
+      ],
+      "correct_letter": "B",
+      "answer": "It halts",
+      "explanation": "Blocking the electron transport chain collapses the proton gradient, halting ATP synthesis."
+    },
+    {
+      "id": "gold-32",
+      "topic": "mcat::biobiochem::metabolism",
+      "question": "Under anaerobic conditions in humans, what regenerates NAD⁺?",
+      "options": [
+        "The Krebs cycle",
+        "Lactate fermentation",
+        "Beta-oxidation",
+        "The electron transport chain"
+      ],
+      "correct_letter": "B",
+      "answer": "Lactate fermentation",
+      "explanation": "Lactate fermentation reoxidizes NADH to NAD⁺ so glycolysis can continue."
+    },
+    {
+      "id": "gold-33",
+      "topic": "mcat::biobiochem::glycolysis",
+      "question": "Glycolysis makes 4 ATP and invests 2. What is the net ATP?",
+      "options": [
+        "2",
+        "4",
+        "6",
+        "0"
+      ],
+      "correct_letter": "A",
+      "answer": "2",
+      "explanation": "Net ATP = 4 produced − 2 invested = 2 per glucose."
+    },
+    {
+      "id": "gold-34",
+      "topic": "mcat::biobiochem::glycolysis",
+      "question": "What is the main control enzyme of glycolysis?",
+      "options": [
+        "Hexokinase",
+        "PFK-1",
+        "Pyruvate kinase",
+        "Aldolase"
+      ],
+      "correct_letter": "B",
+      "answer": "PFK-1",
+      "explanation": "Phosphofructokinase-1 catalyzes the committed, rate-limiting step."
+    },
+    {
+      "id": "gold-35",
+      "topic": "mcat::biobiochem::glycolysis",
+      "question": "High ATP inhibits PFK-1. What is this kind of regulation called?",
+      "options": [
+        "Competitive inhibition",
+        "Allosteric feedback inhibition",
+        "Covalent modification",
+        "Induced fit"
+      ],
+      "correct_letter": "B",
+      "answer": "Allosteric feedback inhibition",
+      "explanation": "ATP binds a regulatory site (allosteric) to inhibit PFK-1 as a feedback signal."
+    },
+    {
+      "id": "gold-36",
+      "topic": "mcat::biobiochem::cell_biology",
+      "question": "Which organelle is the site of aerobic ATP production?",
+      "options": [
+        "The nucleus",
+        "The mitochondrion",
+        "The ribosome",
+        "The Golgi apparatus"
+      ],
+      "correct_letter": "B",
+      "answer": "The mitochondrion",
+      "explanation": "Oxidative phosphorylation occurs at the mitochondrial inner membrane."
+    },
+    {
+      "id": "gold-37",
+      "topic": "mcat::biobiochem::cell_biology",
+      "question": "Ribosomes on the rough ER synthesize which proteins?",
+      "options": [
+        "Cytosolic enzymes",
+        "Secretory and membrane proteins",
+        "Lipids",
+        "tRNA molecules"
+      ],
+      "correct_letter": "B",
+      "answer": "Secretory and membrane proteins",
+      "explanation": "The rough ER makes proteins destined for secretion or membranes."
+    },
+    {
+      "id": "gold-38",
+      "topic": "mcat::biobiochem::molecular_genetics",
+      "question": "The lagging strand is made in fragments. What are they called?",
+      "options": [
+        "Primers",
+        "Okazaki fragments",
+        "Introns",
+        "Codons"
+      ],
+      "correct_letter": "B",
+      "answer": "Okazaki fragments",
+      "explanation": "Discontinuous lagging-strand synthesis produces Okazaki fragments."
+    },
+    {
+      "id": "gold-39",
+      "topic": "mcat::biobiochem::molecular_genetics",
+      "question": "DNA polymerase can only add nucleotides to which end?",
+      "options": [
+        "The 5′ end",
+        "The 3′ end",
+        "Either end",
+        "The middle"
+      ],
+      "correct_letter": "B",
+      "answer": "The 3′ end",
+      "explanation": "Synthesis proceeds 5′→3′, adding to the free 3′-OH end."
+    },
+    {
+      "id": "gold-40",
+      "topic": "mcat::biobiochem::membranes",
+      "question": "The Na⁺/K⁺ ATPase pumps ions against their gradients. Transport class?",
+      "options": [
+        "Facilitated diffusion",
+        "Primary active transport",
+        "Secondary active transport",
+        "Simple diffusion"
+      ],
+      "correct_letter": "B",
+      "answer": "Primary active transport",
+      "explanation": "It hydrolyzes ATP directly to move ions uphill: primary active transport."
+    },
+    {
+      "id": "gold-41",
+      "topic": "mcat::biobiochem::membranes",
+      "question": "Glucose uptake coupled to the Na⁺ gradient is what kind of transport?",
+      "options": [
+        "Primary active transport",
+        "Secondary active transport",
+        "Simple diffusion",
+        "Endocytosis"
+      ],
+      "correct_letter": "B",
+      "answer": "Secondary active transport",
+      "explanation": "It uses the Na⁺ gradient (set up by the pump) as an energy source: secondary active transport."
+    },
+    {
+      "id": "gold-42",
+      "topic": "mcat::psychsoc::learning_memory",
+      "question": "A dog salivates to a bell after it is paired with food. Conditioning type?",
+      "options": [
+        "Operant",
+        "Classical",
+        "Observational",
+        "Latent"
+      ],
+      "correct_letter": "B",
+      "answer": "Classical",
+      "explanation": "Pairing a neutral stimulus (bell) with an unconditioned stimulus (food) is classical conditioning."
+    },
+    {
+      "id": "gold-43",
+      "topic": "mcat::psychsoc::learning_memory",
+      "question": "A rat presses a lever more often after receiving food. Conditioning type?",
+      "options": [
+        "Classical",
+        "Operant (positive reinforcement)",
+        "Negative punishment",
+        "Habituation"
+      ],
+      "correct_letter": "B",
+      "answer": "Operant (positive reinforcement)",
+      "explanation": "Behavior increases because of a rewarding consequence: operant positive reinforcement."
+    },
+    {
+      "id": "gold-44",
+      "topic": "mcat::psychsoc::learning_memory",
+      "question": "Studying in short sessions across a week beats cramming. Which effect is this?",
+      "options": [
+        "Serial position",
+        "The spacing effect",
+        "State-dependent memory",
+        "Priming"
+      ],
+      "correct_letter": "B",
+      "answer": "The spacing effect",
+      "explanation": "Distributed practice outperforms massed practice: the spacing effect."
+    },
+    {
+      "id": "gold-45",
+      "topic": "mcat::psychsoc::learning_memory",
+      "question": "Removing a chore when grades improve increases studying. Reinforcement type?",
+      "options": [
+        "Positive reinforcement",
+        "Negative reinforcement",
+        "Positive punishment",
+        "Negative punishment"
+      ],
+      "correct_letter": "B",
+      "answer": "Negative reinforcement",
+      "explanation": "Removing an aversive stimulus to increase behavior is negative reinforcement."
+    },
+    {
+      "id": "gold-46",
+      "topic": "mcat::psychsoc::sensation_perception",
+      "question": "The dimmest light detectable half the time defines what?",
+      "options": [
+        "The difference threshold",
+        "The absolute threshold",
+        "Weber's constant",
+        "The signal criterion"
+      ],
+      "correct_letter": "B",
+      "answer": "The absolute threshold",
+      "explanation": "Detection 50% of the time defines the absolute threshold."
+    },
+    {
+      "id": "gold-47",
+      "topic": "mcat::psychsoc::sensation_perception",
+      "question": "You need a bigger change to notice a difference in loud vs. soft sounds. Which law?",
+      "options": [
+        "Weber's law",
+        "Stevens' power law",
+        "Fitts's law",
+        "Bloch's law"
+      ],
+      "correct_letter": "A",
+      "answer": "Weber's law",
+      "explanation": "The just-noticeable difference is a constant proportion of the stimulus: Weber's law."
+    },
+    {
+      "id": "gold-48",
+      "topic": "mcat::psychsoc::sensation_perception",
+      "question": "Receptors stop responding to a constant background smell. This is?",
+      "options": [
+        "Sensitization",
+        "Sensory adaptation",
+        "Accommodation",
+        "Retrieval failure"
+      ],
+      "correct_letter": "B",
+      "answer": "Sensory adaptation",
+      "explanation": "Reduced response to an unchanging stimulus is sensory adaptation."
+    },
+    {
+      "id": "gold-49",
+      "topic": "mcat::psychsoc::cognition",
+      "question": "Someone cannot use a coin as a screwdriver. Which bias is this?",
+      "options": [
+        "Confirmation bias",
+        "Functional fixedness",
+        "Anchoring",
+        "Framing"
+      ],
+      "correct_letter": "B",
+      "answer": "Functional fixedness",
+      "explanation": "Seeing an object only in its usual role is functional fixedness."
+    }
+  ]
+}

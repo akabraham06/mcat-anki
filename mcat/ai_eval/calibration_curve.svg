@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="460" height="460" font-family="sans-serif" font-size="12">
+<rect width="460" height="460" fill="white"/>
+<text x="230.0" y="24" text-anchor="middle" font-size="15" font-weight="bold">MCAT memory model — reliability diagram</text>
+<line x1="60.0" y1="400.0" x2="60.0" y2="60.0" stroke="#eee"/>
+<line x1="60.0" y1="400.0" x2="400.0" y2="400.0" stroke="#eee"/>
+<text x="60.0" y="418.0" text-anchor="middle" fill="#555">0.0</text>
+<text x="50.0" y="404.0" text-anchor="end" fill="#555">0.0</text>
+<line x1="128.0" y1="400.0" x2="128.0" y2="60.0" stroke="#eee"/>
+<line x1="60.0" y1="332.0" x2="400.0" y2="332.0" stroke="#eee"/>
+<text x="128.0" y="418.0" text-anchor="middle" fill="#555">0.2</text>
+<text x="50.0" y="336.0" text-anchor="end" fill="#555">0.2</text>
+<line x1="196.0" y1="400.0" x2="196.0" y2="60.0" stroke="#eee"/>
+<line x1="60.0" y1="264.0" x2="400.0" y2="264.0" stroke="#eee"/>
+<text x="196.0" y="418.0" text-anchor="middle" fill="#555">0.4</text>
+<text x="50.0" y="268.0" text-anchor="end" fill="#555">0.4</text>
+<line x1="264.0" y1="400.0" x2="264.0" y2="60.0" stroke="#eee"/>
+<line x1="60.0" y1="196.0" x2="400.0" y2="196.0" stroke="#eee"/>
+<text x="264.0" y="418.0" text-anchor="middle" fill="#555">0.6</text>
+<text x="50.0" y="200.0" text-anchor="end" fill="#555">0.6</text>
+<line x1="332.0" y1="400.0" x2="332.0" y2="60.0" stroke="#eee"/>
+<line x1="60.0" y1="128.0" x2="400.0" y2="128.0" stroke="#eee"/>
+<text x="332.0" y="418.0" text-anchor="middle" fill="#555">0.8</text>
+<text x="50.0" y="132.0" text-anchor="end" fill="#555">0.8</text>
+<line x1="400.0" y1="400.0" x2="400.0" y2="60.0" stroke="#eee"/>
+<line x1="60.0" y1="60.0" x2="400.0" y2="60.0" stroke="#eee"/>
+<text x="400.0" y="418.0" text-anchor="middle" fill="#555">1.0</text>
+<text x="50.0" y="64.0" text-anchor="end" fill="#555">1.0</text>
+<rect x="60.0" y="60.0" width="340" height="340" fill="none" stroke="#333"/>
+<line x1="60.0" y1="400.0" x2="400.0" y2="60.0" stroke="#999" stroke-dasharray="5,4"/>
+<polyline points="179.5,288.6 212.6,257.2 247.6,210.9 281.5,166.0 315.5,137.9 349.6,119.9 381.0,84.1" fill="none" stroke="#1f77b4" stroke-width="2.5"/>
+<circle cx="179.5" cy="288.6" r="4" fill="#1f77b4"/>
+<text x="179.5" y="280.6" text-anchor="middle" fill="#1f77b4" font-size="9">180</text>
+<circle cx="212.6" cy="257.2" r="4" fill="#1f77b4"/>
+<text x="212.6" y="249.2" text-anchor="middle" fill="#1f77b4" font-size="9">169</text>
+<circle cx="247.6" cy="210.9" r="4" fill="#1f77b4"/>
+<text x="247.6" y="202.9" text-anchor="middle" fill="#1f77b4" font-size="9">187</text>
+<circle cx="281.5" cy="166.0" r="4" fill="#1f77b4"/>
+<text x="281.5" y="158.0" text-anchor="middle" fill="#1f77b4" font-size="9">154</text>
+<circle cx="315.5" cy="137.9" r="4" fill="#1f77b4"/>
+<text x="315.5" y="129.9" text-anchor="middle" fill="#1f77b4" font-size="9">179</text>
+<circle cx="349.6" cy="119.9" r="4" fill="#1f77b4"/>
+<text x="349.6" y="111.9" text-anchor="middle" fill="#1f77b4" font-size="9">176</text>
+<circle cx="381.0" cy="84.1" r="4" fill="#1f77b4"/>
+<text x="381.0" y="76.1" text-anchor="middle" fill="#1f77b4" font-size="9">155</text>
+<text x="230.0" y="446" text-anchor="middle">Mean predicted recall probability</text>
+<text x="18" y="230.0" text-anchor="middle" transform="rotate(-90 18 230.0)">Empirical recall (observed)</text>
+<text x="70.2" y="77.0" fill="#333">Brier 0.1897  |  LogLoss 0.5604  |  ECE 0.0220</text>
+<text x="70.2" y="100.8" fill="#999" font-size="10">dashed = perfect calibration; point labels = bin count</text>
+</svg>
