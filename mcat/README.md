@@ -12,8 +12,11 @@ spanning a **wide difficulty range**.
 | `sources/openstax/`           | Staged OpenStax corpus (56 sources, CC BY-NC-SA 4.0) mapped to the taxonomy. |
 | `sources/register_sources.py` | Registers the corpus into a live collection.                                 |
 | `content.py` / `gen_deck.py`  | The hand-authored starter deck (learning + exam + CARS).                     |
-| `ai_eval/`                    | Offline gold-set evaluation of the Phase-2 AI features.                      |
+| `ai_eval/`                    | Offline evaluations: AI features, model validation, and measurement experiments. |
+| `bench/`                      | 50k-card engine benchmark (`run_bench.py`; deck cache in `.cache/`, git-ignored). |
 | `tests/test_build_deck.py`    | Deterministic offline tests for the pipeline.                                |
+| `tests/crash_harness.py`      | Crash-safety + offline AI-off harness (`just mcat-crash-test`).              |
+| `tests/sync_conflict_test.py` | Sync same-card conflict merge simulation (`just mcat-sync-conflict`).        |
 | `dist/`                       | Built `.apkg` output.                                                        |
 
 ## How it works
@@ -62,6 +65,23 @@ just mcat-build-deck --recall 6 --mcat 6 --stretch 3
 # Deterministic offline pipeline tests:
 just mcat-build-deck-test
 ```
+
+## Evaluations, benchmarks & safety tests
+
+Grounded, one-command proofs (all offline & deterministic; synthetic seeded
+learners for outcomes, real formulas/engine calls — see each report's honesty
+note):
+
+```bash
+just mcat-eval-all          # calibration + performance + paraphrase + study + leakage + gold-set
+just mcat-bench             # 50k-card engine benchmark (p50/p95/worst)
+just mcat-crash-test        # 20 mid-write SIGKILLs: zero corruption + AI-off still scores
+just mcat-sync-conflict     # same-card conflict merge rule (chunks.rs) simulation
+```
+
+Reports live in `ai_eval/` (`report.md`, `model_validation_report.md`,
+`experiments_report.md`) and `bench/results/`; see also `docs/model-descriptions.md`,
+`docs/brainlift.md`, and `docs/sync-conflict-rule.md` at the repo root.
 
 By default the build runs in a **private temporary collection** and exports an
 `.apkg`, so it never opens the live SQLite database and is safe to run with the
