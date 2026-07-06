@@ -174,6 +174,9 @@ class MCATHome:
 
             if AiSettingsDialog(self.mw, self.mw).exec():
                 self.refresh()
+        elif url.startswith("mcat:study-topic:"):
+            # url form: "mcat:study-topic:<full topic tag>"
+            self._study_topic(url[len("mcat:study-topic:") :])
         return False
 
     def _study_now(self) -> None:
@@ -207,6 +210,34 @@ class MCATHome:
             f"MCAT: launched session deck did={did} cards={len(card_ids)} "
             f"interleave={interleave} mode={'interleaved' if session.interleaved else 'blocked'}"
         )
+
+        col.decks.select(did)
+        col.startTimebox()
+        self.mw.moveToState("review")
+
+    def _study_topic(self, topic_key: str) -> None:
+        """Study a single weak topic straight from the dashboard shortlist.
+
+        Gathers that topic's tagged cards into the reusable "MCAT Session"
+        filtered deck and opens the reviewer on them. Non-destructive: being a
+        filtered deck, emptying/deleting it returns every card to its home deck.
+        """
+        topic_key = topic_key.strip()
+        if not topic_key:
+            return
+        col = self.mw.col
+        card_ids = list(col.find_cards(f'"tag:{topic_key}" OR "tag:{topic_key}::*"'))[
+            :20
+        ]
+        if not card_ids:
+            tooltip(tr.studying_no_cards_are_due_yet(), parent=self.mw)
+            return
+
+        try:
+            did = build_mcat_session_deck(col, card_ids)
+        except Exception as exc:
+            showWarning(f"Couldn't build the MCAT session deck: {exc}", parent=self.mw)
+            return
 
         col.decks.select(did)
         col.startTimebox()

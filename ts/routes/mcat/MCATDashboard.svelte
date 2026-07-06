@@ -88,6 +88,7 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     const study = (): void => bridgeCommand("study");
     const openDecks = (): void => bridgeCommand("decks");
     const openAiSettings = (): void => bridgeCommand("mcat:ai-settings");
+    const studyTopic = (key: string): void => bridgeCommand(`mcat:study-topic:${key}`);
 
     // --- Readiness gauge (the signature Calibration Gauge, 472–528) ---
     $: rd = readiness.readiness as ScoreEstimate | undefined;
@@ -299,6 +300,30 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
     });
 
     $: recommendation = readiness.recommendation;
+
+    // --- Weak spots: the recommender's pre-ranked shortlist (highest priority
+    // first), enriched with section + recall for a glanceable focus list. ---
+    interface WeakSpot {
+        key: string;
+        name: string;
+        sectionKey: string;
+        weaknessPct: number;
+        recallPct: number;
+        due: number;
+    }
+    $: weakSpots = (recommendation?.candidates ?? []).slice(0, 4).map((c): WeakSpot => {
+        const t = targetByKey.get(c.topicKey);
+        const m = masteryByKey.get(c.topicKey);
+        return {
+            key: c.topicKey,
+            name: c.topicName,
+            sectionKey: t?.sectionKey ?? "",
+            weaknessPct: Math.round(c.weakness * 100),
+            recallPct: Math.round((m?.averageRecallProbability ?? 0) * 100),
+            due: Number(c.dueCards ?? 0),
+        };
+    });
+
     $: firstMin =
         planItems[0]?.minutes ?? Math.max(15, Math.round(sessionTargetSecs / 60));
     $: xp = readiness.xp;
@@ -726,6 +751,65 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
             {/if}
             {#if !aiOn}
                 <p class="ai-note">{aiDirection}</p>
+            {/if}
+        </section>
+
+        <!-- ===== Weak spots: ranked shortlist under the gauge, one-tap study.
+             Fills the left column beside the tall plan panel. ===== -->
+        <section class="focus-panel" aria-label="Weak spots">
+            <header class="panel-head">
+                <h2>Weak spots</h2>
+                <span class="src">weakest first</span>
+            </header>
+            {#if weakSpots.length}
+                <ul class="focus-list">
+                    {#each weakSpots as w (w.key)}
+                        <li>
+                            <span
+                                class="chip"
+                                style="--chip:{hueOf(w.sectionKey)}"
+                                title={shortSection(w.sectionKey, w.sectionKey)}
+                            >
+                                {shortSection(w.sectionKey, w.sectionKey)}
+                            </span>
+                            <div class="focus-body">
+                                <div class="focus-line">
+                                    <span class="focus-topic">{w.name}</span>
+                                    <span class="focus-meta">
+                                        {w.recallPct}% recall{w.due
+                                            ? ` · ${w.due} due`
+                                            : ""}
+                                    </span>
+                                </div>
+                                <div
+                                    class="focus-bar"
+                                    title="Weakness {w.weaknessPct}%"
+                                >
+                                    <div
+                                        class="focus-fill"
+                                        style="width:{Math.max(
+                                            4,
+                                            Math.min(100, w.weaknessPct),
+                                        )}%;--hue:{hueOf(w.sectionKey)}"
+                                    ></div>
+                                </div>
+                            </div>
+                            {#if inDesktopShell}
+                                <button
+                                    type="button"
+                                    class="focus-study"
+                                    on:click={() => studyTopic(w.key)}
+                                >
+                                    Study
+                                </button>
+                            {/if}
+                        </li>
+                    {/each}
+                </ul>
+            {:else}
+                <p class="focus-empty">
+                    Answer a few graded questions and your weakest topics surface here.
+                </p>
             {/if}
         </section>
     </div>
@@ -1314,11 +1398,16 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         display: grid;
         gap: clamp(0.7rem, 1.4vw, 1.1rem);
         grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
-        grid-template-areas: "gauge plan";
+        grid-template-areas:
+            "gauge plan"
+            "focus plan";
         align-items: start;
     }
     .cluster > .gauge-panel {
         grid-area: gauge;
+    }
+    .cluster > .focus-panel {
+        grid-area: focus;
     }
     .cluster > .plan-panel {
         grid-area: plan;
@@ -1863,6 +1952,104 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         border-radius: 50%;
         background: var(--mc-warn);
         box-shadow: 0 0 0 3px color-mix(in srgb, var(--mc-warn) 22%, transparent);
+    }
+
+    /* ===================== Weak spots (focus list) ===================== */
+    .focus-panel {
+        border: 1px solid var(--mc-hairline);
+        border-radius: 12px;
+        padding: clamp(0.8rem, 1.5vh, 1.1rem) 1.15rem;
+        background: var(--mc-panel);
+    }
+    .focus-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+    .focus-list li {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 0.5rem 0;
+        border-top: 1px solid var(--mc-hairline);
+    }
+    .focus-list li:first-child {
+        border-top: none;
+    }
+    .focus-panel .chip {
+        flex: none;
+        width: 6em;
+        text-align: center;
+        border-radius: 999px;
+        padding: 0.08rem 0.4rem;
+        font-family: var(--mc-font-mono);
+        font-size: 0.62rem;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        color: #0a0f16;
+        background: var(--chip, var(--mc-muted));
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .focus-body {
+        flex: 1;
+        min-width: 0;
+    }
+    .focus-line {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.6rem;
+    }
+    .focus-topic {
+        font-weight: 600;
+        font-size: 0.9rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .focus-meta {
+        flex: none;
+        font-family: var(--mc-font-mono);
+        font-size: 0.72rem;
+        color: var(--mc-muted);
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+    }
+    .focus-bar {
+        margin-top: 0.3rem;
+        height: 5px;
+        border-radius: 3px;
+        background: var(--mc-hairline);
+        overflow: hidden;
+    }
+    .focus-fill {
+        height: 100%;
+        border-radius: 3px;
+        background: var(--hue, var(--mc-warn));
+        opacity: 0.85;
+    }
+    .focus-study {
+        flex: none;
+        border: 1px solid var(--mc-hairline);
+        border-radius: 7px;
+        background: transparent;
+        color: var(--mc-text);
+        font-family: var(--mc-font-body);
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.32rem 0.75rem;
+        cursor: pointer;
+    }
+    .focus-study:hover {
+        border-color: var(--mc-ready);
+        color: var(--mc-ready);
+    }
+    .focus-empty {
+        margin: 0.4rem 0 0;
+        color: var(--mc-muted);
+        font-size: 0.88rem;
     }
 
     /* ===================== Section vitals ===================== */
@@ -2671,6 +2858,7 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
             grid-template-columns: 1fr;
             grid-template-areas:
                 "gauge"
+                "focus"
                 "plan";
         }
         .cluster > .plan-panel {
