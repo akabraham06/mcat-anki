@@ -862,12 +862,18 @@ def _check_dynamic_request_permissions():
         "/_anki/buildInterleavedSession",
         "/_anki/getTopicTargets",
         "/_anki/getGhostPace",
-        # Read-only AI RPCs used by the dashboard status pill / AI study plan
-        # and the reviewer's "Explain this miss" button. These never mutate the
-        # collection; generation/acceptance run through the Qt AI Card Studio.
+        # AI RPCs used by the dashboard status pill / AI study plan, the
+        # reviewer's "Explain this miss" button, and the in-dashboard AI Card
+        # Studio (source registration + source-grounded generation + accepting
+        # candidates into the MCAT deck). The MCAT home is a trusted first-party
+        # page, so these first-party AI actions are allowed here.
         "/_anki/getAiStatus",
         "/_anki/getAiStudyPlan",
         "/_anki/listAiSources",
+        "/_anki/registerAiSource",
+        "/_anki/removeAiSource",
+        "/_anki/generateCards",
+        "/_anki/acceptGeneratedCards",
         "/_anki/explainMiss",
     ):
         pass
