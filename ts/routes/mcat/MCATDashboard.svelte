@@ -874,7 +874,7 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                     <b>{passingCount}</b>
                     passing ·
                     <b>{blockedCount}</b>
-                     blocked/duplicate
+                    blocked/duplicate
                 </div>
                 <ul class="cand-list">
                     {#each candidates as c, i (i)}
