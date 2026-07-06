@@ -73,7 +73,7 @@ For live web reloading during development, run `just web-watch` in a second term
 
 ### Open the MCAT dashboard
 
-In the running desktop app: **Tools → MCAT Dashboard**. It shows the three scores with ranges, the section breakdown, the best-next-topic recommendation, transfer gaps, the pacing table, and the interleaved-session builder.
+In the running desktop app: **Tools → MCAT Dashboard**. The default view stays uncluttered — the three scores with ranges, a **Weak spots** focus list (top topics ranked by weakness, each with a one-tap **Study** button that builds a filtered session for that topic), and the inline **AI Card Studio** for generating source-grounded cards. The fuller breakdowns (section detail, best-next-topic recommendation, transfer gaps, pacing table, and interleaved-session builder) are revealed on demand via progressive-disclosure sections.
 
 ### Load the starter deck
 
@@ -226,6 +226,8 @@ Two guarantees run through all of them:
 
 **Zero user setup:** the app ships pointed at a built-in hosted proxy (real key held server-side), so AI works with **no API key typed in**. It degrades gracefully to the baselines above if AI is off or unavailable.
 
+**In-app authoring:** card generation lives directly on the dashboard as the **AI Card Studio** — register a named source, generate cards, review the quality-gated candidates with their visible citations, and accept them into your deck without leaving the MCAT tab.
+
 ### Evaluation (runs before any card reaches a student)
 
 A deterministic, offline evaluation (`just mcat-ai-eval`, mock provider — no network/key) checks each feature against its baseline and gates generated cards at a **cutoff of 0.70 set before testing**. On a **held-out set of 50 labelled cards** (20 good, 30 deliberately bad):
@@ -244,7 +246,6 @@ All **5/5** features beat their no-AI baseline by a pre-registered margin. Full 
 just mcat-ai-eval                  # offline: AI-on vs AI-off + held-out gate vs keyword/vector
 just mcat-ai-verify-scoring-off    # offline: app still scores with AI OFF (+ give-up rule)
 just mcat-ai-verify-live           # live: zero-config proxy + real checker + source-grounded gen
-bash mcat/ai_eval/walkthrough.sh   # all of the above, narrated per requirement
 ```
 
 - **What/why/skipped note:** [`mcat/ai_eval/AI_NOTES.md`](./mcat/ai_eval/AI_NOTES.md)
