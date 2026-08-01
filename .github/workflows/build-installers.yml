@@ -38,17 +38,17 @@ jobs:
     runs-on: macos-14
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v4
       - name: Setup build environment
         uses: ./.github/actions/setup-anki
       - name: Build installer (unsigned)
         run: ./tools/build-installer
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         if: always()
         with:
           name: logs-installer-macos
           path: out/installer/logs/
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         with:
           name: installer-macos
           path: out/installer/dist/
@@ -57,17 +57,17 @@ jobs:
     runs-on: macos-15-intel
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v4
       - name: Setup build environment
         uses: ./.github/actions/setup-anki
       - name: Build installer (unsigned)
         run: ./tools/build-installer
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         if: always()
         with:
           name: logs-installer-macos-intel
           path: out/installer/logs/
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         with:
           name: installer-macos-intel
           path: out/installer/dist/
@@ -76,7 +76,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v4
       - name: Setup build environment
         uses: ./.github/actions/setup-anki
       - name: Build app
@@ -87,12 +87,12 @@ jobs:
         run: |
           $version = (Get-Content .version).Trim()
           out\pyenv\scripts\python.exe qt\tools\build_installer.py --version $version package
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         if: always()
         with:
           name: logs-installer-windows
           path: out/installer/logs/
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         with:
           name: installer-windows
           path: out/installer/dist/
@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v4
       - name: Setup build environment
         uses: ./.github/actions/setup-anki
       - name: Build and install fcitx5-qt for bundling
@@ -128,12 +128,12 @@ jobs:
           sudo cmake --install /tmp/fcitx5-qt-build
       - name: Build installer (unsigned)
         run: ./tools/build-installer
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         if: always()
         with:
           name: logs-installer-linux
           path: out/installer/logs/
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         with:
           name: installer-linux
           path: out/installer/dist/
